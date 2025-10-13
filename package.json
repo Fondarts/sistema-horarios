@@ -1,0 +1,45 @@
+{
+  "name": "horarios-app",
+  "version": "1.0.0",
+  "description": "Sistema de gestión de horarios de empleados",
+  "main": "src/index.tsx",
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "dev": "npm start",
+    "lint": "eslint src --ext .ts,.tsx",
+    "lint:fix": "eslint src --ext .ts,.tsx --fix"
+  },
+  "keywords": [
+    "horarios",
+    "empleados",
+    "gantt",
+    "react",
+    "typescript",
+    "gestión"
+  ],
+  "author": "Tu Nombre",
+  "license": "MIT",
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "dependencies": {
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.1",
+    "date-fns": "^4.1.0",
+    "lucide-react": "^0.545.0",
+    "react-dom": "^19.2.0",
+    "react-scripts": "^5.0.1"
+  }
+}

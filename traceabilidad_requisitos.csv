@@ -1,0 +1,37 @@
+REQ_ID,Módulo (archivo),Feature,Scenario,Fase,Rol,Tags
+REQ-EMP-002,empleados.feature,Gestión de empleados,Alta básica de empleado,MVP,encargado,REQ-EMP-001 REQ-EMP-002 encargado mvp
+REQ-EMP-003,empleados.feature,Gestión de empleados,Edición de tope mensual,,encargado,REQ-EMP-003 encargado
+REQ-MET-001,estadisticas.feature,Estadísticas (solo encargado),Días con mayor carga por empleado,MVP+,encargado,REQ-MET-001 REQ-MET-002 encargado metricas mvp_plus
+REQ-MET-003,estadisticas.feature,Estadísticas (solo encargado),Tiempo desde último fin de semana libre,,encargado,REQ-MET-003 encargado
+REQ-MET-004,estadisticas.feature,Estadísticas (solo encargado),Tope vs. asignado,,encargado,REQ-MET-004 encargado
+REQ-MET-005,estadisticas.feature,Estadísticas (solo encargado),Cobertura diaria mínima,,encargado,REQ-MET-005 encargado
+REQ-EXP-001,exportacion.feature,Exportación de horarios,Exportar a iCal,MVP+,encargado,REQ-EXP-001 REQ-EXP-002 encargado export mvp_plus
+REQ-EXP-003,exportacion.feature,Exportación de horarios,Exportar a Google Calendar,,encargado,REQ-EXP-003 encargado
+REQ-EXP-4,exportacion.feature,Exportación de horarios,Exportar CSV,,encargado,REQ-EXP-4 encargado
+REQ-GANTT-001,gantt_interactivo.feature,Gantt interactivo (arrastrar y redimensionar),Crear turno por arrastre,MVP,encargado,REQ-GANTT-001 REQ-GANTT-002 encargado mvp planificacion ui
+REQ-GANTT-003,gantt_interactivo.feature,Gantt interactivo (arrastrar y redimensionar),Mover turno por arrastre,,encargado,REQ-GANTT-003 encargado
+REQ-GANTT-004,gantt_interactivo.feature,Gantt interactivo (arrastrar y redimensionar),Redimensionar turno,,encargado,REQ-GANTT-004 encargado
+REQ-GANTT-005,gantt_interactivo.feature,Gantt interactivo (arrastrar y redimensionar),Snap a intervalos,MVP+,,REQ-GANTT-005 mvp_plus ui
+REQ-GANTT-006,gantt_interactivo.feature,Gantt interactivo (arrastrar y redimensionar),Zoom diario y semanal,MVP+,,REQ-GANTT-006 mvp_plus ui
+REQ-HOR-001,horario_tienda.feature,Horario de tienda (semana y excepciones),Definir horario semanal,MVP,encargado,REQ-HOR-001 REQ-HOR-002 encargado mvp planificacion
+REQ-HOR-003,horario_tienda.feature,Horario de tienda (semana y excepciones),Marcar día cerrado,,encargado,REQ-HOR-003 encargado
+REQ-HOR-004,horario_tienda.feature,Horario de tienda (semana y excepciones),Excepción por feriado,,encargado,REQ-HOR-004 encargado
+REQ-LOGIN-002,login.feature,Sistema de logueo simple,Logueo exitoso como encargado,MVP,encargado,REQ-LOGIN-001 REQ-LOGIN-002 encargado mvp ui
+REQ-LOGIN-003,login.feature,Sistema de logueo simple,Logueo exitoso como empleado,,empleado,REQ-LOGIN-003 empleado
+REQ-LOGIN-004,login.feature,Sistema de logueo simple,Error de autenticación,,,REQ-LOGIN-004
+REQ-PLANT-001,plantillas.feature,Plantillas y copiar semana,Guardar semana como plantilla,MVP+,encargado,REQ-PLANT-001 REQ-PLANT-002 encargado mvp_plus planificacion
+REQ-PLANT-003,plantillas.feature,Plantillas y copiar semana,Aplicar plantilla a otra semana,,encargado,REQ-PLANT-003 encargado
+REQ-PLANT-004,plantillas.feature,Plantillas y copiar semana,Copiar semana actual a la siguiente,,encargado,REQ-PLANT-004 encargado
+REQ-PUB-002,publicacion_notificaciones.feature,Publicación y notificaciones,Publicar cambios,MVP+,encargado,REQ-PUB-001 REQ-PUB-002 encargado mvp_plus notificacion
+REQ-PUB-003,publicacion_notificaciones.feature,Publicación y notificaciones,Empleado recibe notificación,,empleado,REQ-PUB-003 empleado
+REQ-ROLES-001,roles_permisos.feature,Vistas y permisos por rol,El empleado solo puede ver,MVP,empleado,REQ-ROLES-001 REQ-ROLES-002 empleado mvp ui
+REQ-ROLES-003,roles_permisos.feature,Vistas y permisos por rol,El encargado puede administrar,,encargado,REQ-ROLES-003 encargado
+REQ-SYNC-001,sincronizacion.feature,Sincronización local y en la nube,Uso offline con Local Storage,MVP,,REQ-SYNC-001 REQ-SYNC-002 mvp sync
+REQ-SYNC-003,sincronizacion.feature,Sincronización local y en la nube,Sincronización al recuperar conexión,,,REQ-SYNC-003
+REQ-UI-002,ui_responsive.feature,UI responsive y accesible,Gantt en móvil,MVP,,REQ-UI-001 REQ-UI-002 mvp ui
+REQ-UI-003,ui_responsive.feature,UI responsive y accesible,Contraste y tamaños táctiles,,,REQ-UI-003
+REQ-VAL-001,validaciones_conflictos.feature,Validaciones y detección de conflictos,Turno fuera del horario de tienda,MVP,encargado,REQ-VAL-001 REQ-VAL-002 encargado mvp regla
+REQ-VAL-003,validaciones_conflictos.feature,Validaciones y detección de conflictos,Turno en día cerrado por excepción,,encargado,REQ-VAL-003 encargado
+REQ-VAL-004,validaciones_conflictos.feature,Validaciones y detección de conflictos,Solapamiento de turnos del mismo empleado,,encargado,REQ-VAL-004 encargado
+REQ-VAL-005,validaciones_conflictos.feature,Validaciones y detección de conflictos,No disponibilidad del empleado,,encargado,REQ-VAL-005 encargado
+REQ-VAL-006,validaciones_conflictos.feature,Validaciones y detección de conflictos,Exceso de tope mensual,,encargado,REQ-VAL-006 encargado
