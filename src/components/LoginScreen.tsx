@@ -18,13 +18,17 @@ export default function LoginScreen() {
     setError('');
     setIsLoading(true);
 
-    const result = login(formData.name, formData.pin);
-    
-    if (!result.success) {
-      setError(result.message);
+    try {
+      const result = await login(formData.name, formData.pin);
+      
+      if (!result.success) {
+        setError(result.message);
+      }
+    } catch (error) {
+      setError('Error al iniciar sesión');
+    } finally {
+      setIsLoading(false);
     }
-    
-    setIsLoading(false);
   };
 
   const handleInputChange = (field: 'name' | 'pin', value: string) => {
