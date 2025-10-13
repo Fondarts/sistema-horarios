@@ -573,6 +573,9 @@ export default function ScheduleManagement() {
     };
   }, [draggedShift, resizingShift, resizeHandle, hours, updateShift, timeToMinutes, minutesToTime, roundToIncrement]);
 
+  // Debug log for modal state
+  console.log('ScheduleManagement render - editingShift:', editingShift, 'showShiftModal:', showShiftModal);
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -868,8 +871,6 @@ export default function ScheduleManagement() {
               <h3 className="text-lg font-medium text-gray-900">
                 {editingShift ? 'Editar Turno' : 'Crear Turno'}
               </h3>
-              {/* Debug info */}
-              {console.log('Modal rendering - editingShift:', editingShift, 'showShiftModal:', showShiftModal)}
               <button
                 onClick={closeShiftModal}
                 className="text-gray-400 hover:text-gray-600"
