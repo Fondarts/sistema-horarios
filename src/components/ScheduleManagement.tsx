@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { format, addDays, startOfWeek, endOfWeek, eachDayOfInterval } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { Eye, EyeOff, Save } from 'lucide-react';
+import { Eye, EyeOff, Save, Copy } from 'lucide-react';
 import { useSchedule } from '../contexts/ScheduleContext';
 import { useEmployees } from '../contexts/EmployeeContext';
 import { Shift } from '../types';
@@ -37,6 +37,7 @@ export default function ScheduleManagement() {
   const [resizingShift, setResizingShift] = useState<Shift | null>(null);
   const [resizeHandle, setResizeHandle] = useState<'start' | 'end' | null>(null);
   const [isDraggingOrResizing, setIsDraggingOrResizing] = useState(false);
+  const [isCopyingShifts, setIsCopyingShifts] = useState(false);
   const ganttRef = useRef<HTMLDivElement>(null);
 
   const weekStart = startOfWeek(currentWeek, { weekStartsOn: 1 }); // Lunes
@@ -306,6 +307,84 @@ export default function ScheduleManagement() {
     publishShifts(unpublishedShifts.map(s => s.id));
   };
 
+  const repeatPreviousWeek = async () => {
+    if (isCopyingShifts) return; // Prevenir múltiples ejecuciones
+    
+    setIsCopyingShifts(true);
+    
+    try {
+      // Calcular la semana anterior
+      const previousWeek = new Date(currentWeek);
+      previousWeek.setDate(previousWeek.getDate() - 7);
+      
+      const prevWeekStart = startOfWeek(previousWeek, { weekStartsOn: 1 });
+      const prevWeekEnd = endOfWeek(previousWeek, { weekStartsOn: 1 });
+      const prevWeekDays = eachDayOfInterval({ start: prevWeekStart, end: prevWeekEnd });
+      
+      // Obtener turnos de la semana anterior
+      const previousWeekShifts = shifts.filter(shift => {
+        const shiftDate = new Date(shift.date);
+        return shiftDate >= prevWeekStart && shiftDate <= prevWeekEnd;
+      });
+      
+      // Verificar si hay turnos para copiar
+      if (previousWeekShifts.length === 0) {
+        alert('No hay turnos en la semana anterior para copiar.');
+        return;
+      }
+      
+      // Confirmar la acción
+      const confirmMessage = `¿Estás seguro de que quieres copiar ${previousWeekShifts.length} turnos de la semana anterior?\n\nEsto sobrescribirá cualquier turno existente en la semana actual.`;
+      if (!confirm(confirmMessage)) {
+        return;
+      }
+      
+      // Verificar si ya hay turnos en la semana actual
+      const currentWeekShifts = weekShifts;
+      if (currentWeekShifts.length > 0) {
+        const overwriteConfirm = `Ya existen ${currentWeekShifts.length} turnos en la semana actual.\n\n¿Quieres continuar y sobrescribir los turnos existentes?`;
+        if (!confirm(overwriteConfirm)) {
+          return;
+        }
+      }
+      
+      let copiedCount = 0;
+      
+      // Copiar turnos a la semana actual
+      for (const prevShift of previousWeekShifts) {
+        const prevShiftDate = new Date(prevShift.date);
+        const dayIndex = prevWeekDays.findIndex(day => 
+          format(day, 'yyyy-MM-dd') === format(prevShiftDate, 'yyyy-MM-dd')
+        );
+        
+        if (dayIndex !== -1) {
+          const newDate = weekDays[dayIndex];
+          
+          // Crear nuevo turno sin el ID
+          const { id, ...shiftWithoutId } = prevShift;
+          const newShift = {
+            ...shiftWithoutId,
+            date: format(newDate, 'yyyy-MM-dd'),
+            isPublished: false // Los turnos copiados no están publicados
+          };
+          
+          try {
+            addShift(newShift);
+            copiedCount++;
+          } catch (error) {
+            console.error('Error al copiar turno:', error);
+          }
+        }
+      }
+      
+      // Mostrar mensaje de confirmación
+      alert(`Se copiaron ${copiedCount} turnos de la semana anterior exitosamente.`);
+      
+    } finally {
+      setIsCopyingShifts(false);
+    }
+  };
+
   const zoomIn = () => {
     setZoomLevel(prev => Math.min(prev + 0.2, 2.5));
   };
@@ -567,6 +646,19 @@ export default function ScheduleManagement() {
               className="btn-secondary"
             >
               Semana Siguiente →
+            </button>
+            <button
+              onClick={repeatPreviousWeek}
+              disabled={isCopyingShifts}
+              className={`flex items-center space-x-2 ${
+                isCopyingShifts 
+                  ? 'btn-secondary opacity-50 cursor-not-allowed' 
+                  : 'btn-primary hover:bg-primary-600'
+              }`}
+              title={isCopyingShifts ? "Copiando turnos..." : "Copiar todos los turnos de la semana anterior"}
+            >
+              <Copy className={`w-4 h-4 ${isCopyingShifts ? 'animate-spin' : ''}`} />
+              <span>{isCopyingShifts ? 'Copiando...' : 'Repetir Semana Anterior'}</span>
             </button>
           </div>
           <button
