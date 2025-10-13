@@ -188,7 +188,8 @@ export default function ScheduleManagement() {
   };
 
   const zoomOut = () => {
-    setZoomLevel(prev => Math.max(prev - 0.2, 0.3));
+    const minZoom = getMinimumZoomFor24Hours();
+    setZoomLevel(prev => Math.max(prev - 0.2, minZoom));
   };
 
   const resetZoom = () => {
@@ -198,6 +199,19 @@ export default function ScheduleManagement() {
   // Calculate column width based on zoom level
   const getColumnWidth = () => {
     return Math.round(60 * zoomLevel); // Base width 60px * zoom level
+  };
+
+  // Calculate minimum zoom level to fit 24 hours in available width
+  const getMinimumZoomFor24Hours = () => {
+    if (!scrollContainerRef.current) return 0.3;
+    
+    const containerWidth = scrollContainerRef.current.clientWidth;
+    const dayColumnWidth = 200; // Fixed width for day/employee column
+    const availableWidth = containerWidth - dayColumnWidth;
+    const minColumnWidth = availableWidth / 24; // 24 hours
+    const minZoom = minColumnWidth / 60; // Base width is 60px
+    
+    return Math.max(0.2, minZoom); // Minimum 20% zoom
   };
 
   // Format hours in a readable way (e.g., "7h 55m" or "5h 30m")
@@ -227,6 +241,19 @@ export default function ScheduleManagement() {
       scrollContainerRef.current.scrollLeft = scrollPosition;
     }
   }, [storeStartHour, zoomLevel]);
+
+  // Recalculate minimum zoom when window resizes
+  useEffect(() => {
+    const handleResize = () => {
+      const minZoom = getMinimumZoomFor24Hours();
+      if (zoomLevel < minZoom) {
+        setZoomLevel(minZoom);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [zoomLevel]);
 
   // Global event listeners for drag functionality
   useEffect(() => {
