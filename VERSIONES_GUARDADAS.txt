@@ -20,12 +20,20 @@
 📅 Fecha: 13/10/2025
 🎯 Estado: CORRECCIONES Y MEJORAS
 
+🏷️  TAG: v1.2-drag-24h
+📝 COMMIT: e22d483
+📅 Fecha: 13/10/2025
+🎯 Estado: DRAG AVANZADO Y TURNOS 24H
+
 DESCRIPCIÓN v1.0-stable:
 Esta es la versión base funcional del sistema de horarios. Incluye todas las
 funcionalidades básicas necesarias para el funcionamiento del sistema.
 
 DESCRIPCIÓN v1.1-fixes:
 Versión con correcciones importantes al posicionamiento de barras y botón de eliminar.
+
+DESCRIPCIÓN v1.2-drag-24h:
+Versión con drag avanzado de 10 minutos y soporte completo para turnos de 24 horas.
 
 FUNCIONALIDADES INCLUIDAS v1.0-stable:
 ✅ Vista de horarios con grid semanal
@@ -46,6 +54,16 @@ FUNCIONALIDADES INCLUIDAS v1.1-fixes:
 ✅ Cálculo preciso de posición basado en tiempo del turno
 ✅ Debug logs para verificación de cálculos
 ✅ Variables renombradas para mayor claridad
+
+FUNCIONALIDADES INCLUIDAS v1.2-drag-24h:
+✅ Drag con incrementos precisos de 10 minutos
+✅ Event listeners globales para drag continuo
+✅ Vista de 24 horas completas (00:00-23:00)
+✅ Auto-scroll inteligente al horario de tienda
+✅ Indicadores visuales: horas de tienda en azul
+✅ Permite turnos fuera del horario de apertura
+✅ Validaciones corregidas para inventarios y limpieza
+✅ Funciones de utilidad: timeToMinutes, minutesToTime, roundToIncrement
 
 ARCHIVOS PRINCIPALES:
 - src/components/ScheduleManagement.tsx (versión funcional básica)
@@ -138,4 +156,4 @@ git tag -a v1.1-nueva-funcionalidad -m "Descripción de la nueva funcionalidad"
                                 FIN DEL REGISTRO
 ================================================================================
 
-Última actualización: 13/10/2025 12:15:30
+Última actualización: 13/10/2025 12:45:00
