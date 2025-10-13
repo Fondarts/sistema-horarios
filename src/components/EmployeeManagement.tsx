@@ -40,6 +40,7 @@ export function EmployeeManagement() {
     color: '#3B82F6',
     pin: '',
     isActive: true,
+    role: 'empleado' as 'encargado' | 'empleado',
     unavailableTimes: [] as UnavailableTime[]
   });
 
@@ -146,6 +147,7 @@ export function EmployeeManagement() {
       color: employee.color,
       pin: employee.pin,
       isActive: employee.isActive,
+      role: employee.role,
       unavailableTimes: employee.unavailableTimes
     });
     setShowAddForm(true);
@@ -171,6 +173,7 @@ export function EmployeeManagement() {
       color: '#3B82F6',
       pin: '',
       isActive: true,
+      role: 'empleado',
       unavailableTimes: []
     });
     setEditingEmployee(null);
@@ -244,6 +247,27 @@ export function EmployeeManagement() {
                 />
                 <p className="text-xs text-gray-500 mt-1">
                   Clave de 5 dígitos para el login del empleado
+                </p>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Rol del Empleado
+                </label>
+                <select
+                  value={formData.role}
+                  onChange={(e) => setFormData(prev => ({ ...prev, role: e.target.value as 'encargado' | 'empleado' }))}
+                  className="input-field"
+                  required
+                >
+                  <option value="empleado">Empleado Regular</option>
+                  <option value="encargado">Encargado Principal</option>
+                </select>
+                <p className="text-xs text-gray-500 mt-1">
+                  {formData.role === 'encargado' 
+                    ? 'Puede gestionar horarios, empleados y configuraciones'
+                    : 'Solo puede ver sus propios horarios'
+                  }
                 </p>
               </div>
               
@@ -454,9 +478,16 @@ export function EmployeeManagement() {
                     <Calendar className="w-4 h-4 text-gray-400 mr-2" />
                     <span>{employee.birthday ? formatBirthday(employee.birthday) : 'No especificada'}</span>
                   </div>
-                  <div className="flex items-center">
+                  <div className="flex items-center justify-between">
                     <span className="text-xs text-gray-500 font-mono bg-gray-100 px-2 py-1 rounded">
                       PIN: {employee.pin}
+                    </span>
+                    <span className={`text-xs px-2 py-1 rounded font-medium ${
+                      employee.role === 'encargado' 
+                        ? 'bg-blue-100 text-blue-800' 
+                        : 'bg-green-100 text-green-800'
+                    }`}>
+                      {employee.role === 'encargado' ? 'Encargado' : 'Empleado'}
                     </span>
                   </div>
                   {employee.unavailableTimes.length > 0 && (

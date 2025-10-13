@@ -61,7 +61,8 @@ const mockEmployees: Employee[] = [
     birthday: '10/04/1995',
     isActive: true,
     color: '#3B82F6', // Azul
-    pin: '12345'
+    pin: '12345',
+    role: 'encargado'
   },
   {
     id: '2',
@@ -71,7 +72,8 @@ const mockEmployees: Employee[] = [
     birthday: '15/08/1990',
     isActive: true,
     color: '#10B981', // Verde
-    pin: '23456'
+    pin: '23456',
+    role: 'empleado'
   },
   {
     id: '3',
@@ -88,7 +90,8 @@ const mockEmployees: Employee[] = [
     birthday: '03/12/1988',
     isActive: true,
     color: '#F59E0B', // Amarillo
-    pin: '34567'
+    pin: '34567',
+    role: 'empleado'
   },
   {
     id: '4',
@@ -105,7 +108,8 @@ const mockEmployees: Employee[] = [
     birthday: '22/07/1992',
     isActive: true,
     color: '#EF4444', // Rojo
-    pin: '45678'
+    pin: '45678',
+    role: 'empleado'
   },
   {
     id: '5',
@@ -115,7 +119,8 @@ const mockEmployees: Employee[] = [
     birthday: '14/03/1996',
     isActive: true,
     color: '#8B5CF6', // Púrpura
-    pin: '56789'
+    pin: '56789',
+    role: 'empleado'
   },
   {
     id: '6',
@@ -132,7 +137,8 @@ const mockEmployees: Employee[] = [
     birthday: '08/11/1991',
     isActive: true,
     color: '#06B6D4', // Cian
-    pin: '67890'
+    pin: '67890',
+    role: 'empleado'
   },
   {
     id: '7',
@@ -142,7 +148,8 @@ const mockEmployees: Employee[] = [
     birthday: '17/09/1994',
     isActive: true,
     color: '#F97316', // Naranja
-    pin: '78901'
+    pin: '78901',
+    role: 'empleado'
   }
 ];
 
@@ -188,7 +195,8 @@ export function EmployeeProvider({ children }: EmployeeProviderProps) {
       ...employeeData,
       id: Date.now().toString(),
       color: employeeData.color || getNextAvailableColor(employees),
-      pin: employeeData.pin || generateUniquePin(employees)
+      pin: employeeData.pin || generateUniquePin(employees),
+      role: employeeData.role || 'empleado' // Por defecto es empleado regular
     };
     setEmployees(prev => [...prev, newEmployee]);
   };

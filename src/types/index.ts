@@ -19,6 +19,7 @@ export interface Employee {
   isActive: boolean;
   color: string; // color hexadecimal para las barras del empleado
   pin: string; // clave de 5 dígitos para login
+  role: 'encargado' | 'empleado'; // rol del empleado
 }
 
 export interface UnavailableTime {
