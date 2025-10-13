@@ -184,15 +184,32 @@ export default function ScheduleManagement() {
   };
 
   const zoomIn = () => {
-    setZoomLevel(prev => Math.min(prev + 0.5, 3));
+    setZoomLevel(prev => Math.min(prev + 0.2, 2.5));
   };
 
   const zoomOut = () => {
-    setZoomLevel(prev => Math.max(prev - 0.5, 0.5));
+    setZoomLevel(prev => Math.max(prev - 0.2, 0.3));
   };
 
   const resetZoom = () => {
     setZoomLevel(1);
+  };
+
+  // Calculate column width based on zoom level
+  const getColumnWidth = () => {
+    return Math.round(60 * zoomLevel); // Base width 60px * zoom level
+  };
+
+  // Format hours in a readable way (e.g., "7h 55m" or "5h 30m")
+  const formatHours = (hours: number): string => {
+    const wholeHours = Math.floor(hours);
+    const minutes = Math.round((hours - wholeHours) * 60);
+    
+    if (minutes === 0) {
+      return `${wholeHours}h`;
+    } else {
+      return `${wholeHours}h ${minutes}m`;
+    }
   };
 
   const navigateWeek = (direction: 'prev' | 'next') => {
@@ -205,11 +222,11 @@ export default function ScheduleManagement() {
   useEffect(() => {
     if (scrollContainerRef.current) {
       // Scroll to show store hours (with some padding)
-      const storeStartPixel = storeStartHour * 60; // 60px per hour
-      const scrollPosition = Math.max(0, storeStartPixel - 120); // 2 hours before store opens
+      const storeStartPixel = storeStartHour * getColumnWidth(); // dynamic px per hour
+      const scrollPosition = Math.max(0, storeStartPixel - (2 * getColumnWidth())); // 2 hours before store opens
       scrollContainerRef.current.scrollLeft = scrollPosition;
     }
-  }, [storeStartHour]);
+  }, [storeStartHour, zoomLevel]);
 
   // Global event listeners for drag functionality
   useEffect(() => {
@@ -222,7 +239,7 @@ export default function ScheduleManagement() {
 
       // Calculate which day column we're in (200px for day column + hour columns)
       const dayColumnWidth = 200;
-      const hourColumnWidth = 60;
+      const hourColumnWidth = getColumnWidth();
       
       if (x < dayColumnWidth) return; // Don't drag if in day column
       
@@ -384,7 +401,7 @@ export default function ScheduleManagement() {
       <div ref={scrollContainerRef} className="overflow-x-auto">
         <div className="min-w-full">
           {/* Header with hours */}
-          <div className="grid border-b border-gray-200" style={{ gridTemplateColumns: `200px repeat(${hours.length}, 60px)` }}>
+          <div className="grid border-b border-gray-200" style={{ gridTemplateColumns: `200px repeat(${hours.length}, ${getColumnWidth()}px)` }}>
             <div className="p-3 font-medium text-gray-700 bg-gray-50">Día / Empleado</div>
             {hours.map((hour) => {
               // Check if this hour is within store hours
@@ -393,7 +410,7 @@ export default function ScheduleManagement() {
                 <div 
                   key={hour} 
                   className={`p-2 text-center border-l border-gray-200 ${isStoreHour ? 'bg-blue-50' : 'bg-gray-50'}`} 
-                  style={{ width: '60px' }}
+                  style={{ width: `${getColumnWidth()}px` }}
                 >
                   <div className={`text-xs ${isStoreHour ? 'text-blue-700 font-medium' : 'text-gray-600'}`}>
                     {hour}:00
@@ -417,7 +434,7 @@ export default function ScheduleManagement() {
               
               return (
                 <div key={day.toISOString()} className="grid border-b border-gray-100 relative" style={{ 
-                  gridTemplateColumns: `200px repeat(${hours.length}, 60px)`, 
+                  gridTemplateColumns: `200px repeat(${hours.length}, ${getColumnWidth()}px)`, 
                   minHeight: '120px'
                 }}>
                   {/* Day and employees */}
@@ -442,7 +459,7 @@ export default function ScheduleManagement() {
                       <div 
                         key={`${day.toISOString()}-${hour}`} 
                         className={`relative border-r border-gray-200 ${isStoreHour ? 'bg-blue-25' : ''}`} 
-                        style={{ height: '120px', width: '60px' }}
+                        style={{ height: '120px', width: `${getColumnWidth()}px` }}
                       >
                         {/* Hour line */}
                         <div className="absolute w-full border-t border-gray-100" style={{ top: '50%' }}>
@@ -467,24 +484,26 @@ export default function ScheduleManagement() {
                     const shiftEndTimeInHours = shiftEndHour + (shiftEndMinute / 60);
                     const durationInHours = shiftEndTimeInHours - shiftStartTimeInHours;
                     
-                    // Position relative to the hour columns using fixed pixel widths
-                    // The grid has 200px for day/employee + hour columns (60px each)
+                    // Position relative to the hour columns using dynamic pixel widths
+                    // The grid has 200px for day/employee + hour columns (dynamic width based on zoom)
                     // Calculate position based on the actual shift start time relative to the visible range
-                    const left = 200 + ((shiftStartTimeInHours - startHour) * 60); // 200px + (actual shift time - visible start time) * 60px
-                    const width = durationInHours * 60; // hours * 60px
+                    const columnWidth = getColumnWidth();
+                    const left = 200 + ((shiftStartTimeInHours - startHour) * columnWidth); // 200px + (actual shift time - visible start time) * columnWidth
+                    const width = durationInHours * columnWidth; // hours * columnWidth
                     const top = shiftIndex * 35 + 5;
                     
                     return (
                       <div
                         key={shift.id}
-                        className="absolute rounded cursor-move text-white text-xs p-1"
+                        className="absolute rounded cursor-move text-white text-xs"
                         style={{
                           left: `${left}px`,
                           width: `${width}px`,
                           top: `${top}px`,
                           height: '32px',
                           zIndex: 10,
-                          backgroundColor: employee?.color || '#3B82F6'
+                          backgroundColor: employee?.color || '#3B82F6',
+                          padding: '4px 8px 8px 8px' // top right bottom left
                         }}
                         onMouseDown={(e) => handleMouseDown(e, shift)}
                         onDoubleClick={() => openEditShiftModal(shift)}
@@ -492,11 +511,13 @@ export default function ScheduleManagement() {
                         <div className="font-medium text-xs truncate">
                           {employee?.name}
                         </div>
-                        <div className="text-xs opacity-90 truncate">
-                          {shift.startTime}-{shift.endTime}
-                        </div>
-                        <div className="text-xs opacity-75 truncate">
-                          {shift.hours}h
+                        <div className="text-xs opacity-90 flex justify-between items-center">
+                          <span className="truncate">
+                            {shift.startTime}-{shift.endTime}
+                          </span>
+                          <span className="ml-2 flex-shrink-0">
+                            {formatHours(shift.hours)}
+                          </span>
                         </div>
                       </div>
                     );
