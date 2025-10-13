@@ -19,8 +19,8 @@ interface ScheduleContextType {
   storeSchedule: StoreSchedule[];
   storeExceptions: StoreException[];
   templates: Template[];
-  addShift: (shift: Omit<Shift, 'id' | 'createdAt' | 'updatedAt'>) => ValidationError[];
-  updateShift: (id: string, updates: Partial<Shift>) => ValidationError[];
+  addShift: (shift: Omit<Shift, 'id' | 'createdAt' | 'updatedAt'>) => Promise<ValidationError[]>;
+  updateShift: (id: string, updates: Partial<Shift>) => Promise<ValidationError[]>;
   deleteShift: (id: string) => void;
   publishShifts: (shiftIds: string[]) => void;
   addStoreSchedule: (schedule: Omit<StoreSchedule, 'id'>) => void;
@@ -29,8 +29,8 @@ interface ScheduleContextType {
   updateStoreException: (id: string, updates: Partial<StoreException>) => void;
   deleteStoreException: (id: string) => void;
   saveTemplate: (name: string, shifts: Omit<Shift, 'id' | 'isPublished' | 'createdAt' | 'updatedAt'>[]) => void;
-  applyTemplate: (templateId: string, startDate: string) => ValidationError[];
-  copyWeekToNext: (startDate: string) => ValidationError[];
+  applyTemplate: (templateId: string, startDate: string) => Promise<ValidationError[]>;
+  copyWeekToNext: (startDate: string) => Promise<ValidationError[]>;
   isLoading: boolean;
 }
 
@@ -180,7 +180,7 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
       await addDoc(collection(db, 'shifts'), newShift);
     } catch (error) {
       console.error('Error adding shift:', error);
-      errors.push({ field: 'general', message: 'Error al crear el turno' });
+      errors.push({ type: 'schedule', message: 'Error al crear el turno' });
     }
     
     return errors;
@@ -210,7 +210,7 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
       await updateDoc(shiftRef, updateData);
     } catch (error) {
       console.error('Error updating shift:', error);
-      errors.push({ field: 'general', message: 'Error al actualizar el turno' });
+      errors.push({ type: 'schedule', message: 'Error al actualizar el turno' });
     }
     
     return errors;
@@ -300,7 +300,7 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
     try {
       const template = templates.find(t => t.id === templateId);
       if (!template) {
-        errors.push({ field: 'template', message: 'Plantilla no encontrada' });
+        errors.push({ type: 'schedule', message: 'Plantilla no encontrada' });
         return errors;
       }
 
@@ -318,7 +318,7 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
       await Promise.all(addPromises);
     } catch (error) {
       console.error('Error applying template:', error);
-      errors.push({ field: 'general', message: 'Error al aplicar la plantilla' });
+      errors.push({ type: 'schedule', message: 'Error al aplicar la plantilla' });
     }
     
     return errors;
@@ -354,7 +354,7 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
       await Promise.all(addPromises);
     } catch (error) {
       console.error('Error copying week:', error);
-      errors.push({ field: 'general', message: 'Error al copiar la semana' });
+      errors.push({ type: 'schedule', message: 'Error al copiar la semana' });
     }
     
     return errors;

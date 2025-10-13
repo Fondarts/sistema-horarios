@@ -40,9 +40,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
         // Usuario autenticado, buscar empleado asociado
         try {
           const employeeDoc = await getDoc(doc(db, 'employees', user.uid));
-          if (employeeDoc.exists()) {
-            const employeeData = employeeDoc.data() as Employee;
-            setCurrentEmployee({ id: user.uid, ...employeeData });
+        if (employeeDoc.exists()) {
+          const employeeData = employeeDoc.data() as Omit<Employee, 'id'>;
+          setCurrentEmployee({ id: user.uid, ...employeeData });
           } else {
             // Si no hay empleado asociado, cerrar sesión
             await signOut(auth);
