@@ -1,5 +1,17 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Employee, UnavailableTime } from '../types';
+import { db } from '../firebase';
+import { 
+  collection, 
+  doc, 
+  addDoc, 
+  updateDoc, 
+  deleteDoc, 
+  getDocs, 
+  onSnapshot,
+  query,
+  orderBy
+} from 'firebase/firestore';
 
 interface EmployeeContextType {
   employees: Employee[];
@@ -83,11 +95,11 @@ const mockEmployees: Employee[] = [
       {
         id: '2',
         dayOfWeek: 0, // Domingo
-        startTime: '00:00',
-        endTime: '23:59'
+        startTime: '09:00',
+        endTime: '12:00'
       }
     ],
-    birthday: '03/12/1988',
+    birthday: '22/03/1988',
     isActive: true,
     color: '#F59E0B', // Amarillo
     pin: '34567',
@@ -96,16 +108,9 @@ const mockEmployees: Employee[] = [
   {
     id: '4',
     name: 'Carlos Martinez',
-    weeklyLimit: 45,
-    unavailableTimes: [
-      {
-        id: '3',
-        dayOfWeek: 1, // Lunes
-        startTime: '09:00',
-        endTime: '12:00'
-      }
-    ],
-    birthday: '22/07/1992',
+    weeklyLimit: 25,
+    unavailableTimes: [],
+    birthday: '05/12/1992',
     isActive: true,
     color: '#EF4444', // Rojo
     pin: '45678',
@@ -114,9 +119,16 @@ const mockEmployees: Employee[] = [
   {
     id: '5',
     name: 'Sofia Lopez',
-    weeklyLimit: 38,
-    unavailableTimes: [],
-    birthday: '14/03/1996',
+    weeklyLimit: 32,
+    unavailableTimes: [
+      {
+        id: '3',
+        dayOfWeek: 6, // Sábado
+        startTime: '18:00',
+        endTime: '22:00'
+      }
+    ],
+    birthday: '18/07/1996',
     isActive: true,
     color: '#8B5CF6', // Púrpura
     pin: '56789',
@@ -125,16 +137,9 @@ const mockEmployees: Employee[] = [
   {
     id: '6',
     name: 'Diego Fernandez',
-    weeklyLimit: 42,
-    unavailableTimes: [
-      {
-        id: '4',
-        dayOfWeek: 5, // Viernes
-        startTime: '18:00',
-        endTime: '23:59'
-      }
-    ],
-    birthday: '08/11/1991',
+    weeklyLimit: 28,
+    unavailableTimes: [],
+    birthday: '03/11/1991',
     isActive: true,
     color: '#06B6D4', // Cian
     pin: '67890',
@@ -143,97 +148,161 @@ const mockEmployees: Employee[] = [
   {
     id: '7',
     name: 'Valentina Torres',
-    weeklyLimit: 32,
-    unavailableTimes: [],
-    birthday: '17/09/1994',
+    weeklyLimit: 26,
+    unavailableTimes: [
+      {
+        id: '4',
+        dayOfWeek: 1, // Lunes
+        startTime: '08:00',
+        endTime: '10:00'
+      }
+    ],
+    birthday: '14/09/1994',
     isActive: true,
     color: '#F97316', // Naranja
     pin: '78901',
     role: 'empleado'
+  },
+  {
+    id: '8',
+    name: 'Roberto Silva',
+    weeklyLimit: 30,
+    unavailableTimes: [],
+    birthday: '28/01/1989',
+    isActive: true,
+    color: '#84CC16', // Lima
+    pin: '89012',
+    role: 'empleado'
+  },
+  {
+    id: '9',
+    name: 'Camila Herrera',
+    weeklyLimit: 24,
+    unavailableTimes: [
+      {
+        id: '5',
+        dayOfWeek: 3, // Miércoles
+        startTime: '16:00',
+        endTime: '20:00'
+      }
+    ],
+    birthday: '12/06/1993',
+    isActive: true,
+    color: '#EC4899', // Rosa
+    pin: '90123',
+    role: 'empleado'
+  },
+  {
+    id: '10',
+    name: 'Andres Morales',
+    weeklyLimit: 35,
+    unavailableTimes: [],
+    birthday: '07/02/1990',
+    isActive: true,
+    color: '#6B7280', // Gris
+    pin: '01234',
+    role: 'empleado'
   }
 ];
 
-interface EmployeeProviderProps {
-  children: ReactNode;
-}
-
-export function EmployeeProvider({ children }: EmployeeProviderProps) {
+export function EmployeeProvider({ children }: { children: ReactNode }) {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Cargar empleados desde Firebase
   useEffect(() => {
-    // Cargar empleados desde localStorage o usar datos de prueba
-    const savedEmployees = localStorage.getItem('employees');
-    if (savedEmployees) {
-      try {
-        const parsedEmployees = JSON.parse(savedEmployees);
-        // Migrar empleados existentes que no tienen color
-        const migratedEmployees = parsedEmployees.map((emp: any) => ({
-          ...emp,
-          color: emp.color || getNextAvailableColor(parsedEmployees)
-        }));
-        setEmployees(migratedEmployees);
-      } catch (error) {
-        console.error('Error parsing saved employees:', error);
-        setEmployees(mockEmployees);
-      }
-    } else {
-      setEmployees(mockEmployees);
-    }
-    setIsLoading(false);
+    const employeesRef = collection(db, 'employees');
+    const q = query(employeesRef, orderBy('name'));
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const employeesData: Employee[] = [];
+      snapshot.forEach((doc) => {
+        employeesData.push({ id: doc.id, ...doc.data() } as Employee);
+      });
+      setEmployees(employeesData);
+      setIsLoading(false);
+    }, (error) => {
+      console.error('Error loading employees:', error);
+      setIsLoading(false);
+    });
+
+    return () => unsubscribe();
   }, []);
 
-  useEffect(() => {
-    // Guardar empleados en localStorage cuando cambien
-    if (!isLoading) {
-      localStorage.setItem('employees', JSON.stringify(employees));
+  const addEmployee = async (employeeData: Omit<Employee, 'id'>) => {
+    try {
+      const newEmployee: Omit<Employee, 'id'> = {
+        ...employeeData,
+        color: employeeData.color || getNextAvailableColor(employees),
+        pin: employeeData.pin || generateUniquePin(employees),
+        role: employeeData.role || 'empleado'
+      };
+
+      await addDoc(collection(db, 'employees'), newEmployee);
+    } catch (error) {
+      console.error('Error adding employee:', error);
+      throw error;
     }
-  }, [employees, isLoading]);
-
-  const addEmployee = (employeeData: Omit<Employee, 'id'>) => {
-    const newEmployee: Employee = {
-      ...employeeData,
-      id: Date.now().toString(),
-      color: employeeData.color || getNextAvailableColor(employees),
-      pin: employeeData.pin || generateUniquePin(employees),
-      role: employeeData.role || 'empleado' // Por defecto es empleado regular
-    };
-    setEmployees(prev => [...prev, newEmployee]);
   };
 
-  const updateEmployee = (id: string, updates: Partial<Employee>) => {
-    setEmployees(prev => 
-      prev.map(emp => 
-        emp.id === id ? { ...emp, ...updates } : emp
-      )
-    );
+  const updateEmployee = async (id: string, updates: Partial<Employee>) => {
+    try {
+      const employeeRef = doc(db, 'employees', id);
+      await updateDoc(employeeRef, updates);
+    } catch (error) {
+      console.error('Error updating employee:', error);
+      throw error;
+    }
   };
 
-  const deleteEmployee = (id: string) => {
-    setEmployees(prev => prev.filter(emp => emp.id !== id));
+  const deleteEmployee = async (id: string) => {
+    try {
+      await deleteDoc(doc(db, 'employees', id));
+    } catch (error) {
+      console.error('Error deleting employee:', error);
+      throw error;
+    }
   };
 
-  const getEmployee = (id: string) => {
+  const getEmployee = (id: string): Employee | undefined => {
     return employees.find(emp => emp.id === id);
   };
 
-  const resetToMockEmployees = () => {
-    localStorage.removeItem('employees');
-    setEmployees(mockEmployees);
-  };
+  const resetToMockEmployees = async () => {
+    try {
+      setIsLoading(true);
+      
+      // Eliminar todos los empleados existentes
+      const employeesRef = collection(db, 'employees');
+      const snapshot = await getDocs(employeesRef);
+      
+      const deletePromises = snapshot.docs.map(doc => deleteDoc(doc.ref));
+      await Promise.all(deletePromises);
 
-  const value: EmployeeContextType = {
-    employees,
-    addEmployee,
-    updateEmployee,
-    deleteEmployee,
-    getEmployee,
-    resetToMockEmployees,
-    isLoading
+      // Agregar empleados de prueba
+      const addPromises = mockEmployees.map(employee => {
+        const { id, ...employeeData } = employee;
+        return addDoc(employeesRef, employeeData);
+      });
+      
+      await Promise.all(addPromises);
+    } catch (error) {
+      console.error('Error resetting to mock employees:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <EmployeeContext.Provider value={value}>
+    <EmployeeContext.Provider value={{
+      employees,
+      addEmployee,
+      updateEmployee,
+      deleteEmployee,
+      getEmployee,
+      resetToMockEmployees,
+      isLoading
+    }}>
       {children}
     </EmployeeContext.Provider>
   );
@@ -246,5 +315,3 @@ export function useEmployees() {
   }
   return context;
 }
-
-

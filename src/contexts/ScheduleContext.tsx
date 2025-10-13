@@ -1,5 +1,18 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Shift, StoreSchedule, StoreException, ValidationError, Template } from '../types';
+import { db } from '../firebase';
+import { 
+  collection, 
+  doc, 
+  addDoc, 
+  updateDoc, 
+  deleteDoc, 
+  getDocs, 
+  onSnapshot,
+  query,
+  orderBy,
+  where
+} from 'firebase/firestore';
 
 interface ScheduleContextType {
   shifts: Shift[];
@@ -34,356 +47,339 @@ const defaultStoreSchedule: StoreSchedule[] = [
   { id: '7', dayOfWeek: 0, isOpen: false }, // Domingo cerrado
 ];
 
-// Turnos de prueba
-const mockShifts: Shift[] = [
-  {
-    id: '1',
-    employeeId: '1',
-    date: '2025-01-13',
-    startTime: '09:00',
-    endTime: '17:00',
-    hours: 8,
-    isPublished: false,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  }
-];
+// Función para calcular horas entre dos tiempos
+const calculateHours = (startTime: string, endTime: string): number => {
+  const [startHour, startMin] = startTime.split(':').map(Number);
+  const [endHour, endMin] = endTime.split(':').map(Number);
+  
+  const startMinutes = startHour * 60 + startMin;
+  const endMinutes = endHour * 60 + endMin;
+  
+  return (endMinutes - startMinutes) / 60;
+};
 
-interface ScheduleProviderProps {
-  children: ReactNode;
-}
-
-export function ScheduleProvider({ children }: ScheduleProviderProps) {
+export function ScheduleProvider({ children }: { children: ReactNode }) {
   const [shifts, setShifts] = useState<Shift[]>([]);
   const [storeSchedule, setStoreSchedule] = useState<StoreSchedule[]>([]);
   const [storeExceptions, setStoreExceptions] = useState<StoreException[]>([]);
   const [templates, setTemplates] = useState<Template[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Cargar datos desde Firebase
   useEffect(() => {
-    // Cargar datos desde localStorage
-    const savedShifts = localStorage.getItem('shifts');
-    const savedStoreSchedule = localStorage.getItem('storeSchedule');
-    const savedStoreExceptions = localStorage.getItem('storeExceptions');
-    const savedTemplates = localStorage.getItem('templates');
-
-    if (savedShifts) {
+    const loadData = async () => {
       try {
-        setShifts(JSON.parse(savedShifts));
-      } catch (error) {
-        console.error('Error parsing saved shifts:', error);
-        setShifts(mockShifts);
-      }
-    } else {
-      setShifts(mockShifts);
-    }
+        // Cargar shifts
+        const shiftsRef = collection(db, 'shifts');
+        const shiftsQuery = query(shiftsRef, orderBy('date'), orderBy('startTime'));
+        const shiftsUnsubscribe = onSnapshot(shiftsQuery, (snapshot) => {
+          const shiftsData: Shift[] = [];
+          snapshot.forEach((doc) => {
+            const data = doc.data();
+            shiftsData.push({
+              id: doc.id,
+              ...data,
+              createdAt: data.createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
+              updatedAt: data.updatedAt?.toDate?.()?.toISOString() || new Date().toISOString()
+            } as Shift);
+          });
+          setShifts(shiftsData);
+        });
 
-    if (savedStoreSchedule) {
-      try {
-        setStoreSchedule(JSON.parse(savedStoreSchedule));
-      } catch (error) {
-        console.error('Error parsing saved store schedule:', error);
-        setStoreSchedule(defaultStoreSchedule);
-      }
-    } else {
-      setStoreSchedule(defaultStoreSchedule);
-    }
+        // Cargar store schedule
+        const storeScheduleRef = collection(db, 'storeSchedule');
+        const storeScheduleQuery = query(storeScheduleRef, orderBy('dayOfWeek'));
+        const storeScheduleUnsubscribe = onSnapshot(storeScheduleQuery, (snapshot) => {
+          const scheduleData: StoreSchedule[] = [];
+          snapshot.forEach((doc) => {
+            scheduleData.push({ id: doc.id, ...doc.data() } as StoreSchedule);
+          });
+          setStoreSchedule(scheduleData);
+        });
 
-    if (savedStoreExceptions) {
-      try {
-        setStoreExceptions(JSON.parse(savedStoreExceptions));
-      } catch (error) {
-        console.error('Error parsing saved store exceptions:', error);
-        setStoreExceptions([]);
-      }
-    }
+        // Cargar store exceptions
+        const exceptionsRef = collection(db, 'storeExceptions');
+        const exceptionsQuery = query(exceptionsRef, orderBy('date'));
+        const exceptionsUnsubscribe = onSnapshot(exceptionsQuery, (snapshot) => {
+          const exceptionsData: StoreException[] = [];
+          snapshot.forEach((doc) => {
+            exceptionsData.push({ id: doc.id, ...doc.data() } as StoreException);
+          });
+          setStoreExceptions(exceptionsData);
+        });
 
-    if (savedTemplates) {
-      try {
-        setTemplates(JSON.parse(savedTemplates));
-      } catch (error) {
-        console.error('Error parsing saved templates:', error);
-        setTemplates([]);
-      }
-    }
+        // Cargar templates
+        const templatesRef = collection(db, 'templates');
+        const templatesQuery = query(templatesRef, orderBy('name'));
+        const templatesUnsubscribe = onSnapshot(templatesQuery, (snapshot) => {
+          const templatesData: Template[] = [];
+          snapshot.forEach((doc) => {
+            templatesData.push({ id: doc.id, ...doc.data() } as Template);
+          });
+          setTemplates(templatesData);
+        });
 
-    setIsLoading(false);
+        setIsLoading(false);
+
+        // Cleanup function
+        return () => {
+          shiftsUnsubscribe();
+          storeScheduleUnsubscribe();
+          exceptionsUnsubscribe();
+          templatesUnsubscribe();
+        };
+      } catch (error) {
+        console.error('Error loading data:', error);
+        setIsLoading(false);
+      }
+    };
+
+    loadData();
   }, []);
 
+  // Inicializar datos por defecto si no existen
   useEffect(() => {
-    // Guardar datos en localStorage cuando cambien
+    const initializeDefaultData = async () => {
+      try {
+        // Verificar si ya existe store schedule
+        const storeScheduleRef = collection(db, 'storeSchedule');
+        const scheduleSnapshot = await getDocs(storeScheduleRef);
+        
+        if (scheduleSnapshot.empty) {
+          // Agregar horario por defecto
+          const addPromises = defaultStoreSchedule.map(schedule => {
+            const { id, ...scheduleData } = schedule;
+            return addDoc(storeScheduleRef, scheduleData);
+          });
+          await Promise.all(addPromises);
+        }
+      } catch (error) {
+        console.error('Error initializing default data:', error);
+      }
+    };
+
     if (!isLoading) {
-      localStorage.setItem('shifts', JSON.stringify(shifts));
-      localStorage.setItem('storeSchedule', JSON.stringify(storeSchedule));
-      localStorage.setItem('storeExceptions', JSON.stringify(storeExceptions));
-      localStorage.setItem('templates', JSON.stringify(templates));
+      initializeDefaultData();
     }
-  }, [shifts, storeSchedule, storeExceptions, templates, isLoading]);
+  }, [isLoading]);
 
-  // Funciones de validación
-  const validateShift = (shift: Omit<Shift, 'id' | 'createdAt' | 'updatedAt'>, excludeId?: string): ValidationError[] => {
+  const addShift = async (shiftData: Omit<Shift, 'id' | 'createdAt' | 'updatedAt'>): Promise<ValidationError[]> => {
     const errors: ValidationError[] = [];
-    const shiftDate = new Date(shift.date);
-    const dayOfWeek = shiftDate.getDay();
-
-    // Validar horario de tienda (solo para días cerrados, permitir turnos fuera del horario)
-    const daySchedule = storeSchedule.find(s => s.dayOfWeek === dayOfWeek);
-    if (!daySchedule?.isOpen) {
-      errors.push({
-        type: 'schedule',
-        message: 'La tienda está cerrada este día'
-      });
-    }
-    // Comentado: Permitir turnos fuera del horario de tienda para inventarios, limpieza, etc.
-    // else if (daySchedule.openTime && daySchedule.closeTime) {
-    //   if (shift.startTime < daySchedule.openTime || shift.endTime > daySchedule.closeTime) {
-    //     errors.push({
-    //       type: 'schedule',
-    //       message: 'Turno fuera del horario de tienda'
-    //     });
-    //   }
-    // }
-
-    // Validar excepciones
-    const exception = storeExceptions.find(e => e.date === shift.date);
-    if (exception && !exception.isOpen) {
-      errors.push({
-        type: 'schedule',
-        message: 'La tienda está cerrada por excepción'
-      });
-    }
-
-    // Validar solapamiento de turnos
-    const overlappingShifts = shifts.filter(s => 
-      s.employeeId === shift.employeeId &&
-      s.date === shift.date &&
-      (excludeId ? s.id !== excludeId : true) &&
-      ((shift.startTime >= s.startTime && shift.startTime < s.endTime) ||
-       (shift.endTime > s.startTime && shift.endTime <= s.endTime) ||
-       (shift.startTime <= s.startTime && shift.endTime >= s.endTime))
-    );
-
-    if (overlappingShifts.length > 0) {
-      errors.push({
-        type: 'conflict',
-        message: 'Solapamiento de turnos'
-      });
-    }
-
-    return errors;
-  };
-
-  const addShift = (shiftData: Omit<Shift, 'id' | 'createdAt' | 'updatedAt'>): ValidationError[] => {
-    const errors = validateShift(shiftData);
     
-    if (errors.length === 0) {
-      // Calculate hours automatically
-      const calculatedHours = calculateHours(shiftData.startTime, shiftData.endTime);
+    try {
+      // Calcular horas automáticamente
+      const hours = calculateHours(shiftData.startTime, shiftData.endTime);
       
-      const newShift: Shift = {
+      const newShift = {
         ...shiftData,
-        hours: calculatedHours, // Override with calculated hours
-        id: Date.now().toString(),
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        hours,
+        createdAt: new Date(),
+        updatedAt: new Date()
       };
-      setShifts(prev => [...prev, newShift]);
+
+      await addDoc(collection(db, 'shifts'), newShift);
+    } catch (error) {
+      console.error('Error adding shift:', error);
+      errors.push({ field: 'general', message: 'Error al crear el turno' });
     }
     
     return errors;
   };
 
-  // Helper function to calculate hours from start and end time
-  const calculateHours = (startTime: string, endTime: string): number => {
-    const start = new Date(`2000-01-01T${startTime}:00`);
-    const end = new Date(`2000-01-01T${endTime}:00`);
-    const diffMs = end.getTime() - start.getTime();
-    return diffMs / (1000 * 60 * 60); // Convert to hours
-  };
-
-  const updateShift = (id: string, updates: Partial<Shift>): ValidationError[] => {
-    const existingShift = shifts.find(s => s.id === id);
-    if (!existingShift) return [];
-
-    // If startTime or endTime is being updated, recalculate hours
-    let finalUpdates = { ...updates };
-    if (updates.startTime || updates.endTime) {
-      const startTime = updates.startTime || existingShift.startTime;
-      const endTime = updates.endTime || existingShift.endTime;
-      finalUpdates.hours = calculateHours(startTime, endTime);
-    }
-
-    const updatedShift = { ...existingShift, ...finalUpdates };
-    const errors = validateShift(updatedShift, id);
-    
-    if (errors.length === 0) {
-      setShifts(prev => 
-        prev.map(s => 
-          s.id === id 
-            ? { ...s, ...finalUpdates, updatedAt: new Date().toISOString() }
-            : s
-        )
-      );
-    }
-    
-    return errors;
-  };
-
-  const deleteShift = (id: string) => {
-    setShifts((prev: Shift[]) => prev.filter((s: Shift) => s.id !== id));
-  };
-
-  const publishShifts = (shiftIds: string[]) => {
-    setShifts((prev: Shift[]) => 
-      prev.map((s: Shift) => 
-        shiftIds.includes(s.id) 
-          ? { ...s, isPublished: true, updatedAt: new Date().toISOString() }
-          : s
-      )
-    );
-  };
-
-  const addStoreSchedule = (scheduleData: Omit<StoreSchedule, 'id'>) => {
-    const newSchedule: StoreSchedule = {
-      ...scheduleData,
-      id: Date.now().toString()
-    };
-    setStoreSchedule((prev: StoreSchedule[]) => [...prev, newSchedule]);
-  };
-
-  const updateStoreSchedule = (id: string, updates: Partial<StoreSchedule>) => {
-    setStoreSchedule((prev: StoreSchedule[]) => 
-      prev.map((s: StoreSchedule) => 
-        s.id === id ? { ...s, ...updates } : s
-      )
-    );
-  };
-
-  const addStoreException = (exceptionData: Omit<StoreException, 'id'>) => {
-    const newException: StoreException = {
-      ...exceptionData,
-      id: Date.now().toString()
-    };
-    setStoreExceptions((prev: StoreException[]) => [...prev, newException]);
-  };
-
-  const updateStoreException = (id: string, updates: Partial<StoreException>) => {
-    setStoreExceptions((prev: StoreException[]) => 
-      prev.map((e: StoreException) => 
-        e.id === id ? { ...e, ...updates } : e
-      )
-    );
-  };
-
-  const deleteStoreException = (id: string) => {
-    setStoreExceptions((prev: StoreException[]) => prev.filter((e: StoreException) => e.id !== id));
-  };
-
-  const saveTemplate = (name: string, templateShifts: Omit<Shift, 'id' | 'isPublished' | 'createdAt' | 'updatedAt'>[]) => {
-    const newTemplate: Template = {
-      id: Date.now().toString(),
-      name,
-      shifts: templateShifts,
-      createdAt: new Date().toISOString()
-    };
-    setTemplates((prev: Template[]) => [...prev, newTemplate]);
-  };
-
-  const applyTemplate = (templateId: string, startDate: string): ValidationError[] => {
-    const template = templates.find((t: Template) => t.id === templateId);
-    if (!template) return [];
-
-    const errors: ValidationError[] = [];
-    const startDateObj = new Date(startDate);
-    
-    template.shifts.forEach((templateShift: Omit<Shift, 'id' | 'isPublished' | 'createdAt' | 'updatedAt'>) => {
-      const shiftDate = new Date(startDateObj);
-      shiftDate.setDate(startDateObj.getDate() + (parseInt(templateShift.date.split('-')[2]) - parseInt(startDate.split('-')[2])));
-      
-      const newShift: Omit<Shift, 'id' | 'createdAt' | 'updatedAt'> = {
-        ...templateShift,
-        date: shiftDate.toISOString().split('T')[0],
-        isPublished: false
-      };
-      
-      const shiftErrors = validateShift(newShift);
-      errors.push(...shiftErrors);
-      
-      if (shiftErrors.length === 0) {
-        const finalShift: Shift = {
-          ...newShift,
-          id: Date.now().toString() + Math.random(),
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        };
-        setShifts((prev: Shift[]) => [...prev, finalShift]);
-      }
-    });
-    
-    return errors;
-  };
-
-  const copyWeekToNext = (startDate: string): ValidationError[] => {
-    const startDateObj = new Date(startDate);
-    const nextWeekStart = new Date(startDateObj);
-    nextWeekStart.setDate(startDateObj.getDate() + 7);
-    
-    const currentWeekShifts = shifts.filter((s: Shift) => {
-      const shiftDate = new Date(s.date);
-      return shiftDate >= startDateObj && shiftDate < nextWeekStart;
-    });
-    
+  const updateShift = async (id: string, updates: Partial<Shift>): Promise<ValidationError[]> => {
     const errors: ValidationError[] = [];
     
-    currentWeekShifts.forEach((shift: Shift) => {
-      const newDate = new Date(shift.date);
-      newDate.setDate(newDate.getDate() + 7);
+    try {
+      const shiftRef = doc(db, 'shifts', id);
       
-      const newShift: Omit<Shift, 'id' | 'createdAt' | 'updatedAt'> = {
-        ...shift,
-        date: newDate.toISOString().split('T')[0],
-        isPublished: false
+      // Si se actualiza startTime o endTime, recalcular hours
+      if (updates.startTime || updates.endTime) {
+        const currentShift = shifts.find(s => s.id === id);
+        if (currentShift) {
+          const startTime = updates.startTime || currentShift.startTime;
+          const endTime = updates.endTime || currentShift.endTime;
+          updates.hours = calculateHours(startTime, endTime);
+        }
+      }
+      
+      const updateData = {
+        ...updates,
+        updatedAt: new Date()
       };
       
-      const shiftErrors = validateShift(newShift);
-      errors.push(...shiftErrors);
-      
-      if (shiftErrors.length === 0) {
-        const finalShift: Shift = {
-          ...newShift,
-          id: Date.now().toString() + Math.random(),
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        };
-        setShifts((prev: Shift[]) => [...prev, finalShift]);
-      }
-    });
+      await updateDoc(shiftRef, updateData);
+    } catch (error) {
+      console.error('Error updating shift:', error);
+      errors.push({ field: 'general', message: 'Error al actualizar el turno' });
+    }
     
     return errors;
   };
 
-  const value: ScheduleContextType = {
-    shifts,
-    storeSchedule,
-    storeExceptions,
-    templates,
-    addShift,
-    updateShift,
-    deleteShift,
-    publishShifts,
-    addStoreSchedule,
-    updateStoreSchedule,
-    addStoreException,
-    updateStoreException,
-    deleteStoreException,
-    saveTemplate,
-    applyTemplate,
-    copyWeekToNext,
-    isLoading
+  const deleteShift = async (id: string) => {
+    try {
+      await deleteDoc(doc(db, 'shifts', id));
+    } catch (error) {
+      console.error('Error deleting shift:', error);
+    }
+  };
+
+  const publishShifts = async (shiftIds: string[]) => {
+    try {
+      const updatePromises = shiftIds.map(id => {
+        const shiftRef = doc(db, 'shifts', id);
+        return updateDoc(shiftRef, { 
+          isPublished: true,
+          updatedAt: new Date()
+        });
+      });
+      
+      await Promise.all(updatePromises);
+    } catch (error) {
+      console.error('Error publishing shifts:', error);
+    }
+  };
+
+  const addStoreSchedule = async (scheduleData: Omit<StoreSchedule, 'id'>) => {
+    try {
+      await addDoc(collection(db, 'storeSchedule'), scheduleData);
+    } catch (error) {
+      console.error('Error adding store schedule:', error);
+    }
+  };
+
+  const updateStoreSchedule = async (id: string, updates: Partial<StoreSchedule>) => {
+    try {
+      await updateDoc(doc(db, 'storeSchedule', id), updates);
+    } catch (error) {
+      console.error('Error updating store schedule:', error);
+    }
+  };
+
+  const addStoreException = async (exceptionData: Omit<StoreException, 'id'>) => {
+    try {
+      await addDoc(collection(db, 'storeExceptions'), exceptionData);
+    } catch (error) {
+      console.error('Error adding store exception:', error);
+    }
+  };
+
+  const updateStoreException = async (id: string, updates: Partial<StoreException>) => {
+    try {
+      await updateDoc(doc(db, 'storeExceptions', id), updates);
+    } catch (error) {
+      console.error('Error updating store exception:', error);
+    }
+  };
+
+  const deleteStoreException = async (id: string) => {
+    try {
+      await deleteDoc(doc(db, 'storeExceptions', id));
+    } catch (error) {
+      console.error('Error deleting store exception:', error);
+    }
+  };
+
+  const saveTemplate = async (name: string, templateShifts: Omit<Shift, 'id' | 'isPublished' | 'createdAt' | 'updatedAt'>[]) => {
+    try {
+      const templateData = {
+        name,
+        shifts: templateShifts,
+        createdAt: new Date()
+      };
+      
+      await addDoc(collection(db, 'templates'), templateData);
+    } catch (error) {
+      console.error('Error saving template:', error);
+    }
+  };
+
+  const applyTemplate = async (templateId: string, startDate: string): Promise<ValidationError[]> => {
+    const errors: ValidationError[] = [];
+    
+    try {
+      const template = templates.find(t => t.id === templateId);
+      if (!template) {
+        errors.push({ field: 'template', message: 'Plantilla no encontrada' });
+        return errors;
+      }
+
+      const addPromises = template.shifts.map(shift => {
+        const newShift = {
+          ...shift,
+          date: startDate,
+          isPublished: false,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        };
+        return addDoc(collection(db, 'shifts'), newShift);
+      });
+      
+      await Promise.all(addPromises);
+    } catch (error) {
+      console.error('Error applying template:', error);
+      errors.push({ field: 'general', message: 'Error al aplicar la plantilla' });
+    }
+    
+    return errors;
+  };
+
+  const copyWeekToNext = async (startDate: string): Promise<ValidationError[]> => {
+    const errors: ValidationError[] = [];
+    
+    try {
+      // Calcular la fecha de inicio de la siguiente semana
+      const currentDate = new Date(startDate);
+      const nextWeekDate = new Date(currentDate);
+      nextWeekDate.setDate(currentDate.getDate() + 7);
+      const nextWeekStart = nextWeekDate.toISOString().split('T')[0];
+      
+      // Obtener turnos de la semana actual
+      const weekShifts = shifts.filter(shift => shift.date === startDate);
+      
+      const addPromises = weekShifts.map(shift => {
+        const newShift = {
+          employeeId: shift.employeeId,
+          date: nextWeekStart,
+          startTime: shift.startTime,
+          endTime: shift.endTime,
+          hours: shift.hours,
+          isPublished: false,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        };
+        return addDoc(collection(db, 'shifts'), newShift);
+      });
+      
+      await Promise.all(addPromises);
+    } catch (error) {
+      console.error('Error copying week:', error);
+      errors.push({ field: 'general', message: 'Error al copiar la semana' });
+    }
+    
+    return errors;
   };
 
   return (
-    <ScheduleContext.Provider value={value}>
+    <ScheduleContext.Provider value={{
+      shifts,
+      storeSchedule,
+      storeExceptions,
+      templates,
+      addShift,
+      updateShift,
+      deleteShift,
+      publishShifts,
+      addStoreSchedule,
+      updateStoreSchedule,
+      addStoreException,
+      updateStoreException,
+      deleteStoreException,
+      saveTemplate,
+      applyTemplate,
+      copyWeekToNext,
+      isLoading
+    }}>
       {children}
     </ScheduleContext.Provider>
   );
@@ -396,4 +392,3 @@ export function useSchedule() {
   }
   return context;
 }
-
