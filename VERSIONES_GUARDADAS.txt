@@ -188,8 +188,26 @@ git tag -a v1.1-nueva-funcionalidad -m "Descripción de la nueva funcionalidad"
 - Usar git tag para ver versiones disponibles
 - Siempre crear ramas para nuevos desarrollos
 
+🏷️  TAG: v1.8.0
+📝 COMMIT: 3561769
+📅 Fecha: 19/12/2024
+🎯 Estado: NUEVOS EMPLEADOS Y FUNCIONALIDAD DE RESIZE
+📋 Descripción: 
+   - 5 nuevos empleados de prueba con límites semanales (30-45h/semana)
+   - Cambio de límites mensuales a semanales
+   - Funcionalidad de resize en barras de turnos con handles visuales
+   - Handles izquierdo/derecho con estilo intuitivo
+   - Resize con incrementos de 10 minutos y validación
+   - Tooltips y efectos hover para mejor UX
+   - Botón de reset a empleados de prueba en Gestión de Empleados
+   - Actualización del tipo Employee de monthlyLimit a weeklyLimit
+   - Estados y manejadores de resize en ScheduleManagement
+   - Manejo mejorado de eventos globales de mouse para resize
+   - Indicadores visuales con handles semi-transparentes blancos
+   - Validación de duración mínima de 10 minutos por turno
+
 ================================================================================
                                 FIN DEL REGISTRO
 ================================================================================
 
-Última actualización: 13/10/2025 13:30:00
+Última actualización: 19/12/2024 15:45:00

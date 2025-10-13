@@ -208,40 +208,62 @@ export function EmployeeManagement() {
               
               <div className="space-y-3">
                 {formData.unavailableTimes.map((unavailable) => (
-                  <div key={unavailable.id} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                    <select
-                      value={unavailable.dayOfWeek}
-                      onChange={(e) => updateUnavailableTime(unavailable.id, { dayOfWeek: parseInt(e.target.value) })}
-                      className="input-field flex-1"
-                    >
-                      {daysOfWeek.map((day, index) => (
-                        <option key={index} value={index}>{day}</option>
-                      ))}
-                    </select>
-                    
-                    <input
-                      type="time"
-                      value={unavailable.startTime}
-                      onChange={(e) => updateUnavailableTime(unavailable.id, { startTime: e.target.value })}
-                      className="input-field"
-                    />
-                    
-                    <span className="text-gray-500">a</span>
-                    
-                    <input
-                      type="time"
-                      value={unavailable.endTime}
-                      onChange={(e) => updateUnavailableTime(unavailable.id, { endTime: e.target.value })}
-                      className="input-field"
-                    />
-                    
-                    <button
-                      type="button"
-                      onClick={() => removeUnavailableTime(unavailable.id)}
-                      className="text-red-600 hover:text-red-800"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                  <div key={unavailable.id} className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-3 items-center">
+                      {/* Día de la semana */}
+                      <div className="md:col-span-1">
+                        <label className="block text-xs font-medium text-gray-600 mb-1">
+                          Día
+                        </label>
+                        <select
+                          value={unavailable.dayOfWeek}
+                          onChange={(e) => updateUnavailableTime(unavailable.id, { dayOfWeek: parseInt(e.target.value) })}
+                          className="input-field w-full"
+                        >
+                          {daysOfWeek.map((day, index) => (
+                            <option key={index} value={index}>{day}</option>
+                          ))}
+                        </select>
+                      </div>
+                      
+                      {/* Hora de inicio */}
+                      <div className="md:col-span-1">
+                        <label className="block text-xs font-medium text-gray-600 mb-1">
+                          Desde
+                        </label>
+                        <input
+                          type="time"
+                          value={unavailable.startTime}
+                          onChange={(e) => updateUnavailableTime(unavailable.id, { startTime: e.target.value })}
+                          className="input-field w-full"
+                        />
+                      </div>
+                      
+                      {/* Hora de fin */}
+                      <div className="md:col-span-1">
+                        <label className="block text-xs font-medium text-gray-600 mb-1">
+                          Hasta
+                        </label>
+                        <input
+                          type="time"
+                          value={unavailable.endTime}
+                          onChange={(e) => updateUnavailableTime(unavailable.id, { endTime: e.target.value })}
+                          className="input-field w-full"
+                        />
+                      </div>
+                      
+                      {/* Botón eliminar */}
+                      <div className="md:col-span-1 flex justify-end">
+                        <button
+                          type="button"
+                          onClick={() => removeUnavailableTime(unavailable.id)}
+                          className="text-red-600 hover:text-red-800 p-2 hover:bg-red-50 rounded-lg transition-colors"
+                          title="Eliminar horario no disponible"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>

@@ -177,8 +177,12 @@ export function ScheduleProvider({ children }: ScheduleProviderProps) {
     const errors = validateShift(shiftData);
     
     if (errors.length === 0) {
+      // Calculate hours automatically
+      const calculatedHours = calculateHours(shiftData.startTime, shiftData.endTime);
+      
       const newShift: Shift = {
         ...shiftData,
+        hours: calculatedHours, // Override with calculated hours
         id: Date.now().toString(),
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
@@ -189,18 +193,34 @@ export function ScheduleProvider({ children }: ScheduleProviderProps) {
     return errors;
   };
 
+  // Helper function to calculate hours from start and end time
+  const calculateHours = (startTime: string, endTime: string): number => {
+    const start = new Date(`2000-01-01T${startTime}:00`);
+    const end = new Date(`2000-01-01T${endTime}:00`);
+    const diffMs = end.getTime() - start.getTime();
+    return diffMs / (1000 * 60 * 60); // Convert to hours
+  };
+
   const updateShift = (id: string, updates: Partial<Shift>): ValidationError[] => {
     const existingShift = shifts.find(s => s.id === id);
     if (!existingShift) return [];
 
-    const updatedShift = { ...existingShift, ...updates };
+    // If startTime or endTime is being updated, recalculate hours
+    let finalUpdates = { ...updates };
+    if (updates.startTime || updates.endTime) {
+      const startTime = updates.startTime || existingShift.startTime;
+      const endTime = updates.endTime || existingShift.endTime;
+      finalUpdates.hours = calculateHours(startTime, endTime);
+    }
+
+    const updatedShift = { ...existingShift, ...finalUpdates };
     const errors = validateShift(updatedShift, id);
     
     if (errors.length === 0) {
       setShifts(prev => 
         prev.map(s => 
           s.id === id 
-            ? { ...s, ...updates, updatedAt: new Date().toISOString() }
+            ? { ...s, ...finalUpdates, updatedAt: new Date().toISOString() }
             : s
         )
       );

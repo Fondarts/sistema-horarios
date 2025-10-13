@@ -328,6 +328,7 @@ export default function ScheduleManagement() {
               date: resizingShift.date,
               startTime: newStartTime,
               endTime: resizingShift.endTime
+              // hours will be recalculated automatically in updateShift
             });
           }
         } else if (resizeHandle === 'end') {
@@ -341,6 +342,7 @@ export default function ScheduleManagement() {
               date: resizingShift.date,
               startTime: resizingShift.startTime,
               endTime: newEndTime
+              // hours will be recalculated automatically in updateShift
             });
           }
         }
