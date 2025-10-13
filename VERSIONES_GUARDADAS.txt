@@ -15,11 +15,19 @@
 📅 Fecha: 13/10/2025
 🎯 Estado: VERSIÓN ESTABLE FUNCIONAL
 
-DESCRIPCIÓN:
+🏷️  TAG: v1.1-fixes
+📝 COMMIT: (próximo commit)
+📅 Fecha: 13/10/2025
+🎯 Estado: CORRECCIONES Y MEJORAS
+
+DESCRIPCIÓN v1.0-stable:
 Esta es la versión base funcional del sistema de horarios. Incluye todas las
 funcionalidades básicas necesarias para el funcionamiento del sistema.
 
-FUNCIONALIDADES INCLUIDAS:
+DESCRIPCIÓN v1.1-fixes:
+Versión con correcciones importantes al posicionamiento de barras y botón de eliminar.
+
+FUNCIONALIDADES INCLUIDAS v1.0-stable:
 ✅ Vista de horarios con grid semanal
 ✅ Barras de turnos con colores de empleados
 ✅ Modal de creación/edición de turnos
@@ -31,6 +39,13 @@ FUNCIONALIDADES INCLUIDAS:
 ✅ Publicación de cambios
 ✅ Import/export corregido en ManagerDashboard
 ✅ Compilación exitosa sin errores
+
+FUNCIONALIDADES INCLUIDAS v1.1-fixes:
+✅ Botón de eliminar en modal de edición de turnos
+✅ Posicionamiento correcto de barras según horario real
+✅ Cálculo preciso de posición basado en tiempo del turno
+✅ Debug logs para verificación de cálculos
+✅ Variables renombradas para mayor claridad
 
 ARCHIVOS PRINCIPALES:
 - src/components/ScheduleManagement.tsx (versión funcional básica)
@@ -123,4 +138,4 @@ git tag -a v1.1-nueva-funcionalidad -m "Descripción de la nueva funcionalidad"
                                 FIN DEL REGISTRO
 ================================================================================
 
-Última actualización: 13/10/2025 11:53:51
+Última actualización: 13/10/2025 12:15:30

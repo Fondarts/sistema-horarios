@@ -184,6 +184,13 @@ export default function ScheduleManagement() {
     closeShiftModal();
   };
 
+  const handleDeleteShift = () => {
+    if (editingShift) {
+      deleteShift(editingShift.id);
+      closeShiftModal();
+    }
+  };
+
   const publishWeekShifts = () => {
     const unpublishedShifts = weekShifts.filter(s => !s.isPublished);
     publishShifts(unpublishedShifts.map(s => s.id));
@@ -379,19 +386,20 @@ export default function ScheduleManagement() {
                   {/* Shift bars for this day */}
                   {dayShifts.map((shift, shiftIndex) => {
                     const employee = employees.find(emp => emp.id === shift.employeeId);
-                    const startHour = parseInt(shift.startTime.split(':')[0]);
-                    const endHour = parseInt(shift.endTime.split(':')[0]);
-                    const startMinute = parseInt(shift.startTime.split(':')[1]);
-                    const endMinute = parseInt(shift.endTime.split(':')[1]);
+                    const shiftStartHour = parseInt(shift.startTime.split(':')[0]);
+                    const shiftEndHour = parseInt(shift.endTime.split(':')[0]);
+                    const shiftStartMinute = parseInt(shift.startTime.split(':')[1]);
+                    const shiftEndMinute = parseInt(shift.endTime.split(':')[1]);
                     
                     // Calculate position and width based on the hour grid
-                    const startTimeInHours = startHour + (startMinute / 60);
-                    const endTimeInHours = endHour + (endMinute / 60);
-                    const durationInHours = endTimeInHours - startTimeInHours;
+                    const shiftStartTimeInHours = shiftStartHour + (shiftStartMinute / 60);
+                    const shiftEndTimeInHours = shiftEndHour + (shiftEndMinute / 60);
+                    const durationInHours = shiftEndTimeInHours - shiftStartTimeInHours;
                     
                     // Position relative to the hour columns using fixed pixel widths
-                    // The grid has 200px for day/employee + 24 hour columns (60px each)
-                    const left = 200 + ((startTimeInHours - startHour) * 60); // 200px + (hours * 60px)
+                    // The grid has 200px for day/employee + hour columns (60px each)
+                    // Calculate position based on the actual shift start time relative to the visible range
+                    const left = 200 + ((shiftStartTimeInHours - startHour) * 60); // 200px + (actual shift time - visible start time) * 60px
                     const width = durationInHours * 60; // hours * 60px
                     const top = shiftIndex * 35 + 5;
                     
@@ -487,20 +495,36 @@ export default function ScheduleManagement() {
                 </div>
               </div>
 
-              <div className="flex justify-end space-x-3 pt-4">
-                <button
-                  type="button"
-                  onClick={closeShiftModal}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 text-sm font-medium text-white bg-primary-600 border border-transparent rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                >
-                  {editingShift ? 'Actualizar Turno' : 'Crear Turno'}
-                </button>
+              <div className="flex justify-between pt-4">
+                {/* Botón de eliminar (solo visible cuando se está editando) */}
+                {editingShift && (
+                  <button
+                    type="button"
+                    onClick={handleDeleteShift}
+                    className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 flex items-center"
+                  >
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    Eliminar
+                  </button>
+                )}
+                {/* Botones de acción */}
+                <div className="flex space-x-3 ml-auto">
+                  <button
+                    type="button"
+                    onClick={closeShiftModal}
+                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 text-sm font-medium text-white bg-primary-600 border border-transparent rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  >
+                    {editingShift ? 'Actualizar Turno' : 'Crear Turno'}
+                  </button>
+                </div>
               </div>
             </form>
           </div>
