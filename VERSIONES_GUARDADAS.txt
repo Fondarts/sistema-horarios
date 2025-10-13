@@ -25,6 +25,16 @@ v1.10.0 - Force 24-hour format in all time input fields
 - Add MutationObserver to handle dynamically added time inputs
 - Support for Chrome, Firefox, Safari, and Edge browsers
 
+v1.11.0 - Implement custom TimeInput component for true 24-hour format
+- Create custom TimeInput component to replace native time inputs
+- Allow input of hours above 12 (13-23) without browser limitations
+- Add automatic formatting and validation for HH:MM format
+- Implement real-time validation and auto-correction
+- Replace all time inputs in EmployeeManagement, ScheduleManagement, and StoreSettings
+- Add proper keyboard navigation and input filtering
+- Ensure consistent 24-hour format across all components
+- Fix issue where native time inputs limited hours to 12-hour format
+
 🏷️  TAG: v1.0-stable
 📝 COMMIT: e1571f5
 📅 Fecha: 13/10/2025
