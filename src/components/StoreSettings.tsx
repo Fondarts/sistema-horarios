@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useSchedule } from '../contexts/ScheduleContext';
 import { Settings, Clock, Calendar, Plus, Trash2 } from 'lucide-react';
 import { StoreSchedule, StoreException } from '../types';
+import TimeInput from './TimeInput';
 
 export function StoreSettings() {
   const { 
@@ -86,25 +87,21 @@ export function StoreSettings() {
                 <div className="flex items-center space-x-3">
                   <div>
                     <label className="block text-xs text-gray-600 mb-1">Abre</label>
-                    <input
-                      type="time"
+                    <TimeInput
                       value={schedule.openTime || '09:00'}
-                      onChange={(e) => handleScheduleChange(schedule.id, { openTime: e.target.value })}
+                      onChange={(value) => handleScheduleChange(schedule.id, { openTime: value })}
                       className="input-field text-sm"
-                      step="60"
-                      data-format="24"
+                      placeholder="HH:MM"
                     />
                   </div>
                   <span className="text-gray-500">-</span>
                   <div>
                     <label className="block text-xs text-gray-600 mb-1">Cierra</label>
-                    <input
-                      type="time"
+                    <TimeInput
                       value={schedule.closeTime || '20:00'}
-                      onChange={(e) => handleScheduleChange(schedule.id, { closeTime: e.target.value })}
+                      onChange={(value) => handleScheduleChange(schedule.id, { closeTime: value })}
                       className="input-field text-sm"
-                      step="60"
-                      data-format="24"
+                      placeholder="HH:MM"
                     />
                   </div>
                 </div>
@@ -181,22 +178,18 @@ export function StoreSettings() {
                       Horario de Apertura
                     </label>
                     <div className="flex items-center space-x-2">
-                      <input
-                        type="time"
+                      <TimeInput
                         value={exceptionForm.openTime}
-                        onChange={(e) => setExceptionForm(prev => ({ ...prev, openTime: e.target.value }))}
+                        onChange={(value) => setExceptionForm(prev => ({ ...prev, openTime: value }))}
                         className="input-field"
-                        step="60"
-                        data-format="24"
+                        placeholder="HH:MM"
                       />
                       <span className="text-gray-500">-</span>
-                      <input
-                        type="time"
+                      <TimeInput
                         value={exceptionForm.closeTime}
-                        onChange={(e) => setExceptionForm(prev => ({ ...prev, closeTime: e.target.value }))}
+                        onChange={(value) => setExceptionForm(prev => ({ ...prev, closeTime: value }))}
                         className="input-field"
-                        step="60"
-                        data-format="24"
+                        placeholder="HH:MM"
                       />
                     </div>
                   </div>

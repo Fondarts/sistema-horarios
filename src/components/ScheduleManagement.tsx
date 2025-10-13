@@ -5,6 +5,7 @@ import { Eye, EyeOff, Save } from 'lucide-react';
 import { useSchedule } from '../contexts/ScheduleContext';
 import { useEmployees } from '../contexts/EmployeeContext';
 import { Shift } from '../types';
+import TimeInput from './TimeInput';
 
 export default function ScheduleManagement() {
   const { shifts, addShift, updateShift, deleteShift, publishShifts, storeSchedule } = useSchedule();
@@ -18,9 +19,19 @@ export default function ScheduleManagement() {
   const [shiftForm, setShiftForm] = useState({
     date: '',
     startTime: '09:00',
-    endTime: '17:00'
+    endTime: '17:00',
+    employeeId: ''
   });
-  const [zoomLevel, setZoomLevel] = useState(1);
+  const [zoomLevel, setZoomLevel] = useState(() => {
+    // Calculate initial zoom to show all 24 hours
+    if (typeof window !== 'undefined') {
+      const containerWidth = window.innerWidth - 200; // Approximate available width
+      const minColumnWidth = containerWidth / 24; // 24 hours
+      const minZoom = minColumnWidth / 60; // Base width is 60px
+      return Math.max(0.3, minZoom); // Minimum 30% zoom
+    }
+    return 0.3; // Fallback
+  });
   const [draggedShift, setDraggedShift] = useState<Shift | null>(null);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [resizingShift, setResizingShift] = useState<Shift | null>(null);
@@ -119,7 +130,8 @@ export default function ScheduleManagement() {
     setShiftForm({
       date: format(new Date(), 'yyyy-MM-dd'),
       startTime: '09:00',
-      endTime: '17:00'
+      endTime: '17:00',
+      employeeId: employee.id
     });
     setShowShiftModal(true);
   };
@@ -130,7 +142,8 @@ export default function ScheduleManagement() {
     setShiftForm({
       date: shift.date,
       startTime: shift.startTime,
-      endTime: shift.endTime
+      endTime: shift.endTime,
+      employeeId: shift.employeeId
     });
     setShowShiftModal(true);
   };
@@ -142,12 +155,13 @@ export default function ScheduleManagement() {
     setShiftForm({
       date: '',
       startTime: '09:00',
-      endTime: '17:00'
+      endTime: '17:00',
+      employeeId: ''
     });
   };
 
   const handleCreateOrUpdateShift = () => {
-    if (!modalEmployee) return;
+    if (!shiftForm.employeeId) return;
 
     const startHour = parseInt(shiftForm.startTime.split(':')[0]);
     const endHour = parseInt(shiftForm.endTime.split(':')[0]);
@@ -156,6 +170,7 @@ export default function ScheduleManagement() {
     if (editingShift) {
       // Actualizar turno existente
       updateShift(editingShift.id, {
+        employeeId: shiftForm.employeeId,
         date: shiftForm.date,
         startTime: shiftForm.startTime,
         endTime: shiftForm.endTime,
@@ -164,7 +179,7 @@ export default function ScheduleManagement() {
     } else {
       // Crear nuevo turno
       const errors = addShift({
-        employeeId: modalEmployee.id,
+        employeeId: shiftForm.employeeId,
         date: shiftForm.date,
         startTime: shiftForm.startTime,
         endTime: shiftForm.endTime,
@@ -243,6 +258,14 @@ export default function ScheduleManagement() {
   // Auto-scroll to store hours on load
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   
+  // Set initial zoom to show all 24 hours when component mounts
+  useEffect(() => {
+    if (scrollContainerRef.current) {
+      const minZoom = getMinimumZoomFor24Hours();
+      setZoomLevel(minZoom);
+    }
+  }, []); // Run only once when component mounts
+
   useEffect(() => {
     if (scrollContainerRef.current) {
       // Scroll to show store hours (with some padding)
@@ -627,12 +650,12 @@ export default function ScheduleManagement() {
       </div>
 
       {/* Shift Creation Modal */}
-      {showShiftModal && modalEmployee && (
+      {showShiftModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-medium text-gray-900">
-                {editingShift ? 'Editar Turno' : 'Crear Turno'} - {modalEmployee.name}
+                {editingShift ? 'Editar Turno' : 'Crear Turno'}
               </h3>
               <button
                 onClick={closeShiftModal}
@@ -660,15 +683,31 @@ export default function ScheduleManagement() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Empleado
+                  </label>
+                  <select
+                    value={shiftForm.employeeId}
+                    onChange={(e) => setShiftForm(prev => ({ ...prev, employeeId: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    required
+                  >
+                    <option value="">Seleccionar empleado</option>
+                    {employees.map(employee => (
+                      <option key={employee.id} value={employee.id}>
+                        {employee.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Hora de inicio
                   </label>
-                  <input
-                    type="time"
+                  <TimeInput
                     value={shiftForm.startTime}
-                    onChange={(e) => setShiftForm(prev => ({ ...prev, startTime: e.target.value }))}
+                    onChange={(value) => setShiftForm(prev => ({ ...prev, startTime: value }))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                    step="60"
-                    data-format="24"
+                    placeholder="HH:MM"
                     required
                   />
                 </div>
@@ -676,13 +715,11 @@ export default function ScheduleManagement() {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Hora de fin
                   </label>
-                  <input
-                    type="time"
+                  <TimeInput
                     value={shiftForm.endTime}
-                    onChange={(e) => setShiftForm(prev => ({ ...prev, endTime: e.target.value }))}
+                    onChange={(value) => setShiftForm(prev => ({ ...prev, endTime: value }))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                    step="60"
-                    data-format="24"
+                    placeholder="HH:MM"
                     required
                   />
                 </div>

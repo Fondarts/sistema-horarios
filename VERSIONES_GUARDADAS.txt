@@ -16,6 +16,15 @@ v1.9.0 - Fix statistics runtime error and add debug logs for availability confli
 - Add debug logs to troubleshoot availability conflict detection
 - Improve error handling for missing or invalid data
 
+v1.10.0 - Force 24-hour format in all time input fields
+- Add step='60' and data-format='24' attributes to all time inputs
+- Implement comprehensive CSS to hide AM/PM fields across all browsers
+- Add JavaScript in index.html to dynamically force 24-hour format
+- Update EmployeeManagement, ScheduleManagement, and StoreSettings components
+- Ensure time picker dropdowns show only HH:MM format (00:00-23:59)
+- Add MutationObserver to handle dynamically added time inputs
+- Support for Chrome, Firefox, Safari, and Edge browsers
+
 🏷️  TAG: v1.0-stable
 📝 COMMIT: e1571f5
 📅 Fecha: 13/10/2025

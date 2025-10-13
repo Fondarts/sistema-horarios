@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useEmployees } from '../contexts/EmployeeContext';
 import { Plus, Edit, Trash2, User, Clock, Calendar } from 'lucide-react';
 import { Employee, UnavailableTime } from '../types';
+import TimeInput from './TimeInput';
 
 // Función para formatear fecha de dd/mm/yyyy a formato legible
 const formatBirthday = (birthday: string): string => {
@@ -319,13 +320,11 @@ export function EmployeeManagement() {
                         <label className="block text-xs font-medium text-gray-600 mb-1">
                           Desde
                         </label>
-                        <input
-                          type="time"
+                        <TimeInput
                           value={unavailable.startTime}
-                          onChange={(e) => updateUnavailableTime(unavailable.id, { startTime: e.target.value })}
+                          onChange={(value) => updateUnavailableTime(unavailable.id, { startTime: value })}
                           className="input-field w-full"
-                          step="60"
-                          data-format="24"
+                          placeholder="HH:MM"
                         />
                       </div>
                       
@@ -334,13 +333,11 @@ export function EmployeeManagement() {
                         <label className="block text-xs font-medium text-gray-600 mb-1">
                           Hasta
                         </label>
-                        <input
-                          type="time"
+                        <TimeInput
                           value={unavailable.endTime}
-                          onChange={(e) => updateUnavailableTime(unavailable.id, { endTime: e.target.value })}
+                          onChange={(value) => updateUnavailableTime(unavailable.id, { endTime: value })}
                           className="input-field w-full"
-                          step="60"
-                          data-format="24"
+                          placeholder="HH:MM"
                         />
                       </div>
                       

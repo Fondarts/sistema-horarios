@@ -25,25 +25,70 @@
             // Agregar atributo para forzar formato de 24 horas
             input.setAttribute('data-format', '24');
             
-            // Ocultar elementos AM/PM si aparecen
-            const style = document.createElement('style');
-            style.textContent = `
-              input[type="time"]::-webkit-datetime-edit-ampm-field {
-                display: none !important;
-                visibility: hidden !important;
-                opacity: 0 !important;
-                width: 0 !important;
-                height: 0 !important;
-                margin: 0 !important;
-                padding: 0 !important;
-                border: none !important;
-                position: absolute !important;
-                left: -9999px !important;
+            // Forzar formato de 24 horas en el input
+            input.setAttribute('step', '60');
+            
+            // Agregar event listener para validar formato 24h
+            input.addEventListener('input', function(e) {
+              const value = e.target.value;
+              if (value) {
+                const [hours, minutes] = value.split(':');
+                if (hours && parseInt(hours) > 23) {
+                  e.target.value = '23:' + (minutes || '00');
+                }
+                if (minutes && parseInt(minutes) > 59) {
+                  e.target.value = (hours || '00') + ':59';
+                }
               }
-            `;
-            document.head.appendChild(style);
+            });
+            
+            // Prevenir entrada de valores inválidos
+            input.addEventListener('keydown', function(e) {
+              // Permitir teclas de navegación y control
+              if ([8, 9, 13, 27, 46, 37, 38, 39, 40].indexOf(e.keyCode) !== -1 ||
+                  (e.keyCode === 65 && e.ctrlKey === true) || // Ctrl+A
+                  (e.keyCode >= 35 && e.keyCode <= 40)) { // End, Home, arrow keys
+                return;
+              }
+              
+              // Permitir solo números y dos puntos
+              if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) && 
+                  (e.keyCode < 96 || e.keyCode > 105) && 
+                  e.keyCode !== 186) { // No permitir caracteres especiales excepto :
+                e.preventDefault();
+              }
+            });
           });
         }
+        
+        // Ocultar elementos AM/PM si aparecen
+        const style = document.createElement('style');
+        style.textContent = `
+          input[type="time"]::-webkit-datetime-edit-ampm-field {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            width: 0 !important;
+            height: 0 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            border: none !important;
+            position: absolute !important;
+            left: -9999px !important;
+          }
+          
+          /* Forzar formato de 24 horas */
+          input[type="time"] {
+            -webkit-appearance: none;
+            -moz-appearance: textfield;
+          }
+          
+          input[type="time"]::-webkit-datetime-edit-fields-wrapper {
+            display: flex;
+            align-items: center;
+          }
+        `;
+        document.head.appendChild(style);
         
         // Ejecutar inmediatamente
         force24HourFormat();
@@ -56,12 +101,14 @@
                 if (node.nodeType === 1) { // Element node
                   if (node.tagName === 'INPUT' && node.type === 'time') {
                     node.setAttribute('data-format', '24');
+                    node.setAttribute('step', '60');
                   }
                   // Buscar inputs de tiempo en elementos agregados
                   const timeInputs = node.querySelectorAll && node.querySelectorAll('input[type="time"]');
                   if (timeInputs) {
                     timeInputs.forEach(input => {
                       input.setAttribute('data-format', '24');
+                      input.setAttribute('step', '60');
                     });
                   }
                 }
