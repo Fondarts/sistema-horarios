@@ -34,6 +34,16 @@ const getNextAvailableColor = (existingEmployees: Employee[]): string => {
   return availableColor || defaultColors[Math.floor(Math.random() * defaultColors.length)];
 };
 
+// Función para generar un PIN único de 5 dígitos
+const generateUniquePin = (existingEmployees: Employee[]): string => {
+  const usedPins = existingEmployees.map(emp => emp.pin);
+  let newPin: string;
+  do {
+    newPin = Math.floor(10000 + Math.random() * 90000).toString(); // 10000-99999
+  } while (usedPins.includes(newPin));
+  return newPin;
+};
+
 // Empleados de prueba
 const mockEmployees: Employee[] = [
   {
@@ -50,7 +60,8 @@ const mockEmployees: Employee[] = [
     ],
     birthday: '10/04/1995',
     isActive: true,
-    color: '#3B82F6' // Azul
+    color: '#3B82F6', // Azul
+    pin: '12345'
   },
   {
     id: '2',
@@ -59,7 +70,8 @@ const mockEmployees: Employee[] = [
     unavailableTimes: [],
     birthday: '15/08/1990',
     isActive: true,
-    color: '#10B981' // Verde
+    color: '#10B981', // Verde
+    pin: '23456'
   },
   {
     id: '3',
@@ -75,7 +87,8 @@ const mockEmployees: Employee[] = [
     ],
     birthday: '03/12/1988',
     isActive: true,
-    color: '#F59E0B' // Amarillo
+    color: '#F59E0B', // Amarillo
+    pin: '34567'
   },
   {
     id: '4',
@@ -91,7 +104,8 @@ const mockEmployees: Employee[] = [
     ],
     birthday: '22/07/1992',
     isActive: true,
-    color: '#EF4444' // Rojo
+    color: '#EF4444', // Rojo
+    pin: '45678'
   },
   {
     id: '5',
@@ -100,7 +114,8 @@ const mockEmployees: Employee[] = [
     unavailableTimes: [],
     birthday: '14/03/1996',
     isActive: true,
-    color: '#8B5CF6' // Púrpura
+    color: '#8B5CF6', // Púrpura
+    pin: '56789'
   },
   {
     id: '6',
@@ -116,7 +131,8 @@ const mockEmployees: Employee[] = [
     ],
     birthday: '08/11/1991',
     isActive: true,
-    color: '#06B6D4' // Cian
+    color: '#06B6D4', // Cian
+    pin: '67890'
   },
   {
     id: '7',
@@ -125,7 +141,8 @@ const mockEmployees: Employee[] = [
     unavailableTimes: [],
     birthday: '17/09/1994',
     isActive: true,
-    color: '#F97316' // Naranja
+    color: '#F97316', // Naranja
+    pin: '78901'
   }
 ];
 
@@ -170,7 +187,8 @@ export function EmployeeProvider({ children }: EmployeeProviderProps) {
     const newEmployee: Employee = {
       ...employeeData,
       id: Date.now().toString(),
-      color: employeeData.color || getNextAvailableColor(employees)
+      color: employeeData.color || getNextAvailableColor(employees),
+      pin: employeeData.pin || generateUniquePin(employees)
     };
     setEmployees(prev => [...prev, newEmployee]);
   };

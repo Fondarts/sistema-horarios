@@ -18,6 +18,7 @@ export interface Employee {
   birthday: string; // formato YYYY-MM-DD
   isActive: boolean;
   color: string; // color hexadecimal para las barras del empleado
+  pin: string; // clave de 5 dígitos para login
 }
 
 export interface UnavailableTime {

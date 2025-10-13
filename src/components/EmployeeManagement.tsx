@@ -38,6 +38,8 @@ export function EmployeeManagement() {
     weeklyLimit: 40,
     birthday: '',
     color: '#3B82F6',
+    pin: '',
+    isActive: true,
     unavailableTimes: [] as UnavailableTime[]
   });
 
@@ -52,44 +54,6 @@ export function EmployeeManagement() {
     return dayNames[dayOfWeek] || 'Día inválido';
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (editingEmployee) {
-      updateEmployee(editingEmployee.id, formData);
-    } else {
-      addEmployee({
-        ...formData,
-        isActive: true
-      });
-    }
-    
-    resetForm();
-  };
-
-  const resetForm = () => {
-    setFormData({
-      name: '',
-      weeklyLimit: 40,
-      birthday: '',
-      color: '#3B82F6',
-      unavailableTimes: []
-    });
-    setShowAddForm(false);
-    setEditingEmployee(null);
-  };
-
-  const handleEdit = (employee: Employee) => {
-    setFormData({
-      name: employee.name,
-      weeklyLimit: employee.weeklyLimit,
-      birthday: employee.birthday,
-      color: employee.color,
-      unavailableTimes: employee.unavailableTimes
-    });
-    setEditingEmployee(employee);
-    setShowAddForm(true);
-  };
 
   const addUnavailableTime = () => {
     setFormData(prev => ({
@@ -173,6 +137,46 @@ export function EmployeeManagement() {
     });
   };
 
+  const handleEdit = (employee: Employee) => {
+    setEditingEmployee(employee);
+    setFormData({
+      name: employee.name,
+      weeklyLimit: employee.weeklyLimit,
+      birthday: employee.birthday,
+      color: employee.color,
+      pin: employee.pin,
+      isActive: employee.isActive,
+      unavailableTimes: employee.unavailableTimes
+    });
+    setShowAddForm(true);
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (editingEmployee) {
+      updateEmployee(editingEmployee.id, formData);
+    } else {
+      addEmployee(formData);
+    }
+    
+    resetForm();
+  };
+
+  const resetForm = () => {
+    setFormData({
+      name: '',
+      weeklyLimit: 40,
+      birthday: '',
+      color: '#3B82F6',
+      pin: '',
+      isActive: true,
+      unavailableTimes: []
+    });
+    setEditingEmployee(null);
+    setShowAddForm(false);
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -219,6 +223,28 @@ export function EmployeeManagement() {
                   className="input-field"
                   required
                 />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  PIN de Acceso (5 dígitos)
+                </label>
+                <input
+                  type="text"
+                  value={formData.pin}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, '').slice(0, 5); // Solo números, máximo 5
+                    setFormData(prev => ({ ...prev, pin: value }));
+                  }}
+                  className="input-field"
+                  placeholder="12345"
+                  pattern="[0-9]{5}"
+                  maxLength={5}
+                  required
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Clave de 5 dígitos para el login del empleado
+                </p>
               </div>
               
               <div>
@@ -427,6 +453,11 @@ export function EmployeeManagement() {
                   <div className="flex items-center">
                     <Calendar className="w-4 h-4 text-gray-400 mr-2" />
                     <span>{employee.birthday ? formatBirthday(employee.birthday) : 'No especificada'}</span>
+                  </div>
+                  <div className="flex items-center">
+                    <span className="text-xs text-gray-500 font-mono bg-gray-100 px-2 py-1 rounded">
+                      PIN: {employee.pin}
+                    </span>
                   </div>
                   {employee.unavailableTimes.length > 0 && (
                     <div className="text-xs text-gray-500">
