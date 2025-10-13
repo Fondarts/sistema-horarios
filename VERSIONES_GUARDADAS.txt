@@ -1,0 +1,126 @@
+================================================================================
+                    REGISTRO DE VERSIONES - SISTEMA DE HORARIOS
+================================================================================
+
+📅 Fecha de creación: 13/10/2025 11:53:51
+🔧 Proyecto: Sistema de Gestión de Horarios
+📁 Ubicación: F:\Proyectos\horarios
+
+================================================================================
+                                VERSIONES DISPONIBLES
+================================================================================
+
+🏷️  TAG: v1.0-stable
+📝 COMMIT: e1571f5
+📅 Fecha: 13/10/2025
+🎯 Estado: VERSIÓN ESTABLE FUNCIONAL
+
+DESCRIPCIÓN:
+Esta es la versión base funcional del sistema de horarios. Incluye todas las
+funcionalidades básicas necesarias para el funcionamiento del sistema.
+
+FUNCIONALIDADES INCLUIDAS:
+✅ Vista de horarios con grid semanal
+✅ Barras de turnos con colores de empleados
+✅ Modal de creación/edición de turnos
+✅ Navegación entre semanas
+✅ Controles de zoom básicos
+✅ Drag básico para mover turnos
+✅ Doble click para editar turnos
+✅ Gestión de empleados con colores
+✅ Publicación de cambios
+✅ Import/export corregido en ManagerDashboard
+✅ Compilación exitosa sin errores
+
+ARCHIVOS PRINCIPALES:
+- src/components/ScheduleManagement.tsx (versión funcional básica)
+- src/components/ManagerDashboard.tsx (import corregido)
+- src/contexts/EmployeeContext.tsx (con colores de empleados)
+- src/contexts/ScheduleContext.tsx (gestión de turnos)
+- src/types/index.ts (tipos con color para empleados)
+
+COMANDOS PARA RESTAURAR:
+git checkout v1.0-stable
+git checkout -b nueva-funcionalidad v1.0-stable
+
+================================================================================
+                                COMANDOS ÚTILES
+================================================================================
+
+🔍 VER HISTORIAL DE COMMITS:
+git log --oneline
+
+🏷️ VER TODOS LOS TAGS:
+git tag
+
+📋 VER DETALLES DE UN COMMIT:
+git show e1571f5
+
+🔄 RESTAURAR A UNA VERSIÓN ESPECÍFICA:
+git checkout v1.0-stable
+
+🌿 CREAR NUEVA RAMA DESDE UNA VERSIÓN:
+git checkout -b nombre-rama v1.0-stable
+
+📊 VER DIFERENCIAS ENTRE VERSIONES:
+git diff v1.0-stable HEAD
+
+💾 CREAR NUEVO TAG:
+git tag -a v1.1-nueva-funcionalidad -m "Descripción de la nueva funcionalidad"
+
+================================================================================
+                                NOTAS IMPORTANTES
+================================================================================
+
+⚠️  ANTES DE HACER CAMBIOS:
+1. Crear una nueva rama desde v1.0-stable
+2. Trabajar en la nueva rama
+3. Hacer commits frecuentes
+4. Crear tags para versiones importantes
+
+🔄 SI ALGO SE ROMPE:
+1. git checkout v1.0-stable (volver a la versión estable)
+2. git checkout -b fix-rama v1.0-stable (crear rama de corrección)
+3. Hacer las correcciones necesarias
+4. Probar que todo funcione
+5. Hacer commit y tag si es necesario
+
+📝 CONVENCIONES DE NAMING:
+- Tags: v1.0-stable, v1.1-feature, v1.2-fix
+- Ramas: feature/nombre, fix/nombre, hotfix/nombre
+- Commits: feat:, fix:, docs:, style:, refactor:
+
+================================================================================
+                                FUNCIONALIDADES PENDIENTES
+================================================================================
+
+🚧 FUNCIONALIDADES AVANZADAS (NO INCLUIDAS EN v1.0-stable):
+- Incrementos variables para drag/resize (10min/30min/1h)
+- Resize handles en las barras de turnos
+- Columna fija (sticky) para días/empleados
+- Botón de eliminar en el modal de edición
+- Vista 24h con scroll horizontal
+- Zoom avanzado con vista enfocada en horarios de tienda
+- Event listeners globales para drag/resize
+
+📋 PRÓXIMOS PASOS SUGERIDOS:
+1. Implementar funcionalidades avanzadas una por una
+2. Crear tags para cada funcionalidad completada
+3. Mantener v1.0-stable como punto de referencia
+4. Documentar cada nueva funcionalidad
+
+================================================================================
+                                CONTACTO Y SOPORTE
+================================================================================
+
+📧 Para consultas sobre versiones o restauración:
+- Revisar este archivo primero
+- Usar git log para ver historial
+- Usar git tag para ver versiones disponibles
+- Siempre crear ramas para nuevos desarrollos
+
+================================================================================
+                                FIN DEL REGISTRO
+================================================================================
+
+Última actualización: 13/10/2025 11:53:51
