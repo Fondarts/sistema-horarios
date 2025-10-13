@@ -38,6 +38,7 @@ export default function ScheduleManagement() {
   const [resizeHandle, setResizeHandle] = useState<'start' | 'end' | null>(null);
   const [isDraggingOrResizing, setIsDraggingOrResizing] = useState(false);
   const [isCopyingShifts, setIsCopyingShifts] = useState(false);
+  const [show24Hours, setShow24Hours] = useState(false); // Toggle for 24h vs focused view
   const ganttRef = useRef<HTMLDivElement>(null);
 
   const weekStart = startOfWeek(currentWeek, { weekStartsOn: 1 }); // Lunes
@@ -65,11 +66,11 @@ export default function ScheduleManagement() {
     return { startHour: 8, endHour: 21 };
   };
 
-  // Siempre mostrar las 24 horas completas para permitir turnos fuera del horario de la tienda
+  // Calcular horas visibles basado en el toggle
   const { startHour: storeStartHour, endHour: storeEndHour } = getStoreHoursRange();
-  const startHour = 0; // Siempre empezar desde las 00:00
-  const endHour = 23;  // Siempre terminar en las 23:00
-  const hours = Array.from({ length: 24 }, (_, i) => i); // 0-23 horas
+  const startHour = show24Hours ? 0 : storeStartHour; // 0 si 24h, o horario de tienda si enfocado
+  const endHour = show24Hours ? 23 : storeEndHour;    // 23 si 24h, o horario de tienda si enfocado
+  const hours = Array.from({ length: endHour - startHour + 1 }, (_, i) => startHour + i);
 
   // Filtrar turnos de la semana actual
   const weekShifts = shifts.filter(shift => {
@@ -296,7 +297,7 @@ export default function ScheduleManagement() {
   };
 
   const zoomOut = () => {
-    const minZoom = getMinimumZoomFor24Hours();
+    const minZoom = getMinimumZoomForVisibleHours();
     setZoomLevel(prev => Math.max(prev - 0.2, minZoom));
   };
 
@@ -309,14 +310,15 @@ export default function ScheduleManagement() {
     return Math.round(60 * zoomLevel); // Base width 60px * zoom level
   };
 
-  // Calculate minimum zoom level to fit 24 hours in available width
-  const getMinimumZoomFor24Hours = () => {
+  // Calculate minimum zoom level to fit visible hours in available width
+  const getMinimumZoomForVisibleHours = () => {
     if (!scrollContainerRef.current) return 0.3;
     
     const containerWidth = scrollContainerRef.current.clientWidth;
     const dayColumnWidth = 200; // Fixed width for day/employee column
     const availableWidth = containerWidth - dayColumnWidth;
-    const minColumnWidth = availableWidth / 24; // 24 hours
+    const visibleHours = endHour - startHour + 1;
+    const minColumnWidth = availableWidth / visibleHours;
     const minZoom = minColumnWidth / 60; // Base width is 60px
     
     return Math.max(0.2, minZoom); // Minimum 20% zoom
@@ -341,27 +343,32 @@ export default function ScheduleManagement() {
   // Auto-scroll to store hours on load
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   
-  // Set initial zoom to show all 24 hours when component mounts
+  // Set initial zoom to show visible hours when component mounts
   useEffect(() => {
     if (scrollContainerRef.current) {
-      const minZoom = getMinimumZoomFor24Hours();
+      const minZoom = getMinimumZoomForVisibleHours();
       setZoomLevel(minZoom);
     }
-  }, []); // Run only once when component mounts
+  }, [show24Hours]); // Recalculate when toggle changes
 
   useEffect(() => {
     if (scrollContainerRef.current) {
-      // Scroll to show store hours (with some padding)
-      const storeStartPixel = storeStartHour * getColumnWidth(); // dynamic px per hour
-      const scrollPosition = Math.max(0, storeStartPixel - (2 * getColumnWidth())); // 2 hours before store opens
-      scrollContainerRef.current.scrollLeft = scrollPosition;
+      if (show24Hours) {
+        // If showing 24h, scroll to beginning
+        scrollContainerRef.current.scrollLeft = 0;
+      } else {
+        // If showing focused view, scroll to show store hours (with some padding)
+        const storeStartPixel = storeStartHour * getColumnWidth(); // dynamic px per hour
+        const scrollPosition = Math.max(0, storeStartPixel - (2 * getColumnWidth())); // 2 hours before store opens
+        scrollContainerRef.current.scrollLeft = scrollPosition;
+      }
     }
-  }, [storeStartHour, zoomLevel]);
+  }, [storeStartHour, zoomLevel, show24Hours]);
 
   // Recalculate minimum zoom when window resizes
   useEffect(() => {
     const handleResize = () => {
-      const minZoom = getMinimumZoomFor24Hours();
+      const minZoom = getMinimumZoomForVisibleHours();
       if (zoomLevel < minZoom) {
         setZoomLevel(minZoom);
       }
@@ -369,7 +376,7 @@ export default function ScheduleManagement() {
 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, [zoomLevel]);
+  }, [zoomLevel, show24Hours]);
 
   // Global event listeners for drag and resize functionality
   useEffect(() => {
@@ -413,12 +420,22 @@ export default function ScheduleManagement() {
         const newEndMinutes = newTimeMinutes + originalDuration;
         const newEndTime = minutesToTime(roundToIncrement(newEndMinutes, 10));
 
-        // Update shift in real time
-        await updateShift(draggedShift.id, {
-          date: draggedShift.date, // Keep same date for now
-          startTime: newStartTime,
-          endTime: newEndTime
-        });
+        // Validate that times are within visible range
+        const newStartHour = parseInt(newStartTime.split(':')[0]);
+        const newEndHour = parseInt(newEndTime.split(':')[0]);
+        
+        // Use visible hours range when toggle is off, or full 24h when toggle is on
+        const minHour = show24Hours ? 0 : startHour;
+        const maxHour = show24Hours ? 23 : endHour;
+        
+        if (newStartHour >= minHour && newStartHour <= maxHour && newEndHour >= minHour && newEndHour <= maxHour) {
+          // Update shift in real time
+          await updateShift(draggedShift.id, {
+            date: draggedShift.date, // Keep same date for now
+            startTime: newStartTime,
+            endTime: newEndTime
+          });
+        }
       }
 
       // Handle resizing
@@ -427,9 +444,13 @@ export default function ScheduleManagement() {
           // Resize start time, keep end time fixed
           const newStartTime = newTime;
           const endTimeMinutes = timeToMinutes(resizingShift.endTime);
+          const newStartHour = parseInt(newStartTime.split(':')[0]);
           
-          // Ensure start time is before end time (minimum 10 minutes)
-          if (newTimeMinutes < endTimeMinutes - 10) {
+          // Ensure start time is before end time (minimum 10 minutes) and within visible range
+          const minHour = show24Hours ? 0 : startHour;
+          const maxHour = show24Hours ? 23 : endHour;
+          
+          if (newTimeMinutes < endTimeMinutes - 10 && newStartHour >= minHour && newStartHour <= maxHour) {
             await updateShift(resizingShift.id, {
               date: resizingShift.date,
               startTime: newStartTime,
@@ -441,9 +462,13 @@ export default function ScheduleManagement() {
           // Resize end time, keep start time fixed
           const newEndTime = newTime;
           const startTimeMinutes = timeToMinutes(resizingShift.startTime);
+          const newEndHour = parseInt(newEndTime.split(':')[0]);
           
-          // Ensure end time is after start time (minimum 10 minutes)
-          if (newTimeMinutes > startTimeMinutes + 10) {
+          // Ensure end time is after start time (minimum 10 minutes) and within visible range
+          const minHour = show24Hours ? 0 : startHour;
+          const maxHour = show24Hours ? 23 : endHour;
+          
+          if (newTimeMinutes > startTimeMinutes + 10 && newEndHour >= minHour && newEndHour <= maxHour) {
             await updateShift(resizingShift.id, {
               date: resizingShift.date,
               startTime: resizingShift.startTime,
@@ -514,6 +539,22 @@ export default function ScheduleManagement() {
               Reset
             </button>
           </div>
+          
+          {/* 24h Toggle */}
+          <div className="flex items-center space-x-2 bg-gray-100 rounded-lg p-2">
+            <label className="flex items-center space-x-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={show24Hours}
+                onChange={(e) => setShow24Hours(e.target.checked)}
+                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+              />
+              <span className="text-sm text-gray-700 font-medium">
+                Ver 24 horas
+              </span>
+            </label>
+          </div>
+          
           <button
             onClick={() => setShowUnpublished(!showUnpublished)}
             className={`flex items-center px-3 py-2 rounded-lg transition-colors ${

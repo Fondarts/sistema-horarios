@@ -166,6 +166,27 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
   const addShift = async (shiftData: Omit<Shift, 'id' | 'createdAt' | 'updatedAt'>): Promise<ValidationError[]> => {
     const errors: ValidationError[] = [];
     
+    // Validar que los horarios no superen las 24 horas
+    const startHour = parseInt(shiftData.startTime.split(':')[0]);
+    const endHour = parseInt(shiftData.endTime.split(':')[0]);
+    
+    if (startHour < 0 || startHour > 23) {
+      errors.push({ type: 'schedule', message: 'La hora de inicio debe estar entre 00:00 y 23:59' });
+    }
+    
+    if (endHour < 0 || endHour > 23) {
+      errors.push({ type: 'schedule', message: 'La hora de fin debe estar entre 00:00 y 23:59' });
+    }
+    
+    // Validar que la hora de fin sea posterior a la de inicio
+    if (startHour > endHour || (startHour === endHour && parseInt(shiftData.startTime.split(':')[1]) >= parseInt(shiftData.endTime.split(':')[1]))) {
+      errors.push({ type: 'schedule', message: 'La hora de fin debe ser posterior a la hora de inicio' });
+    }
+    
+    if (errors.length > 0) {
+      return errors;
+    }
+    
     try {
       // Calcular horas automáticamente
       const hours = calculateHours(shiftData.startTime, shiftData.endTime);
@@ -188,6 +209,37 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
 
   const updateShift = async (id: string, updates: Partial<Shift>): Promise<ValidationError[]> => {
     const errors: ValidationError[] = [];
+    
+    // Validar que los horarios no superen las 24 horas si se están actualizando
+    if (updates.startTime) {
+      const startHour = parseInt(updates.startTime.split(':')[0]);
+      if (startHour < 0 || startHour > 23) {
+        errors.push({ type: 'schedule', message: 'La hora de inicio debe estar entre 00:00 y 23:59' });
+      }
+    }
+    
+    if (updates.endTime) {
+      const endHour = parseInt(updates.endTime.split(':')[0]);
+      if (endHour < 0 || endHour > 23) {
+        errors.push({ type: 'schedule', message: 'La hora de fin debe estar entre 00:00 y 23:59' });
+      }
+    }
+    
+    // Validar que la hora de fin sea posterior a la de inicio si se actualizan ambos
+    if (updates.startTime && updates.endTime) {
+      const startHour = parseInt(updates.startTime.split(':')[0]);
+      const endHour = parseInt(updates.endTime.split(':')[0]);
+      const startMinute = parseInt(updates.startTime.split(':')[1]);
+      const endMinute = parseInt(updates.endTime.split(':')[1]);
+      
+      if (startHour > endHour || (startHour === endHour && startMinute >= endMinute)) {
+        errors.push({ type: 'schedule', message: 'La hora de fin debe ser posterior a la hora de inicio' });
+      }
+    }
+    
+    if (errors.length > 0) {
+      return errors;
+    }
     
     try {
       const shiftRef = doc(db, 'shifts', id);
