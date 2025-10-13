@@ -51,7 +51,7 @@ export function ManagerDashboard() {
                   Panel de Administración
                 </h1>
                 <p className="text-sm text-gray-600">
-                  Bienvenido, {user?.name}
+                  Bienvenido, {currentEmployee?.name}
                 </p>
               </div>
             </div>

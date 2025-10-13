@@ -6,13 +6,13 @@ import { AppRouter } from './components/AppRouter';
 
 function App() {
   return (
-    <AuthProvider>
-      <EmployeeProvider>
+    <EmployeeProvider>
+      <AuthProvider>
         <ScheduleProvider>
           <AppRouter />
         </ScheduleProvider>
-      </EmployeeProvider>
-    </AuthProvider>
+      </AuthProvider>
+    </EmployeeProvider>
   );
 }
 
