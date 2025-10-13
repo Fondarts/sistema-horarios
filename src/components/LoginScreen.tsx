@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { User, Lock, AlertCircle } from 'lucide-react';
+import { useEmployees } from '../contexts/EmployeeContext';
+import { User, Lock, AlertCircle, RefreshCw } from 'lucide-react';
 
 export default function LoginScreen() {
   const { login } = useAuth();
+  const { resetToMockEmployees } = useEmployees();
   const [formData, setFormData] = useState({
     name: '',
     pin: ''
@@ -108,13 +110,26 @@ export default function LoginScreen() {
               </div>
             )}
 
-            <div>
+            <div className="space-y-3">
               <button
                 type="submit"
                 disabled={isLoading || !formData.name.trim() || formData.pin.length !== 5}
                 className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
+              </button>
+              
+              <button
+                type="button"
+                onClick={() => {
+                  resetToMockEmployees();
+                  setError('');
+                  alert('Empleados de prueba cargados. Intenta con: Ana Perez - 12345');
+                }}
+                className="w-full flex justify-center items-center space-x-2 py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+              >
+                <RefreshCw className="w-4 h-4" />
+                <span>Resetear Empleados de Prueba</span>
               </button>
             </div>
           </form>
