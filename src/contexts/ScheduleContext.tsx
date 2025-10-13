@@ -71,7 +71,7 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
       try {
         // Cargar shifts
         const shiftsRef = collection(db, 'shifts');
-        const shiftsQuery = query(shiftsRef, orderBy('date'), orderBy('startTime'));
+        const shiftsQuery = query(shiftsRef, orderBy('date'));
         const shiftsUnsubscribe = onSnapshot(shiftsQuery, (snapshot) => {
           const shiftsData: Shift[] = [];
           snapshot.forEach((doc) => {
