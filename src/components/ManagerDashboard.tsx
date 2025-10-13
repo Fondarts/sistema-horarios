@@ -10,7 +10,7 @@ import { ExportTools } from './ExportTools';
 type TabType = 'schedule' | 'employees' | 'settings' | 'statistics' | 'export';
 
 export function ManagerDashboard() {
-  const { user, logout } = useAuth();
+  const { currentEmployee, logout } = useAuth();
   const [activeTab, setActiveTab] = useState<TabType>('schedule');
 
   const tabs = [
