@@ -3,6 +3,31 @@ import { useEmployees } from '../contexts/EmployeeContext';
 import { Plus, Edit, Trash2, User, Clock, Calendar } from 'lucide-react';
 import { Employee, UnavailableTime } from '../types';
 
+// Función para formatear fecha de dd/mm/yyyy a formato legible
+const formatBirthday = (birthday: string): string => {
+  if (!birthday) return '';
+  
+  // Si ya está en formato dd/mm/yyyy, devolverlo tal como está
+  if (birthday.includes('/')) {
+    return birthday;
+  }
+  
+  // Si está en formato ISO (YYYY-MM-DD), convertir a dd/mm/yyyy
+  try {
+    const date = new Date(birthday);
+    if (!isNaN(date.getTime())) {
+      const day = date.getDate().toString().padStart(2, '0');
+      const month = (date.getMonth() + 1).toString().padStart(2, '0');
+      const year = date.getFullYear();
+      return `${day}/${month}/${year}`;
+    }
+  } catch (error) {
+    console.error('Error formatting birthday:', error);
+  }
+  
+  return birthday;
+};
+
 export function EmployeeManagement() {
   const { employees, addEmployee, updateEmployee, deleteEmployee, resetToMockEmployees } = useEmployees();
   const [showAddForm, setShowAddForm] = useState(false);
@@ -16,8 +41,15 @@ export function EmployeeManagement() {
   });
 
   const daysOfWeek = [
-    'Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'
+    'Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado',
+    'Lunes a Viernes', 'Sábado y Domingo'
   ];
+
+  // Función para obtener el nombre del día
+  const getDayName = (dayOfWeek: number): string => {
+    const dayNames = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+    return dayNames[dayOfWeek] || 'Día inválido';
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -81,12 +113,63 @@ export function EmployeeManagement() {
   };
 
   const updateUnavailableTime = (id: string, updates: Partial<UnavailableTime>) => {
-    setFormData(prev => ({
-      ...prev,
-      unavailableTimes: prev.unavailableTimes.map(ut =>
-        ut.id === id ? { ...ut, ...updates } : ut
-      )
-    }));
+    setFormData(prev => {
+      const currentTime = prev.unavailableTimes.find(ut => ut.id === id);
+      if (!currentTime) return prev;
+
+      // Si se está cambiando el día de la semana
+      if (updates.dayOfWeek !== undefined) {
+        const newDayOfWeek = updates.dayOfWeek;
+        
+        // Si se selecciona "Lunes a Viernes" (índice 7)
+        if (newDayOfWeek === 7) {
+          // Eliminar la entrada actual
+          const filteredTimes = prev.unavailableTimes.filter(ut => ut.id !== id);
+          
+          // Crear 5 entradas para lunes a viernes
+          const weekdays = [1, 2, 3, 4, 5]; // Lunes a Viernes
+          const newTimes = weekdays.map(day => ({
+            id: `${Date.now()}-${day}`,
+            dayOfWeek: day,
+            startTime: currentTime.startTime,
+            endTime: currentTime.endTime
+          }));
+          
+          return {
+            ...prev,
+            unavailableTimes: [...filteredTimes, ...newTimes]
+          };
+        }
+        
+        // Si se selecciona "Sábado y Domingo" (índice 8)
+        if (newDayOfWeek === 8) {
+          // Eliminar la entrada actual
+          const filteredTimes = prev.unavailableTimes.filter(ut => ut.id !== id);
+          
+          // Crear 2 entradas para sábado y domingo
+          const weekendDays = [0, 6]; // Domingo y Sábado
+          const newTimes = weekendDays.map(day => ({
+            id: `${Date.now()}-${day}`,
+            dayOfWeek: day,
+            startTime: currentTime.startTime,
+            endTime: currentTime.endTime
+          }));
+          
+          return {
+            ...prev,
+            unavailableTimes: [...filteredTimes, ...newTimes]
+          };
+        }
+      }
+
+      // Actualización normal para días individuales
+      return {
+        ...prev,
+        unavailableTimes: prev.unavailableTimes.map(ut =>
+          ut.id === id ? { ...ut, ...updates } : ut
+        )
+      };
+    });
   };
 
   return (
@@ -157,12 +240,17 @@ export function EmployeeManagement() {
                   Fecha de Nacimiento
                 </label>
                 <input
-                  type="date"
+                  type="text"
                   value={formData.birthday}
                   onChange={(e) => setFormData(prev => ({ ...prev, birthday: e.target.value }))}
                   className="input-field"
-                  required
+                  placeholder="dd/mm/yyyy"
+                  pattern="\d{2}/\d{2}/\d{4}"
+                  title="Formato: dd/mm/yyyy (ejemplo: 22/07/1992)"
                 />
+                <p className="text-xs text-gray-500 mt-1">
+                  Formato: día/mes/año (ejemplo: 22/07/1992) - Opcional
+                </p>
               </div>
 
               <div>
@@ -236,6 +324,8 @@ export function EmployeeManagement() {
                           value={unavailable.startTime}
                           onChange={(e) => updateUnavailableTime(unavailable.id, { startTime: e.target.value })}
                           className="input-field w-full"
+                          step="60"
+                          data-format="24"
                         />
                       </div>
                       
@@ -249,6 +339,8 @@ export function EmployeeManagement() {
                           value={unavailable.endTime}
                           onChange={(e) => updateUnavailableTime(unavailable.id, { endTime: e.target.value })}
                           className="input-field w-full"
+                          step="60"
+                          data-format="24"
                         />
                       </div>
                       
@@ -337,11 +429,16 @@ export function EmployeeManagement() {
                   </div>
                   <div className="flex items-center">
                     <Calendar className="w-4 h-4 text-gray-400 mr-2" />
-                    <span>{new Date(employee.birthday).toLocaleDateString()}</span>
+                    <span>{employee.birthday ? formatBirthday(employee.birthday) : 'No especificada'}</span>
                   </div>
                   {employee.unavailableTimes.length > 0 && (
                     <div className="text-xs text-gray-500">
-                      {employee.unavailableTimes.length} restricción(es) de horario
+                      <div className="font-medium mb-1">Restricciones de horario:</div>
+                      {employee.unavailableTimes.map((ut, index) => (
+                        <div key={ut.id} className="ml-2">
+                          {getDayName(ut.dayOfWeek)}: {ut.startTime}-{ut.endTime}
+                        </div>
+                      ))}
                     </div>
                   )}
                 </div>

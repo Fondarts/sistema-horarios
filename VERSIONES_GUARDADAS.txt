@@ -10,6 +10,12 @@
                                 VERSIONES DISPONIBLES
 ================================================================================
 
+v1.9.0 - Fix statistics runtime error and add debug logs for availability conflicts
+- Fix timeToMinutes function to handle undefined values
+- Add comprehensive validation in detectCoverageProblems
+- Add debug logs to troubleshoot availability conflict detection
+- Improve error handling for missing or invalid data
+
 🏷️  TAG: v1.0-stable
 📝 COMMIT: e1571f5
 📅 Fecha: 13/10/2025

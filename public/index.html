@@ -14,6 +14,68 @@
   <body>
     <noscript>Necesitas habilitar JavaScript para ejecutar esta aplicación.</noscript>
     <div id="root"></div>
+    
+    <script>
+      // Forzar formato de 24 horas en todos los campos de tiempo
+      document.addEventListener('DOMContentLoaded', function() {
+        // Función para forzar formato de 24 horas
+        function force24HourFormat() {
+          const timeInputs = document.querySelectorAll('input[type="time"]');
+          timeInputs.forEach(input => {
+            // Agregar atributo para forzar formato de 24 horas
+            input.setAttribute('data-format', '24');
+            
+            // Ocultar elementos AM/PM si aparecen
+            const style = document.createElement('style');
+            style.textContent = `
+              input[type="time"]::-webkit-datetime-edit-ampm-field {
+                display: none !important;
+                visibility: hidden !important;
+                opacity: 0 !important;
+                width: 0 !important;
+                height: 0 !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                border: none !important;
+                position: absolute !important;
+                left: -9999px !important;
+              }
+            `;
+            document.head.appendChild(style);
+          });
+        }
+        
+        // Ejecutar inmediatamente
+        force24HourFormat();
+        
+        // Ejecutar cuando se agreguen nuevos elementos
+        const observer = new MutationObserver(function(mutations) {
+          mutations.forEach(function(mutation) {
+            if (mutation.type === 'childList') {
+              mutation.addedNodes.forEach(function(node) {
+                if (node.nodeType === 1) { // Element node
+                  if (node.tagName === 'INPUT' && node.type === 'time') {
+                    node.setAttribute('data-format', '24');
+                  }
+                  // Buscar inputs de tiempo en elementos agregados
+                  const timeInputs = node.querySelectorAll && node.querySelectorAll('input[type="time"]');
+                  if (timeInputs) {
+                    timeInputs.forEach(input => {
+                      input.setAttribute('data-format', '24');
+                    });
+                  }
+                }
+              });
+            }
+          });
+        });
+        
+        observer.observe(document.body, {
+          childList: true,
+          subtree: true
+        });
+      });
+    </script>
   </body>
 </html>
 

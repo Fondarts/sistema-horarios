@@ -48,7 +48,7 @@ const mockEmployees: Employee[] = [
         endTime: '18:00'
       }
     ],
-    birthday: '1995-04-10',
+    birthday: '10/04/1995',
     isActive: true,
     color: '#3B82F6' // Azul
   },
@@ -57,7 +57,7 @@ const mockEmployees: Employee[] = [
     name: 'Luis Gomez',
     weeklyLimit: 35,
     unavailableTimes: [],
-    birthday: '1990-08-15',
+    birthday: '15/08/1990',
     isActive: true,
     color: '#10B981' // Verde
   },
@@ -73,7 +73,7 @@ const mockEmployees: Employee[] = [
         endTime: '23:59'
       }
     ],
-    birthday: '1988-12-03',
+    birthday: '03/12/1988',
     isActive: true,
     color: '#F59E0B' // Amarillo
   },
@@ -89,7 +89,7 @@ const mockEmployees: Employee[] = [
         endTime: '12:00'
       }
     ],
-    birthday: '1992-07-22',
+    birthday: '22/07/1992',
     isActive: true,
     color: '#EF4444' // Rojo
   },
@@ -98,7 +98,7 @@ const mockEmployees: Employee[] = [
     name: 'Sofia Lopez',
     weeklyLimit: 38,
     unavailableTimes: [],
-    birthday: '1996-03-14',
+    birthday: '14/03/1996',
     isActive: true,
     color: '#8B5CF6' // Púrpura
   },
@@ -114,7 +114,7 @@ const mockEmployees: Employee[] = [
         endTime: '23:59'
       }
     ],
-    birthday: '1991-11-08',
+    birthday: '08/11/1991',
     isActive: true,
     color: '#06B6D4' // Cian
   },
@@ -123,7 +123,7 @@ const mockEmployees: Employee[] = [
     name: 'Valentina Torres',
     weeklyLimit: 32,
     unavailableTimes: [],
-    birthday: '1994-09-17',
+    birthday: '17/09/1994',
     isActive: true,
     color: '#F97316' // Naranja
   }

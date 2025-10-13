@@ -91,6 +91,8 @@ export function StoreSettings() {
                       value={schedule.openTime || '09:00'}
                       onChange={(e) => handleScheduleChange(schedule.id, { openTime: e.target.value })}
                       className="input-field text-sm"
+                      step="60"
+                      data-format="24"
                     />
                   </div>
                   <span className="text-gray-500">-</span>
@@ -101,6 +103,8 @@ export function StoreSettings() {
                       value={schedule.closeTime || '20:00'}
                       onChange={(e) => handleScheduleChange(schedule.id, { closeTime: e.target.value })}
                       className="input-field text-sm"
+                      step="60"
+                      data-format="24"
                     />
                   </div>
                 </div>
@@ -182,6 +186,8 @@ export function StoreSettings() {
                         value={exceptionForm.openTime}
                         onChange={(e) => setExceptionForm(prev => ({ ...prev, openTime: e.target.value }))}
                         className="input-field"
+                        step="60"
+                        data-format="24"
                       />
                       <span className="text-gray-500">-</span>
                       <input
@@ -189,6 +195,8 @@ export function StoreSettings() {
                         value={exceptionForm.closeTime}
                         onChange={(e) => setExceptionForm(prev => ({ ...prev, closeTime: e.target.value }))}
                         className="input-field"
+                        step="60"
+                        data-format="24"
                       />
                     </div>
                   </div>

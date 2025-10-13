@@ -667,6 +667,8 @@ export default function ScheduleManagement() {
                     value={shiftForm.startTime}
                     onChange={(e) => setShiftForm(prev => ({ ...prev, startTime: e.target.value }))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    step="60"
+                    data-format="24"
                     required
                   />
                 </div>
@@ -679,6 +681,8 @@ export default function ScheduleManagement() {
                     value={shiftForm.endTime}
                     onChange={(e) => setShiftForm(prev => ({ ...prev, endTime: e.target.value }))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    step="60"
+                    data-format="24"
                     required
                   />
                 </div>
