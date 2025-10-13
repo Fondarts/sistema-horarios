@@ -141,8 +141,6 @@ export default function ScheduleManagement() {
   };
 
   const openEditShiftModal = (shift: Shift) => {
-    console.log('openEditShiftModal called with shift:', shift);
-    console.log('editingShift will be set to:', shift);
     setModalEmployee(employees.find(emp => emp.id === shift.employeeId) || null);
     setEditingShift(shift);
     setShiftForm({
@@ -209,100 +207,6 @@ export default function ScheduleManagement() {
     }
   };
 
-  const handleGridMouseDown = (e: React.MouseEvent) => {
-    console.log('handleGridMouseDown called, isDraggingOrResizing:', isDraggingOrResizing);
-    console.log('target:', e.target);
-    console.log('target classes:', (e.target as HTMLElement).classList);
-    
-    // No procesar si se está haciendo drag o resize
-    if (isDraggingOrResizing) {
-      console.log('Ignoring mouseDown - isDraggingOrResizing is true');
-      return;
-    }
-
-    // Solo procesar si se hace clic en el grid, no en las barras
-    if ((e.target as HTMLElement).closest('.shift-bar')) {
-      console.log('Ignoring mouseDown - clicked on shift bar');
-      return;
-    }
-
-    // No procesar si se hace clic en un handle de resize
-    if ((e.target as HTMLElement).classList.contains('cursor-ew-resize')) {
-      console.log('Ignoring mouseDown - clicked on resize handle');
-      return;
-    }
-
-    // Guardar la posición inicial para detectar si es un clic simple
-    setDragStart({ x: e.clientX, y: e.clientY });
-    setIsDraggingOrResizing(true);
-  };
-
-  const handleGridMouseUp = (e: React.MouseEvent) => {
-    console.log('handleGridMouseUp called, isDraggingOrResizing:', isDraggingOrResizing);
-    
-    if (!isDraggingOrResizing) return;
-    
-    // Verificar si fue un clic simple (sin movimiento significativo)
-    const deltaX = Math.abs(e.clientX - dragStart.x);
-    const deltaY = Math.abs(e.clientY - dragStart.y);
-    
-    if (deltaX < 5 && deltaY < 5) {
-      console.log('Processing grid click - opening modal');
-      if (!ganttRef.current) {
-        setIsDraggingOrResizing(false);
-        return;
-      }
-
-    const rect = ganttRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-
-    // Calcular qué día y hora se hizo clic
-    const dayColumnWidth = 200;
-    const hourColumnWidth = getColumnWidth();
-    
-    // Determinar el día
-    const dayIndex = Math.floor(y / 120); // 120px es la altura mínima de cada fila
-    if (dayIndex < 0 || dayIndex >= weekDays.length) return;
-    
-    const clickedDay = weekDays[dayIndex];
-    
-    // Determinar la hora
-    const xInGrid = x - dayColumnWidth;
-    if (xInGrid < 0) return;
-    
-    const hourIndex = Math.floor(xInGrid / hourColumnWidth);
-    if (hourIndex < 0 || hourIndex >= hours.length) return;
-    
-    const clickedHour = hours[hourIndex];
-    
-    // Calcular la hora de fin (1 hora después, o la siguiente hora disponible)
-    let endHour = hours[Math.min(hourIndex + 1, hours.length - 1)];
-    if (hourIndex === hours.length - 1) {
-      // Si es la última hora, usar la misma hora como fin
-      endHour = clickedHour;
-    }
-    
-    // Convertir números a strings en formato HH:MM
-    const formatHourToString = (hour: number): string => {
-      return hour.toString().padStart(2, '0') + ':00';
-    };
-    
-      // Abrir modal con la fecha y hora pre-seleccionadas
-      setModalEmployee(null);
-      setEditingShift(null);
-      setShiftForm({
-        date: format(clickedDay, 'yyyy-MM-dd'),
-        startTime: formatHourToString(clickedHour),
-        endTime: formatHourToString(endHour),
-        employeeId: ''
-      });
-      setShowShiftModal(true);
-    }
-    
-    // Resetear el estado
-    setIsDraggingOrResizing(false);
-  };
 
   const publishWeekShifts = () => {
     const unpublishedShifts = weekShifts.filter(s => !s.isPublished);
@@ -573,8 +477,6 @@ export default function ScheduleManagement() {
     };
   }, [draggedShift, resizingShift, resizeHandle, hours, updateShift, timeToMinutes, minutesToTime, roundToIncrement]);
 
-  // Debug log for modal state
-  console.log('ScheduleManagement render - editingShift:', editingShift, 'showShiftModal:', showShiftModal);
 
   return (
     <div className="space-y-6">
@@ -724,10 +626,7 @@ export default function ScheduleManagement() {
           {/* Gantt Grid */}
           <div
             ref={ganttRef}
-            className="relative cursor-pointer hover:bg-gray-50 transition-colors duration-200"
-            onMouseDown={handleGridMouseDown}
-            onMouseUp={handleGridMouseUp}
-            title="Haz clic en un espacio vacío para crear un turno"
+            className="relative"
           >
             {weekDays.map((day) => {
               // Get employees working on this day
@@ -827,7 +726,6 @@ export default function ScheduleManagement() {
                           onDoubleClick={(e) => {
                             e.stopPropagation();
                             e.preventDefault();
-                            console.log('Double click on shift bar:', shift);
                             openEditShiftModal(shift);
                           }}
                         >
