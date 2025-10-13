@@ -110,11 +110,11 @@ export default function ScheduleManagement() {
     e.preventDefault();
   };
 
-  const createShift = (employeeId: string, date: string, hour: number) => {
+  const createShift = async (employeeId: string, date: string, hour: number) => {
     const startTime = `${hour.toString().padStart(2, '0')}:00`;
     const endTime = `${(hour + 8).toString().padStart(2, '0')}:00`;
     
-    const errors = addShift({
+    const errors = await addShift({
       employeeId,
       date,
       startTime,
@@ -164,7 +164,7 @@ export default function ScheduleManagement() {
     });
   };
 
-  const handleCreateOrUpdateShift = () => {
+  const handleCreateOrUpdateShift = async () => {
     if (!shiftForm.employeeId) return;
 
     const startHour = parseInt(shiftForm.startTime.split(':')[0]);
@@ -173,7 +173,7 @@ export default function ScheduleManagement() {
 
     if (editingShift) {
       // Actualizar turno existente
-      updateShift(editingShift.id, {
+      await updateShift(editingShift.id, {
         employeeId: shiftForm.employeeId,
         date: shiftForm.date,
         startTime: shiftForm.startTime,
@@ -182,7 +182,7 @@ export default function ScheduleManagement() {
       });
     } else {
       // Crear nuevo turno
-      const errors = addShift({
+      const errors = await addShift({
         employeeId: shiftForm.employeeId,
         date: shiftForm.date,
         startTime: shiftForm.startTime,
@@ -275,7 +275,7 @@ export default function ScheduleManagement() {
           };
           
           try {
-            addShift(newShift);
+            await addShift(newShift);
             copiedCount++;
           } catch (error) {
             console.error('Error al copiar turno:', error);
@@ -373,7 +373,7 @@ export default function ScheduleManagement() {
 
   // Global event listeners for drag and resize functionality
   useEffect(() => {
-    const handleGlobalMouseMove = (e: MouseEvent) => {
+    const handleGlobalMouseMove = async (e: MouseEvent) => {
       if (!ganttRef.current) return;
 
       const rect = ganttRef.current.getBoundingClientRect();
@@ -414,7 +414,7 @@ export default function ScheduleManagement() {
         const newEndTime = minutesToTime(roundToIncrement(newEndMinutes, 10));
 
         // Update shift in real time
-        updateShift(draggedShift.id, {
+        await updateShift(draggedShift.id, {
           date: draggedShift.date, // Keep same date for now
           startTime: newStartTime,
           endTime: newEndTime
@@ -430,7 +430,7 @@ export default function ScheduleManagement() {
           
           // Ensure start time is before end time (minimum 10 minutes)
           if (newTimeMinutes < endTimeMinutes - 10) {
-            updateShift(resizingShift.id, {
+            await updateShift(resizingShift.id, {
               date: resizingShift.date,
               startTime: newStartTime,
               endTime: resizingShift.endTime
@@ -444,7 +444,7 @@ export default function ScheduleManagement() {
           
           // Ensure end time is after start time (minimum 10 minutes)
           if (newTimeMinutes > startTimeMinutes + 10) {
-            updateShift(resizingShift.id, {
+            await updateShift(resizingShift.id, {
               date: resizingShift.date,
               startTime: resizingShift.startTime,
               endTime: newEndTime
