@@ -1,22 +1,22 @@
 import React from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { LoginScreen } from './LoginScreen';
+import LoginScreen from './LoginScreen';
 import { ManagerDashboard } from './ManagerDashboard';
-import { EmployeeDashboard } from './EmployeeDashboard';
+import EmployeeDashboard from './EmployeeDashboard';
 import { LoadingSpinner } from './LoadingSpinner';
 
 export function AppRouter() {
-  const { user, isLoading } = useAuth();
+  const { currentEmployee, isLoading, isManager } = useAuth();
 
   if (isLoading) {
     return <LoadingSpinner />;
   }
 
-  if (!user) {
+  if (!currentEmployee) {
     return <LoginScreen />;
   }
 
-  return user.role === 'encargado' ? <ManagerDashboard /> : <EmployeeDashboard />;
+  return isManager ? <ManagerDashboard /> : <EmployeeDashboard />;
 }
 
 

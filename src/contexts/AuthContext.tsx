@@ -1,90 +1,96 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { User, UserRole } from '../types';
+import { Employee } from '../types';
+import { useEmployees } from './EmployeeContext';
 
 interface AuthContextType {
-  user: User | null;
-  login: (username: string, password: string) => Promise<boolean>;
+  currentEmployee: Employee | null;
+  login: (name: string, pin: string) => { success: boolean; message: string };
   logout: () => void;
+  isAuthenticated: boolean;
+  isManager: boolean;
   isLoading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-// Usuarios de prueba según los features
-const mockUsers: User[] = [
-  {
-    id: '1',
-    username: 'encargado1',
-    password: '12345',
-    role: 'encargado',
-    name: 'Encargado Principal'
-  },
-  {
-    id: '2',
-    username: 'empleado1',
-    password: '67890',
-    role: 'empleado',
-    name: 'Ana Perez'
-  }
-];
 
 interface AuthProviderProps {
   children: ReactNode;
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  const [user, setUser] = useState<User | null>(null);
+  const { employees } = useEmployees();
+  const [currentEmployee, setCurrentEmployee] = useState<Employee | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Cargar empleado logueado desde localStorage al iniciar
   useEffect(() => {
-    // Verificar si hay un usuario guardado en localStorage
-    const savedUser = localStorage.getItem('user');
-    if (savedUser) {
+    const savedEmployee = localStorage.getItem('currentEmployee');
+    if (savedEmployee) {
       try {
-        setUser(JSON.parse(savedUser));
+        const employee = JSON.parse(savedEmployee);
+        // Verificar que el empleado aún existe en la lista actual
+        const existingEmployee = employees.find(emp => emp.id === employee.id);
+        if (existingEmployee) {
+          setCurrentEmployee(existingEmployee);
+        } else {
+          // Si el empleado ya no existe, limpiar la sesión
+          localStorage.removeItem('currentEmployee');
+        }
       } catch (error) {
-        console.error('Error parsing saved user:', error);
-        localStorage.removeItem('user');
+        console.error('Error loading saved employee:', error);
+        localStorage.removeItem('currentEmployee');
       }
     }
     setIsLoading(false);
-  }, []);
+  }, [employees]);
 
-  const login = async (username: string, password: string): Promise<boolean> => {
-    setIsLoading(true);
-    
-    // Simular delay de red
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    const foundUser = mockUsers.find(
-      u => u.username === username && u.password === password
-    );
-    
-    if (foundUser) {
-      setUser(foundUser);
-      localStorage.setItem('user', JSON.stringify(foundUser));
-      setIsLoading(false);
-      return true;
+  // Guardar empleado logueado en localStorage
+  useEffect(() => {
+    if (currentEmployee) {
+      localStorage.setItem('currentEmployee', JSON.stringify(currentEmployee));
+    } else {
+      localStorage.removeItem('currentEmployee');
     }
-    
-    setIsLoading(false);
-    return false;
+  }, [currentEmployee]);
+
+  const login = (name: string, pin: string): { success: boolean; message: string } => {
+    // Buscar empleado por nombre y PIN
+    const employee = employees.find(emp => 
+      emp.name.toLowerCase().trim() === name.toLowerCase().trim() && 
+      emp.pin === pin &&
+      emp.isActive
+    );
+
+    if (employee) {
+      setCurrentEmployee(employee);
+      return { 
+        success: true, 
+        message: `Bienvenido/a, ${employee.name}` 
+      };
+    } else {
+      return { 
+        success: false, 
+        message: 'Credenciales incorrectas o empleado inactivo' 
+      };
+    }
   };
 
   const logout = () => {
-    setUser(null);
-    localStorage.removeItem('user');
+    setCurrentEmployee(null);
   };
 
-  const value: AuthContextType = {
-    user,
-    login,
-    logout,
-    isLoading
-  };
+  const isAuthenticated = currentEmployee !== null;
+  const isManager = currentEmployee?.role === 'encargado';
 
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider value={{
+      currentEmployee,
+      login,
+      logout,
+      isAuthenticated,
+      isManager,
+      isLoading
+    }}>
       {children}
     </AuthContext.Provider>
   );
@@ -97,5 +103,3 @@ export function useAuth() {
   }
   return context;
 }
-
-
