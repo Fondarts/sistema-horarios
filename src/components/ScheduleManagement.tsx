@@ -50,8 +50,11 @@ export default function ScheduleManagement() {
     return { startHour: 8, endHour: 21 };
   };
 
-  const { startHour, endHour } = getStoreHoursRange();
-  const hours = Array.from({ length: endHour - startHour + 1 }, (_, i) => startHour + i);
+  // Siempre mostrar las 24 horas completas para permitir turnos fuera del horario de la tienda
+  const { startHour: storeStartHour, endHour: storeEndHour } = getStoreHoursRange();
+  const startHour = 0; // Siempre empezar desde las 00:00
+  const endHour = 23;  // Siempre terminar en las 23:00
+  const hours = Array.from({ length: 24 }, (_, i) => i); // 0-23 horas
 
   // Filtrar turnos de la semana actual
   const weekShifts = shifts.filter(shift => {
@@ -60,42 +63,26 @@ export default function ScheduleManagement() {
            (showUnpublished || shift.isPublished);
   });
 
+  // Utility functions for time calculations
+  const timeToMinutes = (time: string): number => {
+    const [hours, minutes] = time.split(':').map(Number);
+    return hours * 60 + minutes;
+  };
+
+  const minutesToTime = (minutes: number): string => {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+  };
+
+  const roundToIncrement = (minutes: number, increment: number = 10): number => {
+    return Math.round(minutes / increment) * increment;
+  };
+
   const handleMouseDown = (e: React.MouseEvent, shift: Shift) => {
     setDraggedShift(shift);
     setDragStart({ x: e.clientX, y: e.clientY });
     e.preventDefault();
-  };
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!draggedShift || !ganttRef.current) return;
-
-    const rect = ganttRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-
-    // Calcular nueva posición basada en la grilla
-    const dayWidth = rect.width / 7;
-    const hourHeight = rect.height / 24;
-
-    const newDayIndex = Math.floor(x / dayWidth);
-    const newHour = Math.floor(y / hourHeight);
-
-    if (newDayIndex >= 0 && newDayIndex < 7 && newHour >= 0 && newHour < 24) {
-      const newDate = addDays(weekStart, newDayIndex);
-      const newStartTime = `${newHour.toString().padStart(2, '0')}:00`;
-      const newEndTime = `${(newHour + draggedShift.hours).toString().padStart(2, '0')}:00`;
-
-      // Actualizar turno en tiempo real
-      updateShift(draggedShift.id, {
-        date: format(newDate, 'yyyy-MM-dd'),
-        startTime: newStartTime,
-        endTime: newEndTime
-      });
-    }
-  };
-
-  const handleMouseUp = () => {
-    setDraggedShift(null);
   };
 
   const createShift = (employeeId: string, date: string, hour: number) => {
@@ -212,6 +199,78 @@ export default function ScheduleManagement() {
     setCurrentWeek(prev => addDays(prev, direction === 'next' ? 7 : -7));
   };
 
+  // Auto-scroll to store hours on load
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  
+  useEffect(() => {
+    if (scrollContainerRef.current) {
+      // Scroll to show store hours (with some padding)
+      const storeStartPixel = storeStartHour * 60; // 60px per hour
+      const scrollPosition = Math.max(0, storeStartPixel - 120); // 2 hours before store opens
+      scrollContainerRef.current.scrollLeft = scrollPosition;
+    }
+  }, [storeStartHour]);
+
+  // Global event listeners for drag functionality
+  useEffect(() => {
+    const handleGlobalMouseMove = (e: MouseEvent) => {
+      if (!draggedShift || !ganttRef.current) return;
+
+      const rect = ganttRef.current.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      // Calculate which day column we're in (200px for day column + hour columns)
+      const dayColumnWidth = 200;
+      const hourColumnWidth = 60;
+      
+      if (x < dayColumnWidth) return; // Don't drag if in day column
+      
+      // Calculate which hour we're in
+      const hourX = x - dayColumnWidth;
+      const hourIndex = Math.floor(hourX / hourColumnWidth);
+      
+      if (hourIndex < 0 || hourIndex >= hours.length) return;
+      
+      // Calculate which 10-minute increment within the hour
+      const hourStartX = hourIndex * hourColumnWidth;
+      const positionInHour = hourX - hourStartX;
+      const minuteIncrement = Math.floor((positionInHour / hourColumnWidth) * 6); // 6 increments of 10min per hour
+      const minutes = Math.max(0, Math.min(50, minuteIncrement * 10)); // 0-50 minutes in 10min increments
+      
+      // Calculate new start time
+      const targetHour = hours[hourIndex];
+      const newStartMinutes = targetHour * 60 + minutes;
+      const newStartTime = minutesToTime(roundToIncrement(newStartMinutes, 10));
+      
+      // Calculate new end time maintaining the same duration
+      const originalDuration = timeToMinutes(draggedShift.endTime) - timeToMinutes(draggedShift.startTime);
+      const newEndMinutes = newStartMinutes + originalDuration;
+      const newEndTime = minutesToTime(roundToIncrement(newEndMinutes, 10));
+
+      // Update shift in real time
+      updateShift(draggedShift.id, {
+        date: draggedShift.date, // Keep same date for now
+        startTime: newStartTime,
+        endTime: newEndTime
+      });
+    };
+
+    const handleGlobalMouseUp = () => {
+      setDraggedShift(null);
+    };
+
+    if (draggedShift) {
+      document.addEventListener('mousemove', handleGlobalMouseMove);
+      document.addEventListener('mouseup', handleGlobalMouseUp);
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleGlobalMouseMove);
+      document.removeEventListener('mouseup', handleGlobalMouseUp);
+    };
+  }, [draggedShift, hours, updateShift, timeToMinutes, minutesToTime, roundToIncrement]);
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -322,27 +381,32 @@ export default function ScheduleManagement() {
       </div>
 
       {/* Gantt Chart */}
-      <div className="overflow-x-auto">
+      <div ref={scrollContainerRef} className="overflow-x-auto">
         <div className="min-w-full">
           {/* Header with hours */}
           <div className="grid border-b border-gray-200" style={{ gridTemplateColumns: `200px repeat(${hours.length}, 60px)` }}>
             <div className="p-3 font-medium text-gray-700 bg-gray-50">Día / Empleado</div>
-            {hours.map((hour) => (
-              <div key={hour} className="p-2 text-center border-l border-gray-200 bg-gray-50" style={{ width: '60px' }}>
-                <div className="text-xs text-gray-600">
-                  {hour}:00
+            {hours.map((hour) => {
+              // Check if this hour is within store hours
+              const isStoreHour = hour >= storeStartHour && hour <= storeEndHour;
+              return (
+                <div 
+                  key={hour} 
+                  className={`p-2 text-center border-l border-gray-200 ${isStoreHour ? 'bg-blue-50' : 'bg-gray-50'}`} 
+                  style={{ width: '60px' }}
+                >
+                  <div className={`text-xs ${isStoreHour ? 'text-blue-700 font-medium' : 'text-gray-600'}`}>
+                    {hour}:00
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Gantt Grid */}
           <div
             ref={ganttRef}
             className="relative"
-            onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseUp}
           >
             {weekDays.map((day) => {
               // Get employees working on this day
@@ -372,16 +436,23 @@ export default function ScheduleManagement() {
                   </div>
 
                   {/* Hours for this day */}
-                  {hours.map((hour) => (
-                    <div key={`${day.toISOString()}-${hour}`} className="relative border-r border-gray-200" style={{ height: '120px', width: '60px' }}>
-                      {/* Hour line */}
-                      <div className="absolute w-full border-t border-gray-100" style={{ top: '50%' }}>
-                        <div className="text-xs text-gray-400 px-1">
-                          {hour}:00
+                  {hours.map((hour) => {
+                    const isStoreHour = hour >= storeStartHour && hour <= storeEndHour;
+                    return (
+                      <div 
+                        key={`${day.toISOString()}-${hour}`} 
+                        className={`relative border-r border-gray-200 ${isStoreHour ? 'bg-blue-25' : ''}`} 
+                        style={{ height: '120px', width: '60px' }}
+                      >
+                        {/* Hour line */}
+                        <div className="absolute w-full border-t border-gray-100" style={{ top: '50%' }}>
+                          <div className={`text-xs px-1 ${isStoreHour ? 'text-blue-600' : 'text-gray-400'}`}>
+                            {hour}:00
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
 
                   {/* Shift bars for this day */}
                   {dayShifts.map((shift, shiftIndex) => {

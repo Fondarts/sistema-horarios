@@ -126,21 +126,23 @@ export function ScheduleProvider({ children }: ScheduleProviderProps) {
     const shiftDate = new Date(shift.date);
     const dayOfWeek = shiftDate.getDay();
 
-    // Validar horario de tienda
+    // Validar horario de tienda (solo para días cerrados, permitir turnos fuera del horario)
     const daySchedule = storeSchedule.find(s => s.dayOfWeek === dayOfWeek);
     if (!daySchedule?.isOpen) {
       errors.push({
         type: 'schedule',
         message: 'La tienda está cerrada este día'
       });
-    } else if (daySchedule.openTime && daySchedule.closeTime) {
-      if (shift.startTime < daySchedule.openTime || shift.endTime > daySchedule.closeTime) {
-        errors.push({
-          type: 'schedule',
-          message: 'Turno fuera del horario de tienda'
-        });
-      }
     }
+    // Comentado: Permitir turnos fuera del horario de tienda para inventarios, limpieza, etc.
+    // else if (daySchedule.openTime && daySchedule.closeTime) {
+    //   if (shift.startTime < daySchedule.openTime || shift.endTime > daySchedule.closeTime) {
+    //     errors.push({
+    //       type: 'schedule',
+    //       message: 'Turno fuera del horario de tienda'
+    //     });
+    //   }
+    // }
 
     // Validar excepciones
     const exception = storeExceptions.find(e => e.date === shift.date);
