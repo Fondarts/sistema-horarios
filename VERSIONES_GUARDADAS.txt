@@ -25,6 +25,11 @@
 📅 Fecha: 13/10/2025
 🎯 Estado: DRAG AVANZADO Y TURNOS 24H
 
+🏷️  TAG: v1.3-zoom-bars
+📝 COMMIT: 730e34c
+📅 Fecha: 13/10/2025
+🎯 Estado: ZOOM DE COLUMNAS Y BARRAS MEJORADAS
+
 DESCRIPCIÓN v1.0-stable:
 Esta es la versión base funcional del sistema de horarios. Incluye todas las
 funcionalidades básicas necesarias para el funcionamiento del sistema.
@@ -34,6 +39,9 @@ Versión con correcciones importantes al posicionamiento de barras y botón de e
 
 DESCRIPCIÓN v1.2-drag-24h:
 Versión con drag avanzado de 10 minutos y soporte completo para turnos de 24 horas.
+
+DESCRIPCIÓN v1.3-zoom-bars:
+Versión con zoom de columnas funcional y visualización mejorada de barras de turnos.
 
 FUNCIONALIDADES INCLUIDAS v1.0-stable:
 ✅ Vista de horarios con grid semanal
@@ -64,6 +72,17 @@ FUNCIONALIDADES INCLUIDAS v1.2-drag-24h:
 ✅ Permite turnos fuera del horario de apertura
 ✅ Validaciones corregidas para inventarios y limpieza
 ✅ Funciones de utilidad: timeToMinutes, minutesToTime, roundToIncrement
+
+FUNCIONALIDADES INCLUIDAS v1.3-zoom-bars:
+✅ Zoom de columnas con botones + y - (30% a 250%)
+✅ Incrementos suaves de 0.2 para cambios graduales
+✅ Ancho dinámico de columnas basado en zoom level
+✅ Auto-scroll que se ajusta al nivel de zoom
+✅ Horas totales en formato legible (ej: '7h 55m', '5h 50m')
+✅ Layout optimizado: horario a la izquierda, horas totales a la derecha
+✅ Padding mejorado con estilos inline (4px top, 8px bottom)
+✅ Función formatHours() para convertir decimales a formato legible
+✅ getColumnWidth() para calcular ancho dinámico de columnas
 
 ARCHIVOS PRINCIPALES:
 - src/components/ScheduleManagement.tsx (versión funcional básica)
@@ -156,4 +175,4 @@ git tag -a v1.1-nueva-funcionalidad -m "Descripción de la nueva funcionalidad"
                                 FIN DEL REGISTRO
 ================================================================================
 
-Última actualización: 13/10/2025 12:45:00
+Última actualización: 13/10/2025 13:15:00
