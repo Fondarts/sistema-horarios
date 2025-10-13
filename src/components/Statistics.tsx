@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useSchedule } from '../contexts/ScheduleContext';
 import { useEmployees } from '../contexts/EmployeeContext';
-import { BarChart3, TrendingUp, AlertTriangle, Users, Clock, X } from 'lucide-react';
+import { BarChart3, TrendingUp, AlertTriangle, Users, Clock, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Statistics as StatisticsType, Shift, Employee } from '../types';
+import { format, startOfWeek, endOfWeek, addWeeks, subWeeks } from 'date-fns';
+import { es } from 'date-fns/locale';
 
 // Función para formatear horas decimales a formato "Xh Ym"
 const formatHours = (decimalHours: number): string => {
@@ -168,18 +170,25 @@ const detectCoverageProblems = (shifts: Shift[], employees: Employee[], storeSch
 export function Statistics() {
   const { shifts, storeSchedule } = useSchedule();
   const { employees } = useEmployees();
+  
+  const [selectedWeek, setSelectedWeek] = useState(new Date());
 
   // Calcular estadísticas básicas (semanal)
-  const currentDate = new Date();
-  const startOfWeek = new Date(currentDate);
-  startOfWeek.setDate(currentDate.getDate() - currentDate.getDay() + 1); // Lunes
-  const endOfWeek = new Date(startOfWeek);
-  endOfWeek.setDate(startOfWeek.getDate() + 6); // Domingo
+  const weekStart = startOfWeek(selectedWeek, { weekStartsOn: 1 }); // Lunes
+  const weekEnd = endOfWeek(selectedWeek, { weekStartsOn: 1 }); // Domingo
+
+  const navigateWeek = (direction: 'prev' | 'next') => {
+    if (direction === 'prev') {
+      setSelectedWeek(prev => subWeeks(prev, 1));
+    } else {
+      setSelectedWeek(prev => addWeeks(prev, 1));
+    }
+  };
 
   const weeklyShifts = shifts.filter(shift => {
     const shiftDate = new Date(shift.date);
-    return shiftDate >= startOfWeek && 
-           shiftDate <= endOfWeek &&
+    return shiftDate >= weekStart && 
+           shiftDate <= weekEnd &&
            shift.isPublished;
   });
 
@@ -220,6 +229,37 @@ export function Statistics() {
       <div>
         <h2 className="text-2xl font-bold text-gray-900">Estadísticas</h2>
         <p className="text-gray-600">Métricas de cobertura y carga de trabajo</p>
+      </div>
+
+      {/* Week Navigation */}
+      <div className="card">
+        <div className="flex justify-between items-center">
+          <div className="flex items-center space-x-4">
+            <button
+              onClick={() => navigateWeek('prev')}
+              className="btn-secondary flex items-center space-x-2"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              <span>Semana Anterior</span>
+            </button>
+            <h3 className="text-lg font-semibold">
+              {format(weekStart, 'd MMM', { locale: es })} - {format(weekEnd, 'd MMM yyyy', { locale: es })}
+            </h3>
+            <button
+              onClick={() => navigateWeek('next')}
+              className="btn-secondary flex items-center space-x-2"
+            >
+              <span>Semana Siguiente</span>
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+          <button
+            onClick={() => setSelectedWeek(new Date())}
+            className="btn-secondary"
+          >
+            Esta Semana
+          </button>
+        </div>
       </div>
 
       {/* Summary Cards */}
