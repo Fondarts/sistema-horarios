@@ -7,6 +7,7 @@ interface EmployeeContextType {
   updateEmployee: (id: string, updates: Partial<Employee>) => void;
   deleteEmployee: (id: string) => void;
   getEmployee: (id: string) => Employee | undefined;
+  resetToMockEmployees: () => void;
   isLoading: boolean;
 }
 
@@ -38,7 +39,7 @@ const mockEmployees: Employee[] = [
   {
     id: '1',
     name: 'Ana Perez',
-    monthlyLimit: 160,
+    weeklyLimit: 40,
     unavailableTimes: [
       {
         id: '1',
@@ -54,11 +55,77 @@ const mockEmployees: Employee[] = [
   {
     id: '2',
     name: 'Luis Gomez',
-    monthlyLimit: 150,
+    weeklyLimit: 35,
     unavailableTimes: [],
     birthday: '1990-08-15',
     isActive: true,
     color: '#10B981' // Verde
+  },
+  {
+    id: '3',
+    name: 'María Rodriguez',
+    weeklyLimit: 30,
+    unavailableTimes: [
+      {
+        id: '2',
+        dayOfWeek: 0, // Domingo
+        startTime: '00:00',
+        endTime: '23:59'
+      }
+    ],
+    birthday: '1988-12-03',
+    isActive: true,
+    color: '#F59E0B' // Amarillo
+  },
+  {
+    id: '4',
+    name: 'Carlos Martinez',
+    weeklyLimit: 45,
+    unavailableTimes: [
+      {
+        id: '3',
+        dayOfWeek: 1, // Lunes
+        startTime: '09:00',
+        endTime: '12:00'
+      }
+    ],
+    birthday: '1992-07-22',
+    isActive: true,
+    color: '#EF4444' // Rojo
+  },
+  {
+    id: '5',
+    name: 'Sofia Lopez',
+    weeklyLimit: 38,
+    unavailableTimes: [],
+    birthday: '1996-03-14',
+    isActive: true,
+    color: '#8B5CF6' // Púrpura
+  },
+  {
+    id: '6',
+    name: 'Diego Fernandez',
+    weeklyLimit: 42,
+    unavailableTimes: [
+      {
+        id: '4',
+        dayOfWeek: 5, // Viernes
+        startTime: '18:00',
+        endTime: '23:59'
+      }
+    ],
+    birthday: '1991-11-08',
+    isActive: true,
+    color: '#06B6D4' // Cian
+  },
+  {
+    id: '7',
+    name: 'Valentina Torres',
+    weeklyLimit: 32,
+    unavailableTimes: [],
+    birthday: '1994-09-17',
+    isActive: true,
+    color: '#F97316' // Naranja
   }
 ];
 
@@ -124,12 +191,18 @@ export function EmployeeProvider({ children }: EmployeeProviderProps) {
     return employees.find(emp => emp.id === id);
   };
 
+  const resetToMockEmployees = () => {
+    localStorage.removeItem('employees');
+    setEmployees(mockEmployees);
+  };
+
   const value: EmployeeContextType = {
     employees,
     addEmployee,
     updateEmployee,
     deleteEmployee,
     getEmployee,
+    resetToMockEmployees,
     isLoading
   };
 

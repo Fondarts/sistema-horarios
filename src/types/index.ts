@@ -13,7 +13,7 @@ export interface User {
 export interface Employee {
   id: string;
   name: string;
-  monthlyLimit: number; // horas mensuales
+  weeklyLimit: number; // horas semanales
   unavailableTimes: UnavailableTime[];
   birthday: string; // formato YYYY-MM-DD
   isActive: boolean;
@@ -65,8 +65,8 @@ export interface ValidationError {
 export interface Statistics {
   employeeId: string;
   employeeName: string;
-  monthlyAssignedHours: number;
-  monthlyLimit: number;
+  weeklyAssignedHours: number;
+  weeklyLimit: number;
   daysSinceLastWeekendOff: number;
   busiestDayOfWeek: number;
   coverageIssues: CoverageIssue[];

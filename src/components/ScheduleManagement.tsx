@@ -23,6 +23,8 @@ export default function ScheduleManagement() {
   const [zoomLevel, setZoomLevel] = useState(1);
   const [draggedShift, setDraggedShift] = useState<Shift | null>(null);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [resizingShift, setResizingShift] = useState<Shift | null>(null);
+  const [resizeHandle, setResizeHandle] = useState<'start' | 'end' | null>(null);
   const ganttRef = useRef<HTMLDivElement>(null);
 
   const weekStart = startOfWeek(currentWeek, { weekStartsOn: 1 }); // Lunes
@@ -81,6 +83,14 @@ export default function ScheduleManagement() {
 
   const handleMouseDown = (e: React.MouseEvent, shift: Shift) => {
     setDraggedShift(shift);
+    setDragStart({ x: e.clientX, y: e.clientY });
+    e.preventDefault();
+  };
+
+  const handleResizeStart = (e: React.MouseEvent, shift: Shift, handle: 'start' | 'end') => {
+    e.stopPropagation(); // Prevent triggering drag
+    setResizingShift(shift);
+    setResizeHandle(handle);
     setDragStart({ x: e.clientX, y: e.clientY });
     e.preventDefault();
   };
@@ -255,10 +265,10 @@ export default function ScheduleManagement() {
     return () => window.removeEventListener('resize', handleResize);
   }, [zoomLevel]);
 
-  // Global event listeners for drag functionality
+  // Global event listeners for drag and resize functionality
   useEffect(() => {
     const handleGlobalMouseMove = (e: MouseEvent) => {
-      if (!draggedShift || !ganttRef.current) return;
+      if (!ganttRef.current) return;
 
       const rect = ganttRef.current.getBoundingClientRect();
       const x = e.clientX - rect.left;
@@ -282,29 +292,68 @@ export default function ScheduleManagement() {
       const minuteIncrement = Math.floor((positionInHour / hourColumnWidth) * 6); // 6 increments of 10min per hour
       const minutes = Math.max(0, Math.min(50, minuteIncrement * 10)); // 0-50 minutes in 10min increments
       
-      // Calculate new start time
+      // Calculate new time based on target hour and minutes
       const targetHour = hours[hourIndex];
-      const newStartMinutes = targetHour * 60 + minutes;
-      const newStartTime = minutesToTime(roundToIncrement(newStartMinutes, 10));
-      
-      // Calculate new end time maintaining the same duration
-      const originalDuration = timeToMinutes(draggedShift.endTime) - timeToMinutes(draggedShift.startTime);
-      const newEndMinutes = newStartMinutes + originalDuration;
-      const newEndTime = minutesToTime(roundToIncrement(newEndMinutes, 10));
+      const newTimeMinutes = targetHour * 60 + minutes;
+      const newTime = minutesToTime(roundToIncrement(newTimeMinutes, 10));
 
-      // Update shift in real time
-      updateShift(draggedShift.id, {
-        date: draggedShift.date, // Keep same date for now
-        startTime: newStartTime,
-        endTime: newEndTime
-      });
+      // Handle dragging
+      if (draggedShift) {
+        // Calculate new start time
+        const newStartTime = newTime;
+        
+        // Calculate new end time maintaining the same duration
+        const originalDuration = timeToMinutes(draggedShift.endTime) - timeToMinutes(draggedShift.startTime);
+        const newEndMinutes = newTimeMinutes + originalDuration;
+        const newEndTime = minutesToTime(roundToIncrement(newEndMinutes, 10));
+
+        // Update shift in real time
+        updateShift(draggedShift.id, {
+          date: draggedShift.date, // Keep same date for now
+          startTime: newStartTime,
+          endTime: newEndTime
+        });
+      }
+
+      // Handle resizing
+      if (resizingShift && resizeHandle) {
+        if (resizeHandle === 'start') {
+          // Resize start time, keep end time fixed
+          const newStartTime = newTime;
+          const endTimeMinutes = timeToMinutes(resizingShift.endTime);
+          
+          // Ensure start time is before end time (minimum 10 minutes)
+          if (newTimeMinutes < endTimeMinutes - 10) {
+            updateShift(resizingShift.id, {
+              date: resizingShift.date,
+              startTime: newStartTime,
+              endTime: resizingShift.endTime
+            });
+          }
+        } else if (resizeHandle === 'end') {
+          // Resize end time, keep start time fixed
+          const newEndTime = newTime;
+          const startTimeMinutes = timeToMinutes(resizingShift.startTime);
+          
+          // Ensure end time is after start time (minimum 10 minutes)
+          if (newTimeMinutes > startTimeMinutes + 10) {
+            updateShift(resizingShift.id, {
+              date: resizingShift.date,
+              startTime: resizingShift.startTime,
+              endTime: newEndTime
+            });
+          }
+        }
+      }
     };
 
     const handleGlobalMouseUp = () => {
       setDraggedShift(null);
+      setResizingShift(null);
+      setResizeHandle(null);
     };
 
-    if (draggedShift) {
+    if (draggedShift || resizingShift) {
       document.addEventListener('mousemove', handleGlobalMouseMove);
       document.addEventListener('mouseup', handleGlobalMouseUp);
     }
@@ -313,7 +362,7 @@ export default function ScheduleManagement() {
       document.removeEventListener('mousemove', handleGlobalMouseMove);
       document.removeEventListener('mouseup', handleGlobalMouseUp);
     };
-  }, [draggedShift, hours, updateShift, timeToMinutes, minutesToTime, roundToIncrement]);
+  }, [draggedShift, resizingShift, resizeHandle, hours, updateShift, timeToMinutes, minutesToTime, roundToIncrement]);
 
   return (
     <div className="space-y-6">
@@ -522,7 +571,7 @@ export default function ScheduleManagement() {
                     return (
                       <div
                         key={shift.id}
-                        className="absolute rounded cursor-move text-white text-xs"
+                        className="absolute rounded text-white text-xs"
                         style={{
                           left: `${left}px`,
                           width: `${width}px`,
@@ -532,20 +581,39 @@ export default function ScheduleManagement() {
                           backgroundColor: employee?.color || '#3B82F6',
                           padding: '4px 8px 8px 8px' // top right bottom left
                         }}
-                        onMouseDown={(e) => handleMouseDown(e, shift)}
-                        onDoubleClick={() => openEditShiftModal(shift)}
                       >
-                        <div className="font-medium text-xs truncate">
-                          {employee?.name}
+                        {/* Resize handle - Start (left) */}
+                        <div
+                          className="absolute left-0 top-0 w-2 h-full cursor-ew-resize bg-white bg-opacity-30 hover:bg-opacity-50 rounded-l"
+                          onMouseDown={(e) => handleResizeStart(e, shift, 'start')}
+                          title="Arrastra para cambiar hora de inicio"
+                        />
+                        
+                        {/* Main shift content */}
+                        <div
+                          className="w-full h-full cursor-move"
+                          onMouseDown={(e) => handleMouseDown(e, shift)}
+                          onDoubleClick={() => openEditShiftModal(shift)}
+                        >
+                          <div className="font-medium text-xs truncate">
+                            {employee?.name}
+                          </div>
+                          <div className="text-xs opacity-90 flex justify-between items-center">
+                            <span className="truncate">
+                              {shift.startTime}-{shift.endTime}
+                            </span>
+                            <span className="ml-2 flex-shrink-0">
+                              {formatHours(shift.hours)}
+                            </span>
+                          </div>
                         </div>
-                        <div className="text-xs opacity-90 flex justify-between items-center">
-                          <span className="truncate">
-                            {shift.startTime}-{shift.endTime}
-                          </span>
-                          <span className="ml-2 flex-shrink-0">
-                            {formatHours(shift.hours)}
-                          </span>
-                        </div>
+                        
+                        {/* Resize handle - End (right) */}
+                        <div
+                          className="absolute right-0 top-0 w-2 h-full cursor-ew-resize bg-white bg-opacity-30 hover:bg-opacity-50 rounded-r"
+                          onMouseDown={(e) => handleResizeStart(e, shift, 'end')}
+                          title="Arrastra para cambiar hora de fin"
+                        />
                       </div>
                     );
                   })}

@@ -4,12 +4,12 @@ import { Plus, Edit, Trash2, User, Clock, Calendar } from 'lucide-react';
 import { Employee, UnavailableTime } from '../types';
 
 export function EmployeeManagement() {
-  const { employees, addEmployee, updateEmployee, deleteEmployee } = useEmployees();
+  const { employees, addEmployee, updateEmployee, deleteEmployee, resetToMockEmployees } = useEmployees();
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
   const [formData, setFormData] = useState({
     name: '',
-    monthlyLimit: 160,
+    weeklyLimit: 40,
     birthday: '',
     color: '#3B82F6',
     unavailableTimes: [] as UnavailableTime[]
@@ -37,7 +37,7 @@ export function EmployeeManagement() {
   const resetForm = () => {
     setFormData({
       name: '',
-      monthlyLimit: 160,
+      weeklyLimit: 40,
       birthday: '',
       color: '#3B82F6',
       unavailableTimes: []
@@ -49,7 +49,7 @@ export function EmployeeManagement() {
   const handleEdit = (employee: Employee) => {
     setFormData({
       name: employee.name,
-      monthlyLimit: employee.monthlyLimit,
+      weeklyLimit: employee.weeklyLimit,
       birthday: employee.birthday,
       color: employee.color,
       unavailableTimes: employee.unavailableTimes
@@ -97,13 +97,22 @@ export function EmployeeManagement() {
           <h2 className="text-2xl font-bold text-gray-900">Gestión de Empleados</h2>
           <p className="text-gray-600">Administra la información de tus empleados</p>
         </div>
-        <button
-          onClick={() => setShowAddForm(true)}
-          className="btn-primary flex items-center"
-        >
-          <Plus className="w-5 h-5 mr-2" />
-          Agregar Empleado
-        </button>
+        <div className="flex gap-3">
+          <button
+            onClick={resetToMockEmployees}
+            className="btn-secondary flex items-center"
+          >
+            <User className="w-5 h-5 mr-2" />
+            Cargar Empleados de Prueba
+          </button>
+          <button
+            onClick={() => setShowAddForm(true)}
+            className="btn-primary flex items-center"
+          >
+            <Plus className="w-5 h-5 mr-2" />
+            Agregar Empleado
+          </button>
+        </div>
       </div>
 
       {/* Add/Edit Form */}
@@ -130,15 +139,15 @@ export function EmployeeManagement() {
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Tope Mensual (horas)
+                  Tope Semanal (horas)
                 </label>
                 <input
                   type="number"
-                  value={formData.monthlyLimit}
-                  onChange={(e) => setFormData(prev => ({ ...prev, monthlyLimit: parseInt(e.target.value) }))}
+                  value={formData.weeklyLimit}
+                  onChange={(e) => setFormData(prev => ({ ...prev, weeklyLimit: parseInt(e.target.value) }))}
                   className="input-field"
                   min="1"
-                  max="200"
+                  max="60"
                   required
                 />
               </div>
@@ -302,7 +311,7 @@ export function EmployeeManagement() {
                 <div className="space-y-2 text-sm">
                   <div className="flex items-center">
                     <Clock className="w-4 h-4 text-gray-400 mr-2" />
-                    <span>{employee.monthlyLimit}h/mes</span>
+                    <span>{employee.weeklyLimit}h/semana</span>
                   </div>
                   <div className="flex items-center">
                     <Calendar className="w-4 h-4 text-gray-400 mr-2" />
