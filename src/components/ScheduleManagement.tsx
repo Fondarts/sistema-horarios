@@ -612,8 +612,8 @@ export default function ScheduleManagement() {
               return (
                 <div 
                   key={hour} 
-                  className={`p-2 text-center border-l border-gray-200 ${isStoreHour ? 'bg-blue-50' : 'bg-gray-50'}`} 
-                  style={{ width: `${getColumnWidth()}px` }}
+                  className={`px-2 border-l border-gray-200 flex items-start justify-center ${isStoreHour ? 'bg-blue-50' : 'bg-gray-50'}`} 
+                  style={{ width: `${getColumnWidth()}px`, paddingTop: '4px', paddingBottom: '8px' }}
                 >
                   <div className={`text-xs ${isStoreHour ? 'text-blue-700 font-medium' : 'text-gray-600'}`}>
                     {hour}:00
@@ -636,7 +636,7 @@ export default function ScheduleManagement() {
               const employeesOnDay = Array.from(new Set(dayShifts.map(shift => shift.employeeId)));
               
               return (
-                <div key={day.toISOString()} className="grid border-b border-gray-100 relative" style={{ 
+                <div key={day.toISOString()} className="grid border-b border-gray-300 relative" style={{ 
                   gridTemplateColumns: `200px repeat(${hours.length}, ${getColumnWidth()}px)`, 
                   minHeight: '120px'
                 }}>
@@ -665,7 +665,7 @@ export default function ScheduleManagement() {
                         style={{ height: '120px', width: `${getColumnWidth()}px` }}
                       >
                         {/* Hour line */}
-                        <div className="absolute w-full border-t border-gray-100" style={{ top: '50%' }}>
+                        <div className="absolute w-full border-t border-gray-100" style={{ top: '0' }}>
                           <div className={`text-xs px-1 ${isStoreHour ? 'text-blue-600' : 'text-gray-400'}`}>
                             {hour}:00
                           </div>
@@ -691,9 +691,10 @@ export default function ScheduleManagement() {
                     // The grid has 200px for day/employee + hour columns (dynamic width based on zoom)
                     // Calculate position based on the actual shift start time relative to the visible range
                     const columnWidth = getColumnWidth();
-                    const left = 200 + ((shiftStartTimeInHours - startHour) * columnWidth); // 200px + (actual shift time - visible start time) * columnWidth
-                    const width = durationInHours * columnWidth; // hours * columnWidth
-                    const top = shiftIndex * 35 + 5;
+                    const margin = 2; // Small margin to prevent overlapping with hour labels
+                    const left = 200 + ((shiftStartTimeInHours - startHour) * columnWidth) + margin; // 200px + (actual shift time - visible start time) * columnWidth + margin
+                    const width = (durationInHours * columnWidth) - (margin * 2); // hours * columnWidth - margins on both sides
+                    const top = shiftIndex * 35 + 15; // Increased from 5 to 15 for better vertical spacing
                     
                     return (
                       <div
