@@ -141,6 +141,8 @@ export default function ScheduleManagement() {
   };
 
   const openEditShiftModal = (shift: Shift) => {
+    console.log('openEditShiftModal called with shift:', shift);
+    console.log('editingShift will be set to:', shift);
     setModalEmployee(employees.find(emp => emp.id === shift.employeeId) || null);
     setEditingShift(shift);
     setShiftForm({
@@ -819,7 +821,12 @@ export default function ScheduleManagement() {
                         <div
                           className="w-full h-full cursor-move"
                           onMouseDown={(e) => handleMouseDown(e, shift)}
-                          onDoubleClick={() => openEditShiftModal(shift)}
+                          onDoubleClick={(e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            console.log('Double click on shift bar:', shift);
+                            openEditShiftModal(shift);
+                          }}
                         >
                           <div className="font-medium text-xs truncate">
                             {employee?.name}
@@ -861,6 +868,8 @@ export default function ScheduleManagement() {
               <h3 className="text-lg font-medium text-gray-900">
                 {editingShift ? 'Editar Turno' : 'Crear Turno'}
               </h3>
+              {/* Debug info */}
+              {console.log('Modal rendering - editingShift:', editingShift, 'showShiftModal:', showShiftModal)}
               <button
                 onClick={closeShiftModal}
                 className="text-gray-400 hover:text-gray-600"
