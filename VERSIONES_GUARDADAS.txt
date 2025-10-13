@@ -16,7 +16,7 @@
 🎯 Estado: VERSIÓN ESTABLE FUNCIONAL
 
 🏷️  TAG: v1.1-fixes
-📝 COMMIT: (próximo commit)
+📝 COMMIT: 2dbd204
 📅 Fecha: 13/10/2025
 🎯 Estado: CORRECCIONES Y MEJORAS
 
