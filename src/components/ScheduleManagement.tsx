@@ -874,8 +874,10 @@ export default function ScheduleManagement() {
                       const totalHours = endHour - startHour + 1;
                       const startPosition = (shiftStartTimeInHours - startHour) / totalHours;
                       const durationPosition = durationInHours / totalHours;
-                      left = dayColumnWidth + (startPosition * (scrollContainerRef.current?.offsetWidth - dayColumnWidth || 0)) + margin;
-                      width = (durationPosition * (scrollContainerRef.current?.offsetWidth - dayColumnWidth || 0)) - (margin * 2);
+                      const containerWidth = scrollContainerRef.current?.offsetWidth || 800; // Fallback width
+                      const availableWidth = containerWidth - dayColumnWidth;
+                      left = dayColumnWidth + (startPosition * availableWidth) + margin;
+                      width = (durationPosition * availableWidth) - (margin * 2);
                     } else {
                       // En móvil mantener cálculo con columnas fijas
                       left = dayColumnWidth + (((shiftStartTimeInHours - startHour) / hourDivisor) * 80) + margin;
