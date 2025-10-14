@@ -554,37 +554,37 @@ export default function ScheduleManagement() {
         <div className="flex items-center space-x-4">
           
           {/* 24h Toggle */}
-          <div className="flex items-center space-x-2 bg-gray-100 rounded-lg p-2">
-            <label className="flex items-center space-x-2 cursor-pointer">
+          <div className="flex items-center space-x-1 bg-gray-100 dark:bg-gray-700 rounded p-1">
+            <label className="flex items-center space-x-1 cursor-pointer">
               <input
                 type="checkbox"
                 checked={show24Hours}
                 onChange={(e) => setShow24Hours(e.target.checked)}
-                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                className="w-3 h-3 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-1"
               />
-              <span className="text-sm text-gray-700 font-medium">
-                Ver 24 horas
+              <span className="text-xs text-gray-700 dark:text-gray-300 font-medium">
+                Ver 24h
               </span>
             </label>
           </div>
           
           <button
             onClick={() => setShowUnpublished(!showUnpublished)}
-            className={`flex items-center px-3 py-2 rounded-lg transition-colors ${
+            className={`flex items-center px-2 py-1 rounded text-xs transition-colors ${
               showUnpublished 
-                ? 'bg-primary-100 text-primary-700' 
-                : 'bg-gray-100 text-gray-700'
+                ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/20 dark:text-primary-300' 
+                : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
             }`}
           >
-            {showUnpublished ? <Eye className="w-4 h-4 mr-2" /> : <EyeOff className="w-4 h-4 mr-2" />}
-            {showUnpublished ? 'Ocultar Borradores' : 'Mostrar Borradores'}
+            {showUnpublished ? <Eye className="w-3 h-3 mr-1" /> : <EyeOff className="w-3 h-3 mr-1" />}
+            {showUnpublished ? 'Ocultar' : 'Mostrar'}
           </button>
           <button
             onClick={publishWeekShifts}
-            className="btn-primary flex items-center"
+            className="flex items-center px-2 py-1 bg-primary-600 hover:bg-primary-700 text-white text-xs rounded transition-colors"
           >
-            <Save className="w-5 h-5 mr-2" />
-            Publicar Cambios
+            <Save className="w-3 h-3 mr-1" />
+            Publicar
           </button>
         </div>
       </div>
@@ -592,39 +592,39 @@ export default function ScheduleManagement() {
       {/* Week Navigation */}
       <div className="card">
         <div className="flex justify-between items-center mb-4">
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2">
             <button
               onClick={() => navigateWeek('prev')}
-              className="btn-secondary"
+              className="px-3 py-1 bg-gray-200 hover:bg-gray-300 text-gray-800 text-sm rounded transition-colors dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200"
             >
-              ← Semana Anterior
+              ← Anterior
             </button>
-            <h3 className="text-lg font-semibold">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
               {format(weekStart, 'd MMM', { locale: es })} - {format(weekEnd, 'd MMM yyyy', { locale: es })}
             </h3>
             <button
               onClick={() => navigateWeek('next')}
-              className="btn-secondary"
+              className="px-3 py-1 bg-gray-200 hover:bg-gray-300 text-gray-800 text-sm rounded transition-colors dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200"
             >
-              Semana Siguiente →
+              Siguiente →
             </button>
             <button
               onClick={repeatPreviousWeek}
               disabled={isCopyingShifts}
-              className={`flex items-center space-x-2 ${
+              className={`flex items-center px-3 py-1 text-sm rounded transition-colors ${
                 isCopyingShifts 
-                  ? 'btn-secondary opacity-50 cursor-not-allowed' 
-                  : 'btn-primary hover:bg-primary-600'
+                  ? 'bg-gray-200 opacity-50 cursor-not-allowed text-gray-500 dark:bg-gray-700 dark:text-gray-400' 
+                  : 'bg-primary-600 hover:bg-primary-700 text-white'
               }`}
               title={isCopyingShifts ? "Copiando turnos..." : "Copiar todos los turnos de la semana anterior"}
             >
-              <Copy className={`w-4 h-4 ${isCopyingShifts ? 'animate-spin' : ''}`} />
-              <span>{isCopyingShifts ? 'Copiando...' : 'Repetir Semana Anterior'}</span>
+              <Copy className={`w-3 h-3 mr-1 ${isCopyingShifts ? 'animate-spin' : ''}`} />
+              <span>{isCopyingShifts ? 'Copiando...' : 'Repetir'}</span>
             </button>
           </div>
           <button
             onClick={() => setCurrentWeek(new Date())}
-            className="btn-secondary"
+            className="px-3 py-1 bg-gray-200 hover:bg-gray-300 text-gray-800 text-sm rounded transition-colors dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200"
           >
             Esta Semana
           </button>
