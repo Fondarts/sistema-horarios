@@ -589,73 +589,71 @@ export default function ScheduleManagement() {
         </div>
       </div>
 
+      {/* Employee Selection */}
+      <div className="card">
+        <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-2">Crear Turnos</h4>
+        <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+          Haz clic en un empleado para crear un turno manualmente
+        </p>
+        <div className="flex flex-wrap gap-2">
+          {employees.map((employee) => (
+            <button
+              key={employee.id}
+              onClick={() => openShiftModal({id: employee.id, name: employee.name})}
+              className="px-4 py-2 rounded-lg text-sm transition-colors bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 hover:border-primary-300 flex items-center gap-2"
+            >
+              <div 
+                className="w-3 h-3 rounded-full"
+                style={{ backgroundColor: employee.color }}
+              ></div>
+              {employee.name}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Week Navigation */}
       <div className="card">
-        <div className="flex justify-between items-center mb-4">
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={() => navigateWeek('prev')}
-              className="px-3 py-1 bg-gray-200 hover:bg-gray-300 text-gray-800 text-sm rounded transition-colors dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200"
-            >
-              ← Anterior
-            </button>
-            <button
-              onClick={() => navigateWeek('next')}
-              className="px-3 py-1 bg-gray-200 hover:bg-gray-300 text-gray-800 text-sm rounded transition-colors dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200"
-            >
-              Siguiente →
-            </button>
-            <button
-              onClick={repeatPreviousWeek}
-              disabled={isCopyingShifts}
-              className={`flex items-center px-3 py-1 text-sm rounded transition-colors ${
-                isCopyingShifts 
-                  ? 'bg-gray-200 opacity-50 cursor-not-allowed text-gray-500 dark:bg-gray-700 dark:text-gray-400' 
-                  : 'bg-primary-600 hover:bg-primary-700 text-white'
-              }`}
-              title={isCopyingShifts ? "Copiando turnos..." : "Copiar todos los turnos de la semana anterior"}
-            >
-              <Copy className={`w-3 h-3 mr-1 ${isCopyingShifts ? 'animate-spin' : ''}`} />
-              <span>{isCopyingShifts ? 'Copiando...' : 'Repetir'}</span>
-            </button>
-          </div>
-          
-          {/* Fecha centrada */}
-          <div className="flex-1 text-center">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 whitespace-nowrap">
-              {format(weekStart, 'd MMM', { locale: es })} - {format(weekEnd, 'd MMM yyyy', { locale: es })}
-            </h3>
-          </div>
-          
+        {/* Fecha centrada */}
+        <div className="text-center mb-4">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 whitespace-nowrap">
+            {format(weekStart, 'd MMM', { locale: es })} - {format(weekEnd, 'd MMM yyyy', { locale: es })}
+          </h3>
+        </div>
+
+        {/* Botones de navegación */}
+        <div className="flex justify-center items-center space-x-2">
+          <button
+            onClick={() => navigateWeek('prev')}
+            className="px-3 py-1 bg-gray-200 hover:bg-gray-300 text-gray-800 text-sm rounded transition-colors dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200"
+          >
+            ← Anterior
+          </button>
+          <button
+            onClick={() => navigateWeek('next')}
+            className="px-3 py-1 bg-gray-200 hover:bg-gray-300 text-gray-800 text-sm rounded transition-colors dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200"
+          >
+            Siguiente →
+          </button>
+          <button
+            onClick={repeatPreviousWeek}
+            disabled={isCopyingShifts}
+            className={`flex items-center px-3 py-1 text-sm rounded transition-colors ${
+              isCopyingShifts 
+                ? 'bg-gray-200 opacity-50 cursor-not-allowed text-gray-500 dark:bg-gray-700 dark:text-gray-400' 
+                : 'bg-primary-600 hover:bg-primary-700 text-white'
+            }`}
+            title={isCopyingShifts ? "Copiando turnos..." : "Copiar todos los turnos de la semana anterior"}
+          >
+            <Copy className={`w-3 h-3 mr-1 ${isCopyingShifts ? 'animate-spin' : ''}`} />
+            <span>{isCopyingShifts ? 'Copiando...' : 'Repetir'}</span>
+          </button>
           <button
             onClick={() => setCurrentWeek(new Date())}
             className="px-3 py-1 bg-gray-200 hover:bg-gray-300 text-gray-800 text-sm rounded transition-colors dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200"
           >
             Esta Semana
           </button>
-        </div>
-
-        {/* Employee Selection */}
-        <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-          <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-2">Crear Turnos</h4>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-            Haz clic en un empleado para crear un turno manualmente
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {employees.map((employee) => (
-              <button
-                key={employee.id}
-                onClick={() => openShiftModal({id: employee.id, name: employee.name})}
-                className="px-4 py-2 rounded-lg text-sm transition-colors bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 hover:border-primary-300 flex items-center gap-2"
-              >
-                <div 
-                  className="w-3 h-3 rounded-full"
-                  style={{ backgroundColor: employee.color }}
-                ></div>
-                {employee.name}
-              </button>
-            ))}
-          </div>
         </div>
       </div>
 
