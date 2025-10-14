@@ -12,18 +12,36 @@ const CompactModeContext = createContext<CompactModeContextType | undefined>(und
 
 export function CompactModeProvider({ children }: { children: ReactNode }) {
   const [isCompactMode, setIsCompactMode] = useState(false);
-  const [screenSize, setScreenSize] = useState({
-    width: 1024,
-    height: 768
+  const [screenSize, setScreenSize] = useState(() => {
+    // Inicializar con el tamaño real de la pantalla si está disponible
+    if (typeof window !== 'undefined') {
+      return {
+        width: window.innerWidth,
+        height: window.innerHeight
+      };
+    }
+    return {
+      width: 1024,
+      height: 768
+    };
   });
 
   // Inicializar tamaño de pantalla en el cliente
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      setScreenSize({
-        width: window.innerWidth,
-        height: window.innerHeight
-      });
+      const updateSize = () => {
+        setScreenSize({
+          width: window.innerWidth,
+          height: window.innerHeight
+        });
+      };
+      
+      // Actualizar inmediatamente
+      updateSize();
+      
+      // Escuchar cambios de tamaño
+      window.addEventListener('resize', updateSize);
+      return () => window.removeEventListener('resize', updateSize);
     }
   }, []);
 
@@ -35,26 +53,13 @@ export function CompactModeProvider({ children }: { children: ReactNode }) {
   // Auto-activar modo compacto en móviles
   useEffect(() => {
     console.log('CompactMode: isMobile =', isMobile, 'screenSize =', screenSize);
+    console.log('CompactMode: window.innerWidth =', typeof window !== 'undefined' ? window.innerWidth : 'N/A');
     if (isMobile) {
       console.log('CompactMode: Activando modo compacto automáticamente');
       setIsCompactMode(true);
     }
   }, [isMobile, screenSize]);
 
-  // Escuchar cambios de tamaño de ventana
-  useEffect(() => {
-    const handleResize = () => {
-      const newSize = {
-        width: window.innerWidth,
-        height: window.innerHeight
-      };
-      console.log('CompactMode: Resize detected:', newSize);
-      setScreenSize(newSize);
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
   const toggleCompactMode = () => {
     setIsCompactMode(prev => !prev);
