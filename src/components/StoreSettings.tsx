@@ -109,14 +109,13 @@ export function StoreSettings() {
 
         <div className="space-y-4">
           {storeSchedule.map((schedule) => (
-            <div key={schedule.id} className="flex items-center space-x-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-              <div className="w-24">
+            <div key={schedule.id} className={`p-4 bg-gray-50 dark:bg-gray-700 rounded-lg ${isMobile ? 'space-y-3' : 'flex items-center space-x-4'}`}>
+              {/* Día y checkbox */}
+              <div className={`${isMobile ? 'flex items-center justify-between' : 'w-24'}`}>
                 <span className="font-medium text-gray-900 dark:text-gray-100">
                   {getDayName(schedule.dayOfWeek)}
                 </span>
-              </div>
-              
-              <div className="flex items-center space-x-3">
+                
                 <label className="flex items-center">
                   <input
                     type="checkbox"
@@ -124,33 +123,61 @@ export function StoreSettings() {
                     onChange={(e) => handleScheduleChange(schedule.id, { isOpen: e.target.checked })}
                     className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                   />
-                  <span className="ml-2 text-sm text-gray-700">
+                  <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
                     {schedule.isOpen ? 'Abierto' : 'Cerrado'}
                   </span>
                 </label>
               </div>
 
+              {/* Horarios */}
               {schedule.isOpen && (
-                <div className="flex items-center space-x-3">
-                  <div>
-                    <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Abre</label>
-                    <TimeInput
-                      value={schedule.openTime || '09:00'}
-                      onChange={(value) => handleScheduleChange(schedule.id, { openTime: value })}
-                      className="input-field text-sm"
-                      placeholder="HH:MM"
-                    />
-                  </div>
-                  <span className="text-gray-500 dark:text-gray-400">-</span>
-                  <div>
-                    <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Cierra</label>
-                    <TimeInput
-                      value={schedule.closeTime || '20:00'}
-                      onChange={(value) => handleScheduleChange(schedule.id, { closeTime: value })}
-                      className="input-field text-sm"
-                      placeholder="HH:MM"
-                    />
-                  </div>
+                <div className={`${isMobile ? 'space-y-3' : 'flex items-center space-x-3'}`}>
+                  {isMobile ? (
+                    // Layout móvil: vertical
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Abre:</label>
+                        <TimeInput
+                          value={schedule.openTime || '09:00'}
+                          onChange={(value) => handleScheduleChange(schedule.id, { openTime: value })}
+                          className="input-field text-sm w-20"
+                          placeholder="HH:MM"
+                        />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Cierra:</label>
+                        <TimeInput
+                          value={schedule.closeTime || '20:00'}
+                          onChange={(value) => handleScheduleChange(schedule.id, { closeTime: value })}
+                          className="input-field text-sm w-20"
+                          placeholder="HH:MM"
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    // Layout desktop: horizontal
+                    <>
+                      <div>
+                        <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Abre</label>
+                        <TimeInput
+                          value={schedule.openTime || '09:00'}
+                          onChange={(value) => handleScheduleChange(schedule.id, { openTime: value })}
+                          className="input-field text-sm"
+                          placeholder="HH:MM"
+                        />
+                      </div>
+                      <span className="text-gray-500 dark:text-gray-400">-</span>
+                      <div>
+                        <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Cierra</label>
+                        <TimeInput
+                          value={schedule.closeTime || '20:00'}
+                          onChange={(value) => handleScheduleChange(schedule.id, { closeTime: value })}
+                          className="input-field text-sm"
+                          placeholder="HH:MM"
+                        />
+                      </div>
+                    </>
+                  )}
                 </div>
               )}
             </div>
