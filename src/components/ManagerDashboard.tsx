@@ -16,7 +16,6 @@ import { BirthdayNotification } from './BirthdayNotification';
 import { NotificationCenter } from './NotificationCenter';
 import { KeyboardShortcuts } from './KeyboardShortcuts';
 import { Logo } from './Logo';
-import { CompactModeDebug } from './CompactModeDebug';
 import { HamburgerMenu } from './HamburgerMenu';
 
 type TabType = 'schedule' | 'employees' | 'settings' | 'statistics' | 'export' | 'vacations' | 'holidays';
@@ -114,7 +113,6 @@ export function ManagerDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <CompactModeDebug />
       {/* Header */}
       <header className="bg-white shadow-sm border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

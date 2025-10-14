@@ -18,8 +18,6 @@ export default function ScheduleManagement() {
   const { isHoliday, getHolidayForDate } = useHolidays();
   const { isCompactMode, isMobile } = useCompactMode();
   
-  // Debug log
-  console.log('ScheduleManagement render: isCompactMode =', isCompactMode, 'isMobile =', isMobile);
   
   // Función para verificar si un empleado está de vacaciones en una fecha específica
   const isEmployeeOnVacation = (employeeId: string, date: string): boolean => {
@@ -350,13 +348,8 @@ export default function ScheduleManagement() {
   const getColumnWidth = () => {
     // En modo compacto, columnas más estrechas
     const baseWidth = isCompactMode ? 40 : 60;
-    console.log('ScheduleManagement: isCompactMode =', isCompactMode, 'baseWidth =', baseWidth, 'zoomLevel =', zoomLevel);
     return Math.round(baseWidth * zoomLevel);
   };
-
-  // Debug log después de definir getColumnWidth
-  console.log('ScheduleManagement: getColumnWidth() =', getColumnWidth());
-  console.log('ScheduleManagement: sidebar width =', isCompactMode ? '150px' : '200px');
 
   // Calculate minimum zoom level to fit visible hours in available width
   const getMinimumZoomForVisibleHours = () => {
@@ -699,8 +692,6 @@ export default function ScheduleManagement() {
               gridTemplateColumns: `${isCompactMode ? '150px' : '200px'} repeat(${hours.length}, ${getColumnWidth()}px)`,
               minWidth: 'max-content'
             }}
-            data-compact-mode={isCompactMode}
-            data-sidebar-width={isCompactMode ? '150px' : '200px'}
           >
             <div className={`${isCompactMode ? 'p-2' : 'p-3'} font-medium text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700 ${isCompactMode ? 'text-sm' : ''}`}>Día / Empleado</div>
             {hours.map((hour) => {
@@ -745,8 +736,6 @@ export default function ScheduleManagement() {
                     minHeight: '120px',
                     minWidth: 'max-content'
                   }}
-                  data-compact-mode={isCompactMode}
-                  data-sidebar-width={isCompactMode ? '150px' : '200px'}
                 >
                   {/* Day and employees */}
                   <div className={`${isCompactMode ? 'p-2' : 'p-3'} border-r border-gray-200 dark:border-gray-600 ${

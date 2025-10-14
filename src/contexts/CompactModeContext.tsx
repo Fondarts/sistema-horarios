@@ -52,13 +52,10 @@ export function CompactModeProvider({ children }: { children: ReactNode }) {
 
   // Auto-activar modo compacto en móviles
   useEffect(() => {
-    console.log('CompactMode: isMobile =', isMobile, 'screenSize =', screenSize);
-    console.log('CompactMode: window.innerWidth =', typeof window !== 'undefined' ? window.innerWidth : 'N/A');
     if (isMobile) {
-      console.log('CompactMode: Activando modo compacto automáticamente');
       setIsCompactMode(true);
     }
-  }, [isMobile, screenSize]);
+  }, [isMobile]);
 
 
   const toggleCompactMode = () => {
