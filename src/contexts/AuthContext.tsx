@@ -2,12 +2,16 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { Employee } from '../types';
 import { useEmployees } from './EmployeeContext';
 
+export type UserRole = 'employee' | 'manager' | 'district-manager';
+
 interface AuthContextType {
   currentEmployee: Employee | null;
+  userRole: UserRole | null;
   login: (name: string, pin: string) => Promise<{ success: boolean; message: string }>;
   logout: () => void;
   isAuthenticated: boolean;
   isManager: boolean;
+  isDistrictManager: boolean;
   isLoading: boolean;
 }
 
@@ -20,6 +24,7 @@ interface AuthProviderProps {
 export function AuthProvider({ children }: AuthProviderProps) {
   const { employees } = useEmployees();
   const [currentEmployee, setCurrentEmployee] = useState<Employee | null>(null);
+  const [userRole, setUserRole] = useState<UserRole | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   // Cargar empleado logueado desde localStorage al iniciar
@@ -55,7 +60,39 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const login = async (name: string, pin: string): Promise<{ success: boolean; message: string }> => {
     try {
-      // Buscar empleado por nombre y PIN
+      // Verificar si es un encargado de distrito (usuarios especiales)
+      const districtManagers = [
+        { name: 'admin', pin: 'admin123', role: 'district-manager' as UserRole },
+        { name: 'distrito', pin: 'distrito123', role: 'district-manager' as UserRole }
+      ];
+
+      const districtManager = districtManagers.find(dm => 
+        dm.name.toLowerCase() === name.toLowerCase() && dm.pin === pin
+      );
+
+      if (districtManager) {
+        // Crear un empleado temporal para district managers
+        const tempEmployee: Employee = {
+          id: 'district-manager',
+          name: 'Encargado de Distrito',
+          position: 'District Manager',
+          pin: pin,
+          color: '#8B5CF6',
+          monthlyHoursLimit: 0,
+          unavailableHours: [],
+          isActive: true,
+          isManager: true
+        };
+        
+        setCurrentEmployee(tempEmployee);
+        setUserRole(districtManager.role);
+        return { 
+          success: true, 
+          message: `Bienvenido/a, ${tempEmployee.name}` 
+        };
+      }
+
+      // Buscar empleado normal por nombre y PIN
       const employee = employees.find(emp => 
         emp.name.toLowerCase().trim() === name.toLowerCase().trim() && 
         emp.pin === pin &&
@@ -64,6 +101,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       if (employee) {
         setCurrentEmployee(employee);
+        setUserRole(employee.isManager ? 'manager' : 'employee');
         return { 
           success: true, 
           message: `Bienvenido/a, ${employee.name}` 
@@ -85,18 +123,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const logout = () => {
     setCurrentEmployee(null);
+    setUserRole(null);
   };
 
   const isAuthenticated = currentEmployee !== null;
-  const isManager = currentEmployee?.role === 'encargado';
+  const isManager = userRole === 'manager' || currentEmployee?.isManager;
+  const isDistrictManager = userRole === 'district-manager';
 
   return (
     <AuthContext.Provider value={{
       currentEmployee,
+      userRole,
       login,
       logout,
       isAuthenticated,
       isManager,
+      isDistrictManager,
       isLoading
     }}>
       {children}

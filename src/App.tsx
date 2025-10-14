@@ -8,6 +8,7 @@ import { NotificationStackProvider } from './contexts/NotificationStackContext';
 import { HolidayProvider } from './contexts/HolidayContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { CompactModeProvider } from './contexts/CompactModeContext';
+import { StoreProvider } from './contexts/StoreContext';
 import { AppRouter } from './components/AppRouter';
 import { NotificationStack } from './components/NotificationStack';
 
@@ -15,22 +16,24 @@ function App() {
   return (
     <ThemeProvider>
       <CompactModeProvider>
-        <EmployeeProvider>
-          <AuthProvider>
-            <HolidayProvider>
-              <NotificationProvider>
-                <NotificationStackProvider>
-                  <ScheduleProvider>
-                    <VacationProvider>
-                      <AppRouter />
-                      <NotificationStack />
-                    </VacationProvider>
-                  </ScheduleProvider>
-                </NotificationStackProvider>
-              </NotificationProvider>
-            </HolidayProvider>
-          </AuthProvider>
-        </EmployeeProvider>
+        <StoreProvider>
+          <EmployeeProvider>
+            <AuthProvider>
+              <HolidayProvider>
+                <NotificationProvider>
+                  <NotificationStackProvider>
+                    <ScheduleProvider>
+                      <VacationProvider>
+                        <AppRouter />
+                        <NotificationStack />
+                      </VacationProvider>
+                    </ScheduleProvider>
+                  </NotificationStackProvider>
+                </NotificationProvider>
+              </HolidayProvider>
+            </AuthProvider>
+          </EmployeeProvider>
+        </StoreProvider>
       </CompactModeProvider>
     </ThemeProvider>
   );
