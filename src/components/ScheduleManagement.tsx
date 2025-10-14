@@ -528,12 +528,30 @@ export default function ScheduleManagement() {
 
       // Handle dragging
       if (draggedShift) {
+        // Adjust for the initial click offset within the bar
+        const adjustedX = x - dragOffset;
+        const adjustedHourX = adjustedX - dayColumnWidth;
+        const adjustedHourIndex = Math.floor(adjustedHourX / hourColumnWidth);
+        
+        if (adjustedHourIndex < 0 || adjustedHourIndex >= hours.length) return;
+        
+        // Calculate which 10-minute increment within the hour
+        const adjustedHourStartX = adjustedHourIndex * hourColumnWidth;
+        const adjustedPositionInHour = adjustedHourX - adjustedHourStartX;
+        const adjustedMinuteIncrement = Math.floor((adjustedPositionInHour / hourColumnWidth) * 6); // 6 increments of 10min per hour
+        const adjustedMinutes = Math.max(0, Math.min(50, adjustedMinuteIncrement * 10)); // 0-50 minutes in 10min increments
+        
+        // Calculate new time based on target hour and minutes
+        const adjustedTargetHour = hours[adjustedHourIndex];
+        const adjustedNewTimeMinutes = adjustedTargetHour * 60 + adjustedMinutes;
+        const adjustedNewTime = minutesToTime(roundToIncrement(adjustedNewTimeMinutes, 10));
+        
         // Calculate new start time
-        const newStartTime = newTime;
+        const newStartTime = adjustedNewTime;
         
         // Calculate new end time maintaining the same duration
         const originalDuration = timeToMinutes(draggedShift.endTime) - timeToMinutes(draggedShift.startTime);
-        const newEndMinutes = newTimeMinutes + originalDuration;
+        const newEndMinutes = adjustedNewTimeMinutes + originalDuration;
         const newEndTime = minutesToTime(roundToIncrement(newEndMinutes, 10));
 
         // Validate that times are within visible range
