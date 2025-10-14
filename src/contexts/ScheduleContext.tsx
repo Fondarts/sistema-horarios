@@ -197,7 +197,6 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
 
         // Cleanup function
         return () => {
-          shiftsUnsubscribe();
           storeScheduleUnsubscribe();
           exceptionsUnsubscribe();
           templatesUnsubscribe();
