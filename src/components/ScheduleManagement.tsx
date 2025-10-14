@@ -919,30 +919,24 @@ export default function ScheduleManagement() {
                         left = dayColumnWidth + (startPosition * availableWidth) + 2;
                         width = (durationPosition * availableWidth) - 4;
                       } else {
-                        // En móvil: usar columnas fijas como antes, pero con ancho correcto
-                        const columnWidth = mobileHourColumnWidth; // Usar el ancho fijo definido en móvil
+                        // En móvil: calcular posición exacta basada en horas reales
+                        const columnWidth = mobileHourColumnWidth; // 57px por columna
                         
-                        // Encontrar índice de columna de inicio
-                        const startColumnIndex = hours.findIndex(hour => 
-                          shiftStartTimeInHours >= hour && shiftStartTimeInHours < hour + 2
-                        );
+                        // Calcular posición exacta dentro de la columna de 2 horas
+                        const startHourInColumn = shiftStartTimeInHours - Math.floor(shiftStartTimeInHours / 2) * 2;
+                        const endHourInColumn = shiftEndTimeInHours - Math.floor(shiftEndTimeInHours / 2) * 2;
                         
-                        // Encontrar índice de columna de fin
-                        const endColumnIndex = hours.findIndex(hour => 
-                          shiftEndTimeInHours <= hour + 2
-                        );
+                        // Encontrar la columna de inicio (cada columna representa 2 horas)
+                        const startColumnIndex = Math.floor(shiftStartTimeInHours / 2) - Math.floor(startHour / 2);
+                        const endColumnIndex = Math.floor(shiftEndTimeInHours / 2) - Math.floor(startHour / 2);
                         
-                        // Si no encuentra columna de inicio, usar la primera
-                        const actualStartIndex = startColumnIndex !== -1 ? startColumnIndex : 0;
+                        // Calcular posición exacta dentro de la columna
+                        const startPositionInColumn = (startHourInColumn / 2) * columnWidth;
+                        const endPositionInColumn = (endHourInColumn / 2) * columnWidth;
                         
-                        // Si no encuentra columna de fin, usar la última
-                        const actualEndIndex = endColumnIndex !== -1 ? endColumnIndex + 1 : hours.length;
-                        
-                        // Calcular posición y ancho
-                        left = dayColumnWidth + (actualStartIndex * columnWidth) + 2;
-                        width = ((actualEndIndex - actualStartIndex) * columnWidth) - 4;
-                        
-                        // Debug log
+                        // Calcular left y width
+                        left = dayColumnWidth + (startColumnIndex * columnWidth) + startPositionInColumn + 2;
+                        width = ((endColumnIndex - startColumnIndex) * columnWidth) + (endPositionInColumn - startPositionInColumn) - 4;
                       }
                       
                       const top = (isHolidayDay ? 55 : 15) + (currentIndex * 35);
