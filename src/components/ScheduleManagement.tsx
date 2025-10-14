@@ -186,9 +186,12 @@ export default function ScheduleManagement() {
     e.preventDefault(); // Prevenir scroll del chart
     setResizingShift(shift);
     setResizeHandle(handle);
+    const target = e.currentTarget as HTMLDivElement;
+    const rect = target.getBoundingClientRect();
     const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
     const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
     setDragStart({ x: clientX, y: clientY });
+    setDragOffset(clientX - rect.left); // Guardar offset del click dentro del handle
     setIsDraggingOrResizing(true);
   };
 
@@ -572,9 +575,27 @@ export default function ScheduleManagement() {
 
       // Handle resizing
       if (resizingShift && resizeHandle) {
+        // Adjust for the initial click offset within the handle
+        const adjustedX = x - dragOffset;
+        const adjustedHourX = adjustedX - dayColumnWidth;
+        const adjustedHourIndex = Math.floor(adjustedHourX / hourColumnWidth);
+        
+        if (adjustedHourIndex < 0 || adjustedHourIndex >= hours.length) return;
+        
+        // Calculate which 10-minute increment within the hour
+        const adjustedHourStartX = adjustedHourIndex * hourColumnWidth;
+        const adjustedPositionInHour = adjustedHourX - adjustedHourStartX;
+        const adjustedMinuteIncrement = Math.floor((adjustedPositionInHour / hourColumnWidth) * 6); // 6 increments of 10min per hour
+        const adjustedMinutes = Math.max(0, Math.min(50, adjustedMinuteIncrement * 10)); // 0-50 minutes in 10min increments
+        
+        // Calculate new time based on target hour and minutes
+        const adjustedTargetHour = hours[adjustedHourIndex];
+        const adjustedNewTimeMinutes = adjustedTargetHour * 60 + adjustedMinutes;
+        const adjustedNewTime = minutesToTime(roundToIncrement(adjustedNewTimeMinutes, 10));
+        
         if (resizeHandle === 'start') {
           // Resize start time, keep end time fixed
-          const newStartTime = newTime;
+          const newStartTime = adjustedNewTime;
           const endTimeMinutes = timeToMinutes(resizingShift.endTime);
           const newStartHour = parseInt(newStartTime.split(':')[0]);
           
@@ -582,7 +603,7 @@ export default function ScheduleManagement() {
           const minHour = show24Hours ? 0 : startHour;
           const maxHour = show24Hours ? 23 : endHour;
           
-          if (newTimeMinutes < endTimeMinutes - 10 && newStartHour >= minHour && newStartHour <= maxHour) {
+          if (adjustedNewTimeMinutes < endTimeMinutes - 10 && newStartHour >= minHour && newStartHour <= maxHour) {
             await updateShift(resizingShift.id, {
               date: resizingShift.date,
               startTime: newStartTime,
@@ -592,7 +613,7 @@ export default function ScheduleManagement() {
           }
         } else if (resizeHandle === 'end') {
           // Resize end time, keep start time fixed
-          const newEndTime = newTime;
+          const newEndTime = adjustedNewTime;
           const startTimeMinutes = timeToMinutes(resizingShift.startTime);
           const newEndHour = parseInt(newEndTime.split(':')[0]);
           
@@ -600,7 +621,7 @@ export default function ScheduleManagement() {
           const minHour = show24Hours ? 0 : startHour;
           const maxHour = show24Hours ? 23 : endHour;
           
-          if (newTimeMinutes > startTimeMinutes + 10 && newEndHour >= minHour && newEndHour <= maxHour) {
+          if (adjustedNewTimeMinutes > startTimeMinutes + 10 && newEndHour >= minHour && newEndHour <= maxHour) {
             await updateShift(resizingShift.id, {
               date: resizingShift.date,
               startTime: resizingShift.startTime,
