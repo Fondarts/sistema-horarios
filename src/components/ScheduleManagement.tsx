@@ -183,6 +183,7 @@ export default function ScheduleManagement() {
         const rect = target.getBoundingClientRect();
         const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
         setDragOffset(clientX - rect.left);
+        setDragStart({ x: clientX, y: 'touches' in e ? e.touches[0].clientY : e.clientY });
       };
 
   const handleResizeStart = (e: React.MouseEvent | React.TouchEvent, shift: Shift, handle: 'start' | 'end') => {
@@ -528,30 +529,24 @@ export default function ScheduleManagement() {
 
       // Handle dragging
       if (draggedShift) {
-        // Adjust for the initial click offset within the bar
-        const adjustedX = x - dragOffset;
-        const adjustedHourX = adjustedX - dayColumnWidth;
-        const adjustedHourIndex = Math.floor(adjustedHourX / hourColumnWidth);
+        // Calculate movement delta from initial click position
+        const deltaX = x - dragStart.x;
         
-        if (adjustedHourIndex < 0 || adjustedHourIndex >= hours.length) return;
+        // Convert current shift time to minutes
+        const currentStartMinutes = timeToMinutes(draggedShift.startTime);
+        const currentEndMinutes = timeToMinutes(draggedShift.endTime);
+        const duration = currentEndMinutes - currentStartMinutes;
         
-        // Calculate which 10-minute increment within the hour
-        const adjustedHourStartX = adjustedHourIndex * hourColumnWidth;
-        const adjustedPositionInHour = adjustedHourX - adjustedHourStartX;
-        const adjustedMinuteIncrement = Math.floor((adjustedPositionInHour / hourColumnWidth) * 6); // 6 increments of 10min per hour
-        const adjustedMinutes = Math.max(0, Math.min(50, adjustedMinuteIncrement * 10)); // 0-50 minutes in 10min increments
+        // Convert pixel movement to time movement (assuming 1 hour = hourColumnWidth pixels)
+        const minutesPerPixel = 60 / hourColumnWidth;
+        const deltaMinutes = Math.round(deltaX * minutesPerPixel);
         
-        // Calculate new time based on target hour and minutes
-        const adjustedTargetHour = hours[adjustedHourIndex];
-        const adjustedNewTimeMinutes = adjustedTargetHour * 60 + adjustedMinutes;
-        const adjustedNewTime = minutesToTime(roundToIncrement(adjustedNewTimeMinutes, 10));
+        // Calculate new times
+        const newStartMinutes = currentStartMinutes + deltaMinutes;
+        const newEndMinutes = newStartMinutes + duration;
         
-        // Calculate new start time
-        const newStartTime = adjustedNewTime;
-        
-        // Calculate new end time maintaining the same duration
-        const originalDuration = timeToMinutes(draggedShift.endTime) - timeToMinutes(draggedShift.startTime);
-        const newEndMinutes = adjustedNewTimeMinutes + originalDuration;
+        // Convert back to time strings
+        const newStartTime = minutesToTime(roundToIncrement(newStartMinutes, 10));
         const newEndTime = minutesToTime(roundToIncrement(newEndMinutes, 10));
 
         // Validate that times are within visible range
@@ -563,12 +558,12 @@ export default function ScheduleManagement() {
         const maxHour = show24Hours ? 23 : endHour;
         
         if (newStartHour >= minHour && newStartHour <= maxHour && newEndHour >= minHour && newEndHour <= maxHour) {
-          // Update shift in real time
-          await updateShift(draggedShift.id, {
-            date: draggedShift.date, // Keep same date for now
+          // Update local state for real-time preview
+          setDraggedShift(prev => prev ? {
+            ...prev,
             startTime: newStartTime,
             endTime: newEndTime
-          });
+          } : null);
         }
       }
 
@@ -614,11 +609,30 @@ export default function ScheduleManagement() {
       }
     };
 
-  const handleGlobalMouseUp = () => {
-    console.log('handleGlobalMouseUp called, isDraggingOrResizing:', isDraggingOrResizing);
-    setDraggedShift(null);
-    setResizingShift(null);
-    setResizeHandle(null);
+  const handleGlobalMouseUp = async () => {
+    if (draggedShift) {
+      // Save the final position to the database
+      await updateShift(draggedShift.id, {
+        date: draggedShift.date,
+        startTime: draggedShift.startTime,
+        endTime: draggedShift.endTime,
+        employeeId: draggedShift.employeeId,
+        isPublished: false, // Mark as unpublished after drag
+      });
+      setDraggedShift(null);
+    }
+    if (resizingShift) {
+      // Save the final position to the database
+      await updateShift(resizingShift.id, {
+        date: resizingShift.date,
+        startTime: resizingShift.startTime,
+        endTime: resizingShift.endTime,
+        employeeId: resizingShift.employeeId,
+        isPublished: false, // Mark as unpublished after resize
+      });
+      setResizingShift(null);
+      setResizeHandle(null);
+    }
     // Usar setTimeout para asegurar que el estado se actualice antes de que se procese el click
     setTimeout(() => {
       setIsDraggingOrResizing(false);
