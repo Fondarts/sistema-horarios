@@ -100,15 +100,27 @@ export default function EmployeeDashboard() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center">
-              <Logo />
-              <div className="ml-4">
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                  Mis Horarios
-                </h1>
-                <p className="text-gray-600 dark:text-gray-400">
-                  Bienvenido/a, {currentEmployee.name}
-                </p>
-              </div>
+              {/* Solo mostrar logo y título en desktop */}
+              {!isMobile ? (
+                <>
+                  <Logo />
+                  <div className="ml-4">
+                    <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                      Mis Horarios
+                    </h1>
+                    <p className="text-gray-600 dark:text-gray-400">
+                      Bienvenido/a, {currentEmployee.name}
+                    </p>
+                  </div>
+                </>
+              ) : (
+                /* En móvil solo mostrar saludo */
+                <div>
+                  <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                    Bienvenido/a, {currentEmployee.name}
+                  </h1>
+                </div>
+              )}
             </div>
             <div className="flex items-center space-x-4">
               {/* Menú hamburguesa - solo visible en móvil */}
