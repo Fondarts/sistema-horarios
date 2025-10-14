@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Download, CheckCircle, AlertCircle, RefreshCw, Plus } from 'lucide-react';
+import { Calendar, Download, CheckCircle, AlertCircle, RefreshCw, Plus, CalendarPlus } from 'lucide-react';
 import { format, addYears, isSameDay, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useHolidays, Holiday } from '../contexts/HolidayContext';
@@ -10,6 +10,13 @@ export function HolidayIntegration() {
   const [isLoadingLocal, setIsLoadingLocal] = useState(false);
   const [lastSync, setLastSync] = useState<string | null>(null);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [showCustomHolidayForm, setShowCustomHolidayForm] = useState(false);
+  const [customHolidayForm, setCustomHolidayForm] = useState({
+    name: '',
+    date: '',
+    description: '',
+    type: 'local' as 'national' | 'regional' | 'local'
+  });
 
   // Feriados fijos de España
   const getFixedHolidays = (year: number): Holiday[] => {
@@ -21,7 +28,9 @@ export function HolidayIntegration() {
         type: 'national',
         description: 'Día de Año Nuevo',
         isRecurring: true,
-        addedToCalendar: false
+        addedToCalendar: false,
+        year: year,
+        year: year
       },
       {
         id: `epiphany-${year}`,
@@ -30,7 +39,8 @@ export function HolidayIntegration() {
         type: 'national',
         description: 'Día de Reyes',
         isRecurring: true,
-        addedToCalendar: false
+        addedToCalendar: false,
+        year: year
       },
       {
         id: `good-friday-${year}`,
@@ -39,7 +49,8 @@ export function HolidayIntegration() {
         type: 'national',
         description: 'Viernes Santo',
         isRecurring: true,
-        addedToCalendar: false
+        addedToCalendar: false,
+        year: year
       },
       {
         id: `labour-day-${year}`,
@@ -48,7 +59,8 @@ export function HolidayIntegration() {
         type: 'national',
         description: 'Día Internacional del Trabajador',
         isRecurring: true,
-        addedToCalendar: false
+        addedToCalendar: false,
+        year: year
       },
       {
         id: `assumption-${year}`,
@@ -57,7 +69,8 @@ export function HolidayIntegration() {
         type: 'national',
         description: 'Asunción de la Virgen María',
         isRecurring: true,
-        addedToCalendar: false
+        addedToCalendar: false,
+        year: year
       },
       {
         id: `hispanic-day-${year}`,
@@ -66,7 +79,8 @@ export function HolidayIntegration() {
         type: 'national',
         description: 'Día de la Hispanidad',
         isRecurring: true,
-        addedToCalendar: false
+        addedToCalendar: false,
+        year: year
       },
       {
         id: `all-saints-${year}`,
@@ -75,7 +89,8 @@ export function HolidayIntegration() {
         type: 'national',
         description: 'Día de Todos los Santos',
         isRecurring: true,
-        addedToCalendar: false
+        addedToCalendar: false,
+        year: year
       },
       {
         id: `constitution-day-${year}`,
@@ -84,7 +99,8 @@ export function HolidayIntegration() {
         type: 'national',
         description: 'Día de la Constitución Española',
         isRecurring: true,
-        addedToCalendar: false
+        addedToCalendar: false,
+        year: year
       },
       {
         id: `immaculate-${year}`,
@@ -93,7 +109,8 @@ export function HolidayIntegration() {
         type: 'national',
         description: 'Inmaculada Concepción',
         isRecurring: true,
-        addedToCalendar: false
+        addedToCalendar: false,
+        year: year
       },
       {
         id: `christmas-${year}`,
@@ -102,7 +119,8 @@ export function HolidayIntegration() {
         type: 'national',
         description: 'Día de Navidad',
         isRecurring: true,
-        addedToCalendar: false
+        addedToCalendar: false,
+        year: year
       }
     ];
   };
@@ -141,12 +159,24 @@ export function HolidayIntegration() {
         type: 'national',
         description: 'Viernes Santo',
         isRecurring: true,
-        addedToCalendar: false
+        addedToCalendar: false,
+        year: year
       }
     ];
   };
 
-  const loadHolidays = async (year: number) => {
+  const loadHolidays = async (year: number, forceSync = false) => {
+    // Verificar si ya se sincronizó este mes
+    const lastSyncKey = `holidays_sync_${year}_${new Date().getMonth()}`;
+    const lastSyncDate = localStorage.getItem(lastSyncKey);
+    const currentMonth = new Date().getMonth();
+    const lastSyncMonth = lastSyncDate ? new Date(lastSyncDate).getMonth() : -1;
+    
+    // Solo sincronizar si es un mes diferente o si se fuerza
+    if (!forceSync && lastSyncMonth === currentMonth && localHolidays.length > 0) {
+      return; // Ya se sincronizó este mes
+    }
+    
     setIsLoadingLocal(true);
     
     try {
@@ -164,6 +194,9 @@ export function HolidayIntegration() {
       
       setLocalHolidays(uniqueHolidays);
       setLastSync(new Date().toISOString());
+      
+      // Guardar fecha de sincronización
+      localStorage.setItem(lastSyncKey, new Date().toISOString());
     } catch (error) {
       console.error('Error loading holidays:', error);
     } finally {
@@ -176,7 +209,28 @@ export function HolidayIntegration() {
   }, [selectedYear]);
 
   const handleSyncHolidays = () => {
-    loadHolidays(selectedYear);
+    loadHolidays(selectedYear, true); // Forzar sincronización
+  };
+
+  const handleAddCustomHoliday = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    try {
+      await addHolidayToCalendar({
+        date: customHolidayForm.date,
+        name: customHolidayForm.name,
+        type: customHolidayForm.type,
+        description: customHolidayForm.description,
+        isRecurring: false,
+        addedToCalendar: true,
+        year: selectedYear
+      });
+      
+      setCustomHolidayForm({ name: '', date: '', description: '', type: 'local' });
+      setShowCustomHolidayForm(false);
+    } catch (error) {
+      console.error('Error adding custom holiday:', error);
+    }
   };
 
   const handleAddToCalendar = async (holiday: Holiday) => {
@@ -260,16 +314,23 @@ export function HolidayIntegration() {
             })}
           </select>
           <button
+            onClick={() => setShowCustomHolidayForm(true)}
+            className="btn-secondary flex items-center"
+          >
+            <CalendarPlus className="w-5 h-5 mr-2" />
+            Agregar Feriado
+          </button>
+          <button
             onClick={handleSyncHolidays}
-            disabled={isLoading}
+            disabled={isLoadingLocal}
             className="btn-primary flex items-center"
           >
-            {isLoading ? (
+            {isLoadingLocal ? (
               <RefreshCw className="w-5 h-5 mr-2 animate-spin" />
             ) : (
               <Download className="w-5 h-5 mr-2" />
             )}
-            {isLoading ? 'Sincronizando...' : 'Sincronizar'}
+            {isLoadingLocal ? 'Sincronizando...' : 'Sincronizar'}
           </button>
         </div>
       </div>
@@ -283,6 +344,89 @@ export function HolidayIntegration() {
               Última sincronización: {format(parseISO(lastSync), 'dd/MM/yyyy HH:mm', { locale: es })}
             </span>
           </div>
+        </div>
+      )}
+
+      {/* Custom Holiday Form */}
+      {showCustomHolidayForm && (
+        <div className="card">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+            Agregar Feriado Personalizado
+          </h3>
+          
+          <form onSubmit={handleAddCustomHoliday} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Nombre del Feriado
+                </label>
+                <input
+                  type="text"
+                  value={customHolidayForm.name}
+                  onChange={(e) => setCustomHolidayForm({ ...customHolidayForm, name: e.target.value })}
+                  className="input-field"
+                  placeholder="Ej: Aniversario del Local"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Fecha
+                </label>
+                <input
+                  type="date"
+                  value={customHolidayForm.date}
+                  onChange={(e) => setCustomHolidayForm({ ...customHolidayForm, date: e.target.value })}
+                  className="input-field"
+                  required
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Tipo
+              </label>
+              <select
+                value={customHolidayForm.type}
+                onChange={(e) => setCustomHolidayForm({ ...customHolidayForm, type: e.target.value as 'national' | 'regional' | 'local' })}
+                className="input-field"
+              >
+                <option value="local">Local</option>
+                <option value="regional">Regional</option>
+                <option value="national">Nacional</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Descripción
+              </label>
+              <textarea
+                value={customHolidayForm.description}
+                onChange={(e) => setCustomHolidayForm({ ...customHolidayForm, description: e.target.value })}
+                className="input-field"
+                rows={3}
+                placeholder="Descripción del feriado..."
+              />
+            </div>
+
+            <div className="flex gap-3">
+              <button type="submit" className="btn-primary">
+                Agregar Feriado
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowCustomHolidayForm(false);
+                  setCustomHolidayForm({ name: '', date: '', description: '', type: 'local' });
+                }}
+                className="btn-secondary"
+              >
+                Cancelar
+              </button>
+            </div>
+          </form>
         </div>
       )}
 
