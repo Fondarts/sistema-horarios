@@ -4,6 +4,8 @@ import { Employee } from '../types';
 import { format, addDays, isAfter, isBefore, differenceInDays } from 'date-fns';
 import { es } from 'date-fns/locale';
 
+export {};
+
 interface NotificationCenterProps {
   employees: Employee[];
   currentEmployee: Employee | null;

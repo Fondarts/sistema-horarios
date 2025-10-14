@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useSchedule } from '../contexts/ScheduleContext';
 import { useEmployees } from '../contexts/EmployeeContext';
-import { format, startOfWeek, endOfWeek, eachDayOfInterval } from 'date-fns';
+import { format, startOfWeek, endOfWeek, eachDayOfInterval, addWeeks, subWeeks } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { ChevronLeft, ChevronRight, LogOut, Calendar, Clock } from 'lucide-react';
+import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { ThemeToggle } from './ThemeToggle';
 import { BirthdayNotification } from './BirthdayNotification';
 import { NotificationCenter } from './NotificationCenter';
+import { KeyboardShortcuts } from './KeyboardShortcuts';
 
 export default function EmployeeDashboard() {
   const { currentEmployee, logout } = useAuth();
@@ -15,6 +17,27 @@ export default function EmployeeDashboard() {
   const { employees } = useEmployees();
   const [currentWeek, setCurrentWeek] = useState(new Date());
   const [showBirthdayNotification, setShowBirthdayNotification] = useState(true);
+  const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
+
+  // Atajos de teclado para empleados
+  useKeyboardShortcuts([
+    {
+      key: '/',
+      ctrlKey: true,
+      action: () => setShowKeyboardHelp(!showKeyboardHelp),
+      description: 'Mostrar/ocultar ayuda de atajos'
+    },
+    {
+      key: 'ArrowLeft',
+      action: () => setCurrentWeek(subWeeks(currentWeek, 1)),
+      description: 'Semana anterior'
+    },
+    {
+      key: 'ArrowRight',
+      action: () => setCurrentWeek(addWeeks(currentWeek, 1)),
+      description: 'Semana siguiente'
+    }
+  ]);
 
   if (!currentEmployee) {
     return null;
@@ -70,6 +93,9 @@ export default function EmployeeDashboard() {
               <NotificationCenter 
                 employees={employees}
                 currentEmployee={currentEmployee}
+                isManager={false}
+              />
+              <KeyboardShortcuts 
                 isManager={false}
               />
               <ThemeToggle />

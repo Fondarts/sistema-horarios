@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useEmployees } from '../contexts/EmployeeContext';
 import { LogOut, Calendar, Users, Settings, BarChart3, FileText } from 'lucide-react';
+import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { EmployeeManagement } from './EmployeeManagement';
 import ScheduleManagement from './ScheduleManagement';
 import { StoreSettings } from './StoreSettings';
@@ -10,6 +11,7 @@ import { ExportTools } from './ExportTools';
 import { ThemeToggle } from './ThemeToggle';
 import { BirthdayNotification } from './BirthdayNotification';
 import { NotificationCenter } from './NotificationCenter';
+import { KeyboardShortcuts } from './KeyboardShortcuts';
 
 type TabType = 'schedule' | 'employees' | 'settings' | 'statistics' | 'export';
 
@@ -18,6 +20,7 @@ export function ManagerDashboard() {
   const { employees } = useEmployees();
   const [activeTab, setActiveTab] = useState<TabType>('schedule');
   const [showBirthdayNotification, setShowBirthdayNotification] = useState(true);
+  const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
 
   const tabs = [
     { id: 'schedule' as TabType, label: 'Horarios', icon: Calendar },
@@ -26,6 +29,46 @@ export function ManagerDashboard() {
     { id: 'statistics' as TabType, label: 'Estadísticas', icon: BarChart3 },
     { id: 'export' as TabType, label: 'Exportar', icon: FileText },
   ];
+
+  // Atajos de teclado
+  useKeyboardShortcuts([
+    {
+      key: '/',
+      ctrlKey: true,
+      action: () => setShowKeyboardHelp(!showKeyboardHelp),
+      description: 'Mostrar/ocultar ayuda de atajos'
+    },
+    {
+      key: '1',
+      ctrlKey: true,
+      action: () => setActiveTab('schedule'),
+      description: 'Ir a pestaña Horarios'
+    },
+    {
+      key: '2',
+      ctrlKey: true,
+      action: () => setActiveTab('employees'),
+      description: 'Ir a pestaña Empleados'
+    },
+    {
+      key: '3',
+      ctrlKey: true,
+      action: () => setActiveTab('settings'),
+      description: 'Ir a pestaña Configuración'
+    },
+    {
+      key: '4',
+      ctrlKey: true,
+      action: () => setActiveTab('statistics'),
+      description: 'Ir a pestaña Estadísticas'
+    },
+    {
+      key: '5',
+      ctrlKey: true,
+      action: () => setActiveTab('export'),
+      description: 'Ir a pestaña Exportar'
+    }
+  ]);
 
   const renderContent = () => {
     switch (activeTab) {
@@ -65,6 +108,10 @@ export function ManagerDashboard() {
               <NotificationCenter 
                 employees={employees}
                 currentEmployee={currentEmployee}
+                isManager={true}
+              />
+              <KeyboardShortcuts 
+                currentTab={activeTab}
                 isManager={true}
               />
               <ThemeToggle />
