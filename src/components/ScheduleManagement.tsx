@@ -94,7 +94,8 @@ export default function ScheduleManagement() {
   const { startHour: storeStartHour, endHour: storeEndHour } = getStoreHoursRange();
   const startHour = show24Hours ? 0 : storeStartHour; // 0 si 24h, o horario de tienda si enfocado
   const endHour = show24Hours ? 23 : storeEndHour;    // 23 si 24h, o horario de tienda si enfocado
-  const hours = Array.from({ length: endHour - startHour + 1 }, (_, i) => startHour + i);
+  // Mostrar solo cada 2 horas para reducir densidad
+  const hours = Array.from({ length: Math.ceil((endHour - startHour + 1) / 2) }, (_, i) => startHour + (i * 2));
 
   // Filtrar turnos de la semana actual
   const weekShifts = shifts.filter(shift => {
@@ -347,7 +348,7 @@ export default function ScheduleManagement() {
   // Calculate column width based on zoom level
   const getColumnWidth = () => {
     // En modo compacto, columnas más estrechas
-    const baseWidth = isCompactMode ? 50 : 70;
+    const baseWidth = isCompactMode ? 80 : 100;
     return Math.round(baseWidth * zoomLevel);
   };
 
@@ -675,11 +676,11 @@ export default function ScheduleManagement() {
               return (
                 <div 
                   key={hour} 
-                  className={`px-1 border-l border-gray-200 dark:border-gray-600 flex items-center justify-center ${isStoreHour ? 'bg-blue-50 dark:bg-blue-900/20' : 'bg-gray-50 dark:bg-gray-700'}`} 
+                  className={`px-2 border-l border-gray-200 dark:border-gray-600 flex items-center justify-center ${isStoreHour ? 'bg-blue-50 dark:bg-blue-900/20' : 'bg-gray-50 dark:bg-gray-700'}`} 
                   style={{ width: `${getColumnWidth()}px`, minWidth: `${getColumnWidth()}px` }}
                 >
-                  <div className={`text-xs font-medium ${isStoreHour ? 'text-blue-700 dark:text-blue-300' : 'text-gray-600 dark:text-gray-300'}`}>
-                    {hour}
+                  <div className={`text-sm font-semibold ${isStoreHour ? 'text-blue-700 dark:text-blue-300' : 'text-gray-600 dark:text-gray-300'}`}>
+                    {hour}:00
                   </div>
                 </div>
               );
@@ -823,8 +824,10 @@ export default function ScheduleManagement() {
                     // Calculate position based on the actual shift start time relative to the visible range
                     const columnWidth = getColumnWidth();
                     const margin = 2; // Small margin to prevent overlapping with hour labels
-                    const left = 200 + ((shiftStartTimeInHours - startHour) * columnWidth) + margin; // 200px + (actual shift time - visible start time) * columnWidth + margin
-                    const width = (durationInHours * columnWidth) - (margin * 2); // hours * columnWidth - margins on both sides
+                    // Ajustar para el nuevo sistema de cada 2 horas
+                    const dayColumnWidth = isMobile ? 60 : (isCompactMode ? 100 : 120);
+                    const left = dayColumnWidth + (((shiftStartTimeInHours - startHour) / 2) * columnWidth) + margin; // dayColumnWidth + (actual shift time - visible start time) / 2 * columnWidth + margin
+                    const width = ((durationInHours / 2) * columnWidth) - (margin * 2); // hours / 2 * columnWidth - margins on both sides
                     const top = (isHolidayDay ? 55 : 15) + (shiftIndex * 35); // Offset for holiday block
                     
                     return (
