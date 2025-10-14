@@ -140,15 +140,6 @@ export function ManagerDashboard() {
                 </div>
               )}
             </div>
-            {/* Menú hamburguesa - solo visible en móvil */}
-            <HamburgerMenu 
-              activeTab={activeTab}
-              onTabChange={(tab) => setActiveTab(tab as TabType)}
-              isManager={true}
-              onShowKeyboardHelp={() => setShowKeyboardHelp(true)}
-              onLogout={logout}
-            />
-            
             <div className="flex items-center space-x-4">
               <NotificationCenter 
                 employees={employees}
@@ -184,6 +175,15 @@ export function ManagerDashboard() {
                   Cerrar Sesión
                 </button>
               )}
+              
+              {/* Menú hamburguesa - solo visible en móvil */}
+              <HamburgerMenu 
+                activeTab={activeTab}
+                onTabChange={(tab) => setActiveTab(tab as TabType)}
+                isManager={true}
+                onShowKeyboardHelp={() => setShowKeyboardHelp(true)}
+                onLogout={logout}
+              />
             </div>
           </div>
         </div>
