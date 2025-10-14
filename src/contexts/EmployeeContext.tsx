@@ -187,6 +187,8 @@ const mockEmployees: Employee[] = [
   {
     id: '9',
     name: 'Camila Herrera',
+    username: 'camila.herrera',
+    password: '90123',
     weeklyLimit: 24,
     unavailableTimes: [
       {
@@ -199,8 +201,6 @@ const mockEmployees: Employee[] = [
     birthday: '12/06/1993',
     isActive: true,
     color: '#EC4899', // Rosa
-    username: 'camila.herrera',
-    password: '90123',
     role: 'empleado'
   },
   {
