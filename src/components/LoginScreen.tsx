@@ -47,7 +47,7 @@ export default function LoginScreen() {
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="text-center">
           <div className="flex justify-center mb-4">
-            <Logo />
+            <Logo size="large" />
           </div>
           <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
             Sistema de Horarios
