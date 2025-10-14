@@ -57,6 +57,7 @@ export interface Store {
   address?: string;
   phone?: string;
   email?: string;
+  isActive?: boolean; // Indica si la tienda está activa
   employees?: Employee[]; // Opcional, para simulación o datos agregados
   shifts?: Shift[];       // Opcional, para simulación o datos agregados
   storeSchedule?: StoreSchedule[];

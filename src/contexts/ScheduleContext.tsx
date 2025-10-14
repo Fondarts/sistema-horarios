@@ -256,6 +256,12 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
   const addShift = async (shiftData: Omit<Shift, 'id' | 'createdAt' | 'updatedAt'>): Promise<ValidationError[]> => {
     const errors: ValidationError[] = [];
     
+    // Validar que hay una tienda seleccionada
+    if (!currentStore) {
+      errors.push({ type: 'schedule', message: 'No hay tienda seleccionada' });
+      return errors;
+    }
+    
     // Validar que los horarios no superen las 24 horas
     const startHour = parseInt(shiftData.startTime.split(':')[0]);
     const endHour = parseInt(shiftData.endTime.split(':')[0]);
@@ -460,6 +466,12 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
   const applyTemplate = async (templateId: string, startDate: string): Promise<ValidationError[]> => {
     const errors: ValidationError[] = [];
     
+    // Validar que hay una tienda seleccionada
+    if (!currentStore) {
+      errors.push({ type: 'schedule', message: 'No hay tienda seleccionada' });
+      return errors;
+    }
+    
     try {
       const template = templates.find(t => t.id === templateId);
       if (!template) {
@@ -490,6 +502,12 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
 
   const copyWeekToNext = async (startDate: string): Promise<ValidationError[]> => {
     const errors: ValidationError[] = [];
+    
+    // Validar que hay una tienda seleccionada
+    if (!currentStore) {
+      errors.push({ type: 'schedule', message: 'No hay tienda seleccionada' });
+      return errors;
+    }
     
     try {
       // Calcular la fecha de inicio de la siguiente semana
