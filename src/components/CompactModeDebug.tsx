@@ -41,6 +41,16 @@ export function CompactModeDebug() {
         >
           Force Normal
         </button>
+        <button
+          onClick={() => {
+            // Force mobile mode for testing
+            const event = new CustomEvent('forceMobileMode', { detail: true });
+            window.dispatchEvent(event);
+          }}
+          className="w-full px-3 py-1 bg-purple-500 text-white rounded text-sm hover:bg-purple-600"
+        >
+          Force Mobile
+        </button>
       </div>
     </div>
   );
