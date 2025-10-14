@@ -967,11 +967,11 @@ export default function ScheduleManagement() {
                             zIndex: 5,
                             backgroundColor: employee?.color || '#3B82F6',
                             color: getTextColorForBackground(employee?.color || '#3B82F6'),
-                            padding: '6px 8px 6px 8px'
+                            padding: '6px 8px 6px 8px',
+                            touchAction: 'none'
                           }}
                           onMouseDown={(e) => handleDragStart(e, shift)}
                           onTouchStart={(e) => handleDragStart(e, shift)}
-                          style={{ touchAction: 'none' }}
                           onDoubleClick={(e) => {
                             e.stopPropagation();
                             e.preventDefault();
@@ -983,7 +983,8 @@ export default function ScheduleManagement() {
                             className="absolute left-0 top-0 w-2 h-full cursor-ew-resize rounded-l"
                             style={{
                               backgroundColor: getTextColorForBackground(employee?.color || '#3B82F6'),
-                              opacity: 0.3
+                              opacity: 0.3,
+                              touchAction: 'none'
                             }}
                                   onMouseDown={(e) => {
                                     e.stopPropagation();
@@ -993,7 +994,6 @@ export default function ScheduleManagement() {
                                     e.stopPropagation();
                                     handleResizeStart(e, shift, 'start');
                                   }}
-                                  style={{ touchAction: 'none' }}
                             onMouseEnter={(e) => {
                               e.currentTarget.style.opacity = '0.5';
                             }}
@@ -1019,7 +1019,8 @@ export default function ScheduleManagement() {
                             className="absolute right-0 top-0 w-2 h-full cursor-ew-resize rounded-r"
                             style={{
                               backgroundColor: getTextColorForBackground(employee?.color || '#3B82F6'),
-                              opacity: 0.3
+                              opacity: 0.3,
+                              touchAction: 'none'
                             }}
                                   onMouseDown={(e) => {
                                     e.stopPropagation();
@@ -1029,7 +1030,6 @@ export default function ScheduleManagement() {
                                     e.stopPropagation();
                                     handleResizeStart(e, shift, 'end');
                                   }}
-                                  style={{ touchAction: 'none' }}
                             onMouseEnter={(e) => {
                               e.currentTarget.style.opacity = '0.5';
                             }}
