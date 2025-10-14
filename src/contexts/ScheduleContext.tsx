@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Shift, StoreSchedule, StoreException, ValidationError, Template } from '../types';
+import { useStore } from './StoreContext';
 import { db } from '../firebase';
 import { VacationRequest } from './VacationContext';
 import { 
@@ -67,14 +68,28 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
   const [storeExceptions, setStoreExceptions] = useState<StoreException[]>([]);
   const [templates, setTemplates] = useState<Template[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { currentStore } = useStore();
 
   // Cargar datos desde Firebase
   useEffect(() => {
+    if (!currentStore) {
+      setShifts([]);
+      setStoreSchedule([]);
+      setStoreExceptions([]);
+      setTemplates([]);
+      setIsLoading(false);
+      return;
+    }
+
     const loadData = async () => {
       try {
-        // Cargar shifts
+        // Cargar shifts filtrados por tienda
         const shiftsRef = collection(db, 'shifts');
-        const shiftsQuery = query(shiftsRef, orderBy('date'));
+        const shiftsQuery = query(
+          shiftsRef, 
+          where('storeId', '==', currentStore.id),
+          orderBy('date')
+        );
         const shiftsUnsubscribe = onSnapshot(shiftsQuery, (snapshot) => {
           const shiftsData: Shift[] = [];
           snapshot.forEach((doc) => {
@@ -180,7 +195,7 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
     };
 
     loadData();
-  }, []);
+  }, [currentStore]);
 
   // Inicializar datos por defecto si no existen
   useEffect(() => {
@@ -274,6 +289,7 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
       
       const newShift = {
         ...shiftData,
+        storeId: currentStore.id,
         hours,
         createdAt: new Date(),
         updatedAt: new Date()
@@ -454,6 +470,7 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
       const addPromises = template.shifts.map(shift => {
         const newShift = {
           ...shift,
+          storeId: currentStore.id,
           date: startDate,
           isPublished: false,
           createdAt: new Date(),
@@ -487,6 +504,7 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
       const addPromises = weekShifts.map(shift => {
         const newShift = {
           employeeId: shift.employeeId,
+          storeId: currentStore.id,
           date: nextWeekStart,
           startTime: shift.startTime,
           endTime: shift.endTime,

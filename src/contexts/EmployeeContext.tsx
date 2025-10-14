@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Employee, UnavailableTime } from '../types';
+import { useStore } from './StoreContext';
 import { db } from '../firebase';
 import { 
   collection, 
@@ -10,7 +11,8 @@ import {
   getDocs, 
   onSnapshot,
   query,
-  orderBy
+  orderBy,
+  where
 } from 'firebase/firestore';
 
 interface EmployeeContextType {
@@ -208,11 +210,22 @@ const mockEmployees: Employee[] = [
 export function EmployeeProvider({ children }: { children: ReactNode }) {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { currentStore } = useStore();
 
-  // Cargar empleados desde Firebase
+  // Cargar empleados desde Firebase filtrados por tienda
   useEffect(() => {
+    if (!currentStore) {
+      setEmployees([]);
+      setIsLoading(false);
+      return;
+    }
+
     const employeesRef = collection(db, 'employees');
-    const q = query(employeesRef, orderBy('name'));
+    const q = query(
+      employeesRef, 
+      where('storeId', '==', currentStore.id),
+      orderBy('name')
+    );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const employeesData: Employee[] = [];
@@ -227,12 +240,17 @@ export function EmployeeProvider({ children }: { children: ReactNode }) {
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [currentStore]);
 
   const addEmployee = async (employeeData: Omit<Employee, 'id'>) => {
+    if (!currentStore) {
+      throw new Error('No hay tienda seleccionada');
+    }
+
     try {
       const newEmployee: Omit<Employee, 'id'> = {
         ...employeeData,
+        storeId: currentStore.id,
         color: employeeData.color || getNextAvailableColor(employees),
         pin: employeeData.pin || generateUniquePin(employees),
         role: employeeData.role || 'empleado'
@@ -269,20 +287,25 @@ export function EmployeeProvider({ children }: { children: ReactNode }) {
   };
 
   const resetToMockEmployees = async () => {
+    if (!currentStore) {
+      throw new Error('No hay tienda seleccionada');
+    }
+
     try {
       setIsLoading(true);
       
-      // Eliminar todos los empleados existentes
+      // Eliminar solo los empleados de la tienda actual
       const employeesRef = collection(db, 'employees');
-      const snapshot = await getDocs(employeesRef);
+      const q = query(employeesRef, where('storeId', '==', currentStore.id));
+      const snapshot = await getDocs(q);
       
       const deletePromises = snapshot.docs.map(doc => deleteDoc(doc.ref));
       await Promise.all(deletePromises);
 
-      // Agregar empleados de prueba
+      // Agregar empleados de prueba con el storeId correcto
       const addPromises = mockEmployees.map(employee => {
         const { id, ...employeeData } = employee;
-        return addDoc(employeesRef, employeeData);
+        return addDoc(employeesRef, { ...employeeData, storeId: currentStore.id });
       });
       
       await Promise.all(addPromises);
