@@ -645,18 +645,18 @@ export default function ScheduleManagement() {
       <div ref={scrollContainerRef} className="overflow-x-auto">
         <div className="min-w-full">
           {/* Header with hours */}
-          <div className="grid border-b border-gray-200" style={{ gridTemplateColumns: `200px repeat(${hours.length}, ${getColumnWidth()}px)` }}>
-            <div className="p-3 font-medium text-gray-700 bg-gray-50">Día / Empleado</div>
+          <div className="grid border-b border-gray-200 dark:border-gray-600" style={{ gridTemplateColumns: `200px repeat(${hours.length}, ${getColumnWidth()}px)` }}>
+            <div className="p-3 font-medium text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700">Día / Empleado</div>
             {hours.map((hour) => {
               // Check if this hour is within store hours
               const isStoreHour = hour >= storeStartHour && hour <= storeEndHour;
               return (
                 <div 
                   key={hour} 
-                  className={`px-2 border-l border-gray-200 flex items-start justify-center ${isStoreHour ? 'bg-blue-50' : 'bg-gray-50'}`} 
+                  className={`px-2 border-l border-gray-200 dark:border-gray-600 flex items-start justify-center ${isStoreHour ? 'bg-blue-50 dark:bg-blue-900/20' : 'bg-gray-50 dark:bg-gray-700'}`} 
                   style={{ width: `${getColumnWidth()}px`, paddingTop: '4px', paddingBottom: '8px' }}
                 >
-                  <div className={`text-xs ${isStoreHour ? 'text-blue-700 font-medium' : 'text-gray-600'}`}>
+                  <div className={`text-xs ${isStoreHour ? 'text-blue-700 dark:text-blue-300 font-medium' : 'text-gray-600 dark:text-gray-300'}`}>
                     {hour}:00
                   </div>
                 </div>
@@ -677,19 +677,19 @@ export default function ScheduleManagement() {
               const employeesOnDay = Array.from(new Set(dayShifts.map(shift => shift.employeeId)));
               
               return (
-                <div key={day.toISOString()} className="grid border-b border-gray-300 relative" style={{ 
+                <div key={day.toISOString()} className="grid border-b border-gray-300 dark:border-gray-600 relative" style={{ 
                   gridTemplateColumns: `200px repeat(${hours.length}, ${getColumnWidth()}px)`, 
                   minHeight: '120px'
                 }}>
                   {/* Day and employees */}
-                  <div className="p-3 border-r border-gray-200 bg-gray-50">
-                    <div className="font-medium text-gray-900 mb-2">
+                  <div className="p-3 border-r border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700">
+                    <div className="font-medium text-gray-900 dark:text-gray-100 mb-2">
                       {format(day, 'EEE d', { locale: es })}
                     </div>
                     {employeesOnDay.map(employeeId => {
                       const employee = employees.find(emp => emp.id === employeeId);
                       return employee ? (
-                        <div key={employeeId} className="text-sm text-gray-600 mb-1">
+                        <div key={employeeId} className="text-sm text-gray-600 dark:text-gray-300 mb-1">
                           {employee.name}
                         </div>
                       ) : null;
@@ -702,12 +702,12 @@ export default function ScheduleManagement() {
                     return (
                       <div 
                         key={`${day.toISOString()}-${hour}`} 
-                        className={`relative border-r border-gray-200 ${isStoreHour ? 'bg-blue-25' : ''}`} 
+                        className={`relative border-r border-gray-200 dark:border-gray-600 ${isStoreHour ? 'bg-blue-25 dark:bg-blue-900/10' : ''}`} 
                         style={{ height: '120px', width: `${getColumnWidth()}px` }}
                       >
                         {/* Hour line */}
-                        <div className="absolute w-full border-t border-gray-100" style={{ top: '0' }}>
-                          <div className={`text-xs px-1 ${isStoreHour ? 'text-blue-600' : 'text-gray-400'}`}>
+                        <div className="absolute w-full border-t border-gray-100 dark:border-gray-600" style={{ top: '0' }}>
+                          <div className={`text-xs px-1 ${isStoreHour ? 'text-blue-600 dark:text-blue-300' : 'text-gray-400 dark:text-gray-500'}`}>
                             {hour}:00
                           </div>
                         </div>
