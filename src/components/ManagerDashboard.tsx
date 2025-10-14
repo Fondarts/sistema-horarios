@@ -12,6 +12,7 @@ import { ThemeToggle } from './ThemeToggle';
 import { BirthdayNotification } from './BirthdayNotification';
 import { NotificationCenter } from './NotificationCenter';
 import { KeyboardShortcuts } from './KeyboardShortcuts';
+import { Logo } from './Logo';
 
 type TabType = 'schedule' | 'employees' | 'settings' | 'statistics' | 'export';
 
@@ -94,8 +95,8 @@ export function ManagerDashboard() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <Calendar className="w-8 h-8 text-primary-600 mr-3" />
-              <div>
+              <Logo />
+              <div className="ml-4">
                 <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
                   Panel de Administración
                 </h1>

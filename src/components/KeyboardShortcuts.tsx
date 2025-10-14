@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { HelpCircle, X, Keyboard } from 'lucide-react';
 
+export {};
+
 interface KeyboardShortcutsProps {
   currentTab?: string;
   isManager?: boolean;

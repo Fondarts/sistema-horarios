@@ -3,6 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useEmployees } from '../contexts/EmployeeContext';
 import { User, Lock, AlertCircle } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
+import { Logo } from './Logo';
 
 export default function LoginScreen() {
   const { login } = useAuth();
@@ -45,6 +46,9 @@ export default function LoginScreen() {
       
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="text-center">
+          <div className="flex justify-center mb-4">
+            <Logo />
+          </div>
           <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
             Sistema de Horarios
           </h2>
