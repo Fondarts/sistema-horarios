@@ -129,7 +129,7 @@ export function HamburgerMenu({ activeTab, onTabChange, isManager = false, onSho
                         : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
                     }`}
                   >
-                    <Icon className="w-5 h-5 mr-3" />
+                    <Icon className="w-5 h-5" style={{ marginRight: '12px' }} />
                     {tab.label}
                   </button>
                 </li>
@@ -147,7 +147,7 @@ export function HamburgerMenu({ activeTab, onTabChange, isManager = false, onSho
                 onClick={handleThemeToggle}
                 className="w-full flex items-center px-4 py-3 rounded-lg text-left transition-colors text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
               >
-                {theme === 'dark' ? <Sun className="w-5 h-5 mr-3" /> : <Moon className="w-5 h-5 mr-3" />}
+                {theme === 'dark' ? <Sun className="w-5 h-5" style={{ marginRight: '12px' }} /> : <Moon className="w-5 h-5" style={{ marginRight: '12px' }} />}
                 {theme === 'dark' ? 'Modo Claro' : 'Modo Oscuro'}
               </button>
             </li>
@@ -157,7 +157,7 @@ export function HamburgerMenu({ activeTab, onTabChange, isManager = false, onSho
                   onClick={handleKeyboardHelp}
                   className="w-full flex items-center px-4 py-3 rounded-lg text-left transition-colors text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
                 >
-                  <HelpCircle className="w-5 h-5 mr-3" />
+                  <HelpCircle className="w-5 h-5" style={{ marginRight: '12px' }} />
                   Atajos de Teclado
                 </button>
               </li>
@@ -172,7 +172,7 @@ export function HamburgerMenu({ activeTab, onTabChange, isManager = false, onSho
               onClick={handleLogout}
               className="w-full flex items-center justify-center px-4 py-3 rounded-lg text-left transition-colors text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
             >
-              <LogOut className="w-5 h-5 mr-3" />
+              <LogOut className="w-5 h-5" style={{ marginRight: '12px' }} />
               Cerrar Sesión
             </button>
           </div>
