@@ -353,7 +353,18 @@ export default function ScheduleManagement() {
     if (isMobile) {
       return Math.round(80 * zoomLevel);
     }
-    // En modo compacto, columnas más estrechas
+    
+    // En desktop, calcular ancho para ocupar todo el espacio disponible
+    if (scrollContainerRef.current) {
+      const containerWidth = scrollContainerRef.current.offsetWidth;
+      const dayColumnWidth = isCompactMode ? 100 : 120;
+      const availableWidth = containerWidth - dayColumnWidth;
+      const hourCount = hours.length;
+      const baseWidth = Math.max(40, availableWidth / hourCount);
+      return Math.round(baseWidth * zoomLevel);
+    }
+    
+    // Fallback para modo compacto
     const baseWidth = isCompactMode ? 40 : 60;
     return Math.round(baseWidth * zoomLevel);
   };
@@ -399,6 +410,12 @@ export default function ScheduleManagement() {
     }
   }, [show24Hours]); // Recalculate when toggle changes
 
+  // Recalculate column widths when hours change
+  useEffect(() => {
+    // Forzar re-render para recalcular anchos de columnas
+    setZoomLevel(prev => prev);
+  }, [hours.length, show24Hours]);
+
   useEffect(() => {
     if (scrollContainerRef.current) {
       if (show24Hours) {
@@ -420,11 +437,13 @@ export default function ScheduleManagement() {
       if (zoomLevel < minZoom) {
         setZoomLevel(minZoom);
       }
+      // Forzar re-render para recalcular anchos de columnas
+      setZoomLevel(prev => prev);
     };
 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, [zoomLevel, show24Hours]);
+  }, [zoomLevel, show24Hours, hours.length]);
 
   // Global event listeners for drag and resize functionality
   useEffect(() => {
