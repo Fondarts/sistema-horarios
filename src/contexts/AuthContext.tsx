@@ -130,7 +130,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   const isAuthenticated = currentEmployee !== null;
-  const isManager = userRole === 'manager' || currentEmployee?.isManager;
+  const isManager = userRole === 'manager' || (currentEmployee?.isManager ?? false);
   const isDistrictManager = userRole === 'district-manager';
 
   return (
