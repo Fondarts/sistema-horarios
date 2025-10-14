@@ -87,8 +87,7 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
         const shiftsRef = collection(db, 'shifts');
         const shiftsQuery = query(
           shiftsRef, 
-          where('storeId', '==', currentStore.id),
-          orderBy('date')
+          where('storeId', '==', currentStore.id)
         );
         const shiftsUnsubscribe = onSnapshot(shiftsQuery, (snapshot) => {
           const shiftsData: Shift[] = [];
@@ -101,6 +100,10 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
               updatedAt: data.updatedAt?.toDate?.()?.toISOString() || new Date().toISOString()
             } as Shift);
           });
+          
+          // Ordenar por fecha en JavaScript
+          shiftsData.sort((a, b) => a.date.localeCompare(b.date));
+          
           setShifts(shiftsData);
         });
 
