@@ -58,6 +58,7 @@ export default function ScheduleManagement() {
   });
   const [draggedShift, setDraggedShift] = useState<Shift | null>(null);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [dragOffset, setDragOffset] = useState(0);
   const [resizingShift, setResizingShift] = useState<Shift | null>(null);
   const [resizeHandle, setResizeHandle] = useState<'start' | 'end' | null>(null);
   const [isDraggingOrResizing, setIsDraggingOrResizing] = useState(false);
@@ -67,7 +68,7 @@ export default function ScheduleManagement() {
 
   const weekStart = startOfWeek(currentWeek, { weekStartsOn: 1 }); // Lunes
   const weekEnd = endOfWeek(currentWeek, { weekStartsOn: 1 }); // Domingo
-  const weekDays = eachDayOfInterval({ start: weekStart, end: weekEnd });
+  const days = eachDayOfInterval({ start: weekStart, end: weekEnd });
 
   // Calcular el rango de horas basado en el horario de la tienda
   const getStoreHoursRange = () => {
@@ -170,6 +171,13 @@ export default function ScheduleManagement() {
     setDragStart({ x: e.clientX, y: e.clientY });
     setIsDraggingOrResizing(true);
     e.preventDefault();
+  };
+
+  const handleDragStart = (e: React.MouseEvent, shift: Shift) => {
+    setDraggedShift(shift);
+    const target = e.currentTarget as HTMLDivElement;
+    const rect = target.getBoundingClientRect();
+    setDragOffset(e.clientX - rect.left);
   };
 
   const handleResizeStart = (e: React.MouseEvent, shift: Shift, handle: 'start' | 'end') => {
