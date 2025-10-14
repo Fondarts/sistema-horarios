@@ -699,6 +699,8 @@ export default function ScheduleManagement() {
               gridTemplateColumns: `${isCompactMode ? '150px' : '200px'} repeat(${hours.length}, ${getColumnWidth()}px)`,
               minWidth: 'max-content'
             }}
+            data-compact-mode={isCompactMode}
+            data-sidebar-width={isCompactMode ? '150px' : '200px'}
           >
             <div className={`${isCompactMode ? 'p-2' : 'p-3'} font-medium text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700 ${isCompactMode ? 'text-sm' : ''}`}>Día / Empleado</div>
             {hours.map((hour) => {
@@ -743,6 +745,8 @@ export default function ScheduleManagement() {
                     minHeight: '120px',
                     minWidth: 'max-content'
                   }}
+                  data-compact-mode={isCompactMode}
+                  data-sidebar-width={isCompactMode ? '150px' : '200px'}
                 >
                   {/* Day and employees */}
                   <div className={`${isCompactMode ? 'p-2' : 'p-3'} border-r border-gray-200 dark:border-gray-600 ${
