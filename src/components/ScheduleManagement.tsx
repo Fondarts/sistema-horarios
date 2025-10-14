@@ -843,20 +843,18 @@ export default function ScheduleManagement() {
                         style={{ height: '120px' }}
                         title={isHolidayDay ? `Feriado: ${holiday?.name}` : ''}
                       >
-                        {/* Hour line - solo mostrar en desktop */}
-                        {!isMobile && (
-                          <div className="absolute w-full border-t border-gray-100 dark:border-gray-600" style={{ top: '0' }}>
-                            <div className={`text-xs px-1 ${
-                              isHolidayDay 
-                                ? 'text-orange-600 dark:text-orange-300 font-medium' 
-                                : isStoreHour 
-                                  ? 'text-blue-600 dark:text-blue-300' 
-                                  : 'text-gray-400 dark:text-gray-500'
-                            }`}>
-                              {hour}:00
-                            </div>
+                        {/* Hour line */}
+                        <div className="absolute w-full border-t border-gray-100 dark:border-gray-600" style={{ top: '0' }}>
+                          <div className={`text-xs px-1 ${
+                            isHolidayDay 
+                              ? 'text-orange-600 dark:text-orange-300 font-medium' 
+                              : isStoreHour 
+                                ? 'text-blue-600 dark:text-blue-300' 
+                                : 'text-gray-400 dark:text-gray-500'
+                          }`}>
+                            {hour}:00
                           </div>
-                        )}
+                        </div>
                         
                       </div>
                     );
@@ -918,20 +916,30 @@ export default function ScheduleManagement() {
                         left = dayColumnWidth + (startPosition * availableWidth) + 2;
                         width = (durationPosition * availableWidth) - 4;
                       } else {
-                        // En móvil: usar el array hours para alineación correcta
-                        const hourIndex = hours.findIndex(h => h === Math.floor(shiftStartTimeInHours));
-                        const endHourIndex = hours.findIndex(h => h === Math.floor(shiftEndTimeInHours));
-                        
-                        if (hourIndex === -1) return null; // Turno fuera del rango visible
-                        
-                        // Calcular posición basada en índices de horas
+                        // En móvil: calcular posición basada en horas exactas
                         const columnWidth = 80; // Ancho fijo por columna en móvil
-                        left = dayColumnWidth + (hourIndex * columnWidth) + 2;
                         
-                        // Calcular ancho basado en duración
-                        const actualEndIndex = endHourIndex !== -1 ? endHourIndex + 1 : hours.length;
-                        const spanColumns = actualEndIndex - hourIndex;
-                        width = (spanColumns * columnWidth) - 4;
+                        // Encontrar la columna de inicio más cercana
+                        let startColumnIndex = 0;
+                        for (let i = 0; i < hours.length; i++) {
+                          if (shiftStartTimeInHours >= hours[i] && shiftStartTimeInHours < hours[i] + 2) {
+                            startColumnIndex = i;
+                            break;
+                          }
+                        }
+                        
+                        // Encontrar la columna de fin más cercana
+                        let endColumnIndex = hours.length;
+                        for (let i = 0; i < hours.length; i++) {
+                          if (shiftEndTimeInHours <= hours[i] + 2) {
+                            endColumnIndex = i + 1;
+                            break;
+                          }
+                        }
+                        
+                        // Calcular posición y ancho
+                        left = dayColumnWidth + (startColumnIndex * columnWidth) + 2;
+                        width = ((endColumnIndex - startColumnIndex) * columnWidth) - 4;
                       }
                       
                       const top = (isHolidayDay ? 55 : 15) + (currentIndex * 35);
