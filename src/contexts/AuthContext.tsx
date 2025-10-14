@@ -75,11 +75,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
         const tempEmployee: Employee = {
           id: 'district-manager',
           name: 'Encargado de Distrito',
-          position: 'District Manager',
+          role: 'encargado',
           pin: pin,
           color: '#8B5CF6',
+          weeklyLimit: 0,
           monthlyHoursLimit: 0,
+          unavailableTimes: [],
           unavailableHours: [],
+          birthday: '1990-01-01',
           isActive: true,
           isManager: true
         };

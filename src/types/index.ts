@@ -20,6 +20,10 @@ export interface Employee {
   color: string; // color hexadecimal para las barras del empleado
   pin: string; // clave de 5 dígitos para login
   role: 'encargado' | 'empleado'; // rol del empleado
+  isManager?: boolean; // para compatibilidad con el sistema multitiendas
+  storeId?: string; // ID de la tienda a la que pertenece el empleado
+  monthlyHoursLimit?: number; // límite mensual de horas
+  unavailableHours?: UnavailableTime[]; // horas no disponibles (alias para compatibilidad)
 }
 
 export interface UnavailableTime {
@@ -57,6 +61,7 @@ export interface Shift {
   isPublished: boolean;
   createdAt: string;
   updatedAt: string;
+  storeId?: string; // ID de la tienda a la que pertenece el turno
 }
 
 export interface ValidationError {
