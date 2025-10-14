@@ -5,6 +5,7 @@ import { Eye, EyeOff, Save, Copy } from 'lucide-react';
 import { useSchedule } from '../contexts/ScheduleContext';
 import { useEmployees } from '../contexts/EmployeeContext';
 import { useVacation } from '../contexts/VacationContext';
+import { useHolidays } from '../contexts/HolidayContext';
 import { Shift } from '../types';
 import TimeInput from './TimeInput';
 import { BirthdayNotification } from './BirthdayNotification';
@@ -13,6 +14,7 @@ export default function ScheduleManagement() {
   const { shifts, addShift, updateShift, deleteShift, publishShifts, storeSchedule } = useSchedule();
   const { employees } = useEmployees();
   const { vacationRequests } = useVacation();
+  const { isHoliday, getHolidayForDate } = useHolidays();
   
   // Función para verificar si un empleado está de vacaciones en una fecha específica
   const isEmployeeOnVacation = (employeeId: string, date: string): boolean => {
@@ -716,9 +718,20 @@ export default function ScheduleManagement() {
                   minHeight: '120px'
                 }}>
                   {/* Day and employees */}
-                  <div className="p-3 border-r border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700">
-                    <div className="font-medium text-gray-900 dark:text-gray-100 mb-2">
+                  <div className={`p-3 border-r border-gray-200 dark:border-gray-600 ${
+                    isHoliday(format(day, 'yyyy-MM-dd')) 
+                      ? 'bg-orange-50 dark:bg-orange-900/20' 
+                      : 'bg-gray-50 dark:bg-gray-700'
+                  }`}>
+                    <div className={`font-medium mb-2 ${
+                      isHoliday(format(day, 'yyyy-MM-dd'))
+                        ? 'text-orange-700 dark:text-orange-300'
+                        : 'text-gray-900 dark:text-gray-100'
+                    }`}>
                       {format(day, 'EEE d', { locale: es })}
+                      {isHoliday(format(day, 'yyyy-MM-dd')) && (
+                        <span className="ml-2 text-xs">🎉</span>
+                      )}
                     </div>
                     {employeesOnDay.map(employeeId => {
                       const employee = employees.find(emp => emp.id === employeeId);
@@ -741,15 +754,34 @@ export default function ScheduleManagement() {
                   {/* Hours for this day */}
                   {hours.map((hour) => {
                     const isStoreHour = hour >= storeStartHour && hour <= storeEndHour;
+                    const dayString = format(day, 'yyyy-MM-dd');
+                    const isHolidayDay = isHoliday(dayString);
+                    const holiday = getHolidayForDate(dayString);
+                    
+                    // Determinar el color de fondo
+                    let backgroundColor = '';
+                    if (isHolidayDay) {
+                      backgroundColor = 'bg-orange-50 dark:bg-orange-900/20';
+                    } else if (isStoreHour) {
+                      backgroundColor = 'bg-blue-25 dark:bg-blue-900/10';
+                    }
+                    
                     return (
                       <div 
                         key={`${day.toISOString()}-${hour}`} 
-                        className={`relative border-r border-gray-200 dark:border-gray-600 ${isStoreHour ? 'bg-blue-25 dark:bg-blue-900/10' : ''}`} 
+                        className={`relative border-r border-gray-200 dark:border-gray-600 ${backgroundColor}`} 
                         style={{ height: '120px', width: `${getColumnWidth()}px` }}
+                        title={isHolidayDay ? `Feriado: ${holiday?.name}` : ''}
                       >
                         {/* Hour line */}
                         <div className="absolute w-full border-t border-gray-100 dark:border-gray-600" style={{ top: '0' }}>
-                          <div className={`text-xs px-1 ${isStoreHour ? 'text-blue-600 dark:text-blue-300' : 'text-gray-400 dark:text-gray-500'}`}>
+                          <div className={`text-xs px-1 ${
+                            isHolidayDay 
+                              ? 'text-orange-600 dark:text-orange-300 font-medium' 
+                              : isStoreHour 
+                                ? 'text-blue-600 dark:text-blue-300' 
+                                : 'text-gray-400 dark:text-gray-500'
+                          }`}>
                             {hour}:00
                           </div>
                         </div>

@@ -4,6 +4,7 @@ import { EmployeeProvider } from './contexts/EmployeeContext';
 import { ScheduleProvider } from './contexts/ScheduleContext';
 import { VacationProvider } from './contexts/VacationContext';
 import { NotificationProvider } from './contexts/NotificationContext';
+import { HolidayProvider } from './contexts/HolidayContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { AppRouter } from './components/AppRouter';
 
@@ -13,11 +14,13 @@ function App() {
       <EmployeeProvider>
         <AuthProvider>
           <NotificationProvider>
-            <ScheduleProvider>
-              <VacationProvider>
-                <AppRouter />
-              </VacationProvider>
-            </ScheduleProvider>
+            <HolidayProvider>
+              <ScheduleProvider>
+                <VacationProvider>
+                  <AppRouter />
+                </VacationProvider>
+              </ScheduleProvider>
+            </HolidayProvider>
           </NotificationProvider>
         </AuthProvider>
       </EmployeeProvider>

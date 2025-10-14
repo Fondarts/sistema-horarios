@@ -2,20 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Calendar, Download, CheckCircle, AlertCircle, RefreshCw, Plus } from 'lucide-react';
 import { format, addYears, isSameDay, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
-
-interface Holiday {
-  id: string;
-  date: string;
-  name: string;
-  type: 'national' | 'regional' | 'local';
-  description?: string;
-  isRecurring: boolean;
-  addedToCalendar?: boolean;
-}
+import { useHolidays, Holiday } from '../contexts/HolidayContext';
 
 export function HolidayIntegration() {
-  const [holidays, setHolidays] = useState<Holiday[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const { holidays: firebaseHolidays, addHolidayToCalendar, removeHolidayFromCalendar, isLoading } = useHolidays();
+  const [localHolidays, setLocalHolidays] = useState<Holiday[]>([]);
+  const [isLoadingLocal, setIsLoadingLocal] = useState(false);
   const [lastSync, setLastSync] = useState<string | null>(null);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 
@@ -155,7 +147,7 @@ export function HolidayIntegration() {
   };
 
   const loadHolidays = async (year: number) => {
-    setIsLoading(true);
+    setIsLoadingLocal(true);
     
     try {
       // Simular carga de API (en una app real sería una llamada a una API de feriados)
@@ -170,12 +162,12 @@ export function HolidayIntegration() {
         index === self.findIndex(h => h.id === holiday.id)
       );
       
-      setHolidays(uniqueHolidays);
+      setLocalHolidays(uniqueHolidays);
       setLastSync(new Date().toISOString());
     } catch (error) {
       console.error('Error loading holidays:', error);
     } finally {
-      setIsLoading(false);
+      setIsLoadingLocal(false);
     }
   };
 
@@ -187,12 +179,29 @@ export function HolidayIntegration() {
     loadHolidays(selectedYear);
   };
 
-  const handleAddToCalendar = (holidayId: string) => {
-    setHolidays(prev => prev.map(holiday => 
-      holiday.id === holidayId 
-        ? { ...holiday, addedToCalendar: !holiday.addedToCalendar }
-        : holiday
-    ));
+  const handleAddToCalendar = async (holiday: Holiday) => {
+    try {
+      if (holiday.addedToCalendar) {
+        // Si ya está en el calendario, removerlo
+        const firebaseHoliday = firebaseHolidays.find(fh => fh.date === holiday.date && fh.name === holiday.name);
+        if (firebaseHoliday) {
+          await removeHolidayFromCalendar(firebaseHoliday.id);
+        }
+      } else {
+        // Si no está en el calendario, agregarlo
+        await addHolidayToCalendar({
+          date: holiday.date,
+          name: holiday.name,
+          type: holiday.type,
+          description: holiday.description,
+          isRecurring: holiday.isRecurring,
+          addedToCalendar: true,
+          year: selectedYear
+        });
+      }
+    } catch (error) {
+      console.error('Error updating holiday calendar status:', error);
+    }
   };
 
   const getHolidayTypeColor = (type: string) => {
@@ -211,6 +220,20 @@ export function HolidayIntegration() {
       case 'local': return 'Local';
       default: return 'Desconocido';
     }
+  };
+
+  // Combinar feriados locales con los de Firebase
+  const getCombinedHolidays = (): Holiday[] => {
+    return localHolidays.map(localHoliday => {
+      const firebaseHoliday = firebaseHolidays.find(fh => 
+        fh.date === localHoliday.date && fh.name === localHoliday.name
+      );
+      
+      return {
+        ...localHoliday,
+        addedToCalendar: firebaseHoliday ? firebaseHoliday.addedToCalendar : false
+      };
+    });
   };
 
   return (
@@ -269,14 +292,14 @@ export function HolidayIntegration() {
           Feriados Nacionales {selectedYear}
         </h3>
         
-        {isLoading ? (
+        {isLoadingLocal ? (
           <div className="flex items-center justify-center py-8">
             <RefreshCw className="w-6 h-6 animate-spin text-gray-400 mr-2" />
             <span className="text-gray-600 dark:text-gray-400">Cargando feriados...</span>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {holidays.map((holiday) => (
+            {getCombinedHolidays().map((holiday) => (
               <div
                 key={holiday.id}
                 className={`bg-white dark:bg-gray-700 border rounded-lg p-4 hover:shadow-md transition-shadow ${
@@ -297,7 +320,7 @@ export function HolidayIntegration() {
                       {getHolidayTypeText(holiday.type)}
                     </span>
                     <button
-                      onClick={() => handleAddToCalendar(holiday.id)}
+                      onClick={() => handleAddToCalendar(holiday)}
                       className={`p-1 rounded-full transition-colors ${
                         holiday.addedToCalendar
                           ? 'bg-orange-500 text-white hover:bg-orange-600'
