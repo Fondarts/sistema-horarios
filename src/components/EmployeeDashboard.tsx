@@ -116,6 +116,7 @@ export default function EmployeeDashboard() {
                 activeTab={activeTab}
                 onTabChange={(tab) => setActiveTab(tab as 'schedule' | 'vacations')}
                 isManager={false}
+                onShowKeyboardHelp={() => setShowKeyboardHelp(true)}
               />
               
               <NotificationCenter 
@@ -123,10 +124,16 @@ export default function EmployeeDashboard() {
                 currentEmployee={currentEmployee}
                 isManager={false}
               />
-              <KeyboardShortcuts 
-                isManager={false}
-              />
-              <ThemeToggle />
+              
+              {/* Solo mostrar en desktop */}
+              {!isMobile && (
+                <>
+                  <KeyboardShortcuts 
+                    isManager={false}
+                  />
+                  <ThemeToggle />
+                </>
+              )}
               <button
                 onClick={logout}
                 className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"

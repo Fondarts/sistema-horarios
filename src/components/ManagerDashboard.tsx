@@ -134,6 +134,7 @@ export function ManagerDashboard() {
                 activeTab={activeTab}
                 onTabChange={(tab) => setActiveTab(tab as TabType)}
                 isManager={true}
+                onShowKeyboardHelp={() => setShowKeyboardHelp(true)}
               />
               
               <NotificationCenter 
@@ -141,21 +142,24 @@ export function ManagerDashboard() {
                 currentEmployee={currentEmployee}
                 isManager={true}
               />
-              <KeyboardShortcuts 
-                currentTab={activeTab}
-                isManager={true}
-              />
-              {/* Botón de modo compacto - solo visible en desktop */}
+              
+              {/* Solo mostrar en desktop */}
               {!isMobile && (
-                <button
-                  onClick={toggleCompactMode}
-                  className="flex items-center text-gray-600 hover:text-gray-900 transition-colors dark:text-gray-400 dark:hover:text-gray-100"
-                  title={isCompactMode ? 'Modo normal' : 'Modo compacto'}
-                >
-                  {isCompactMode ? <Maximize2 className="w-5 h-5" /> : <Minimize2 className="w-5 h-5" />}
-                </button>
+                <>
+                  <KeyboardShortcuts 
+                    currentTab={activeTab}
+                    isManager={true}
+                  />
+                  <button
+                    onClick={toggleCompactMode}
+                    className="flex items-center text-gray-600 hover:text-gray-900 transition-colors dark:text-gray-400 dark:hover:text-gray-100"
+                    title={isCompactMode ? 'Modo normal' : 'Modo compacto'}
+                  >
+                    {isCompactMode ? <Maximize2 className="w-5 h-5" /> : <Minimize2 className="w-5 h-5" />}
+                  </button>
+                  <ThemeToggle />
+                </>
               )}
-              <ThemeToggle />
               <button
                 onClick={logout}
                 className="flex items-center text-gray-600 hover:text-gray-900 transition-colors dark:text-gray-400 dark:hover:text-gray-100"

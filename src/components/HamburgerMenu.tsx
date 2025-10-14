@@ -1,16 +1,19 @@
 import React, { useState } from 'react';
-import { Menu, X, Calendar, Users, Plane, CalendarDays, Home, BarChart3, FileText } from 'lucide-react';
+import { Menu, X, Calendar, Users, Plane, CalendarDays, Home, BarChart3, FileText, Sun, Moon, HelpCircle } from 'lucide-react';
 import { useCompactMode } from '../contexts/CompactModeContext';
+import { useTheme } from '../contexts/ThemeContext';
 
 interface HamburgerMenuProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
   isManager?: boolean;
+  onShowKeyboardHelp?: () => void;
 }
 
-export function HamburgerMenu({ activeTab, onTabChange, isManager = false }: HamburgerMenuProps) {
+export function HamburgerMenu({ activeTab, onTabChange, isManager = false, onShowKeyboardHelp }: HamburgerMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const { isMobile } = useCompactMode();
+  const { theme, toggleTheme } = useTheme();
 
   const managerTabs = [
     { id: 'schedule', label: 'Horarios', icon: Calendar },
@@ -31,6 +34,18 @@ export function HamburgerMenu({ activeTab, onTabChange, isManager = false }: Ham
 
   const handleTabClick = (tabId: string) => {
     onTabChange(tabId);
+    setIsOpen(false);
+  };
+
+  const handleThemeToggle = () => {
+    toggleTheme();
+    setIsOpen(false);
+  };
+
+  const handleKeyboardHelp = () => {
+    if (onShowKeyboardHelp) {
+      onShowKeyboardHelp();
+    }
     setIsOpen(false);
   };
 
@@ -99,6 +114,33 @@ export function HamburgerMenu({ activeTab, onTabChange, isManager = false }: Ham
                 </li>
               );
             })}
+          </ul>
+          
+          {/* Separador */}
+          <div className="border-t border-gray-200 dark:border-gray-600 my-4"></div>
+          
+          {/* Botones de configuración */}
+          <ul className="space-y-2">
+            <li>
+              <button
+                onClick={handleThemeToggle}
+                className="w-full flex items-center px-4 py-3 rounded-lg text-left transition-colors text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
+              >
+                {theme === 'dark' ? <Sun className="w-5 h-5 mr-3" /> : <Moon className="w-5 h-5 mr-3" />}
+                {theme === 'dark' ? 'Modo Claro' : 'Modo Oscuro'}
+              </button>
+            </li>
+            {onShowKeyboardHelp && (
+              <li>
+                <button
+                  onClick={handleKeyboardHelp}
+                  className="w-full flex items-center px-4 py-3 rounded-lg text-left transition-colors text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
+                >
+                  <HelpCircle className="w-5 h-5 mr-3" />
+                  Atajos de Teclado
+                </button>
+              </li>
+            )}
           </ul>
         </nav>
       </div>
