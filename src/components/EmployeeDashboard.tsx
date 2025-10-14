@@ -7,6 +7,7 @@ import { es } from 'date-fns/locale';
 import { ChevronLeft, ChevronRight, LogOut, Calendar, Clock } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { BirthdayNotification } from './BirthdayNotification';
+import { NotificationCenter } from './NotificationCenter';
 
 export default function EmployeeDashboard() {
   const { currentEmployee, logout } = useAuth();
@@ -66,6 +67,11 @@ export default function EmployeeDashboard() {
               </p>
             </div>
             <div className="flex items-center space-x-4">
+              <NotificationCenter 
+                employees={employees}
+                currentEmployee={currentEmployee}
+                isManager={false}
+              />
               <ThemeToggle />
               <button
                 onClick={logout}

@@ -9,6 +9,7 @@ import { Statistics } from './Statistics';
 import { ExportTools } from './ExportTools';
 import { ThemeToggle } from './ThemeToggle';
 import { BirthdayNotification } from './BirthdayNotification';
+import { NotificationCenter } from './NotificationCenter';
 
 type TabType = 'schedule' | 'employees' | 'settings' | 'statistics' | 'export';
 
@@ -61,6 +62,11 @@ export function ManagerDashboard() {
               </div>
             </div>
             <div className="flex items-center space-x-4">
+              <NotificationCenter 
+                employees={employees}
+                currentEmployee={currentEmployee}
+                isManager={true}
+              />
               <ThemeToggle />
               <button
                 onClick={logout}
