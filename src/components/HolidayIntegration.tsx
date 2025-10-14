@@ -311,7 +311,8 @@ export function HolidayIntegration() {
 
   // Combinar feriados locales con los de Firebase
   const getCombinedHolidays = (): Holiday[] => {
-    return localHolidays.map(localHoliday => {
+    // Primero, mapear los feriados locales (nacionales) con su estado de Firebase
+    const nationalHolidays = localHolidays.map(localHoliday => {
       const firebaseHoliday = firebaseHolidays.find(fh => 
         fh.date === localHoliday.date && fh.name === localHoliday.name
       );
@@ -321,6 +322,20 @@ export function HolidayIntegration() {
         addedToCalendar: firebaseHoliday ? firebaseHoliday.addedToCalendar : false
       };
     });
+
+    // Luego, agregar los feriados personalizados de Firebase que no están en la lista nacional
+    const customHolidays = firebaseHolidays.filter(firebaseHoliday => {
+      // Solo incluir feriados que no están en la lista nacional
+      return !localHolidays.some(localHoliday => 
+        localHoliday.date === firebaseHoliday.date && localHoliday.name === firebaseHoliday.name
+      );
+    }).map(firebaseHoliday => ({
+      ...firebaseHoliday,
+      addedToCalendar: true // Los feriados personalizados siempre están "agregados al calendario"
+    }));
+
+    // Combinar ambos arrays
+    return [...nationalHolidays, ...customHolidays];
   };
 
   return (
