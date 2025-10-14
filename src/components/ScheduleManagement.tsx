@@ -983,17 +983,13 @@ export default function ScheduleManagement() {
                           />
                           
                                 {/* Main shift content */}
-                                <div className="w-full h-full cursor-move flex justify-between items-center">
-                                  <div className="flex flex-col">
-                                    <div className="font-medium text-xs leading-tight">
-                                      {employee?.name}
-                                    </div>
-                                    <div className="text-xs opacity-90 leading-tight">
-                                      {shift.startTime}-{shift.endTime}
-                                    </div>
+                                <div className="w-full h-full cursor-move flex flex-col justify-center">
+                                  <div className="font-medium text-xs leading-tight">
+                                    {employee?.name}
                                   </div>
-                                  <div className="text-xs opacity-75 font-medium">
-                                    {formatHours(shift.hours)}
+                                  <div className="text-xs opacity-90 leading-tight flex justify-between">
+                                    <span>{shift.startTime}-{shift.endTime}</span>
+                                    <span className="opacity-75 font-medium">{formatHours(shift.hours)}</span>
                                   </div>
                                 </div>
                           
