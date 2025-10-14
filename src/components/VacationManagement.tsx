@@ -3,12 +3,14 @@ import { Calendar, Plus, Edit, Trash2, Check, X, Clock, User } from 'lucide-reac
 import { useEmployees } from '../contexts/EmployeeContext';
 import { useVacation, VacationRequest } from '../contexts/VacationContext';
 import { useAuth } from '../contexts/AuthContext';
+import { useCompactMode } from '../contexts/CompactModeContext';
 import { format, addDays, isAfter, isBefore, differenceInDays } from 'date-fns';
 import { es } from 'date-fns/locale';
 
 export function VacationManagement() {
   const { employees } = useEmployees();
   const { currentEmployee } = useAuth();
+  const { isMobile } = useCompactMode();
   const { 
     vacationRequests, 
     addVacationRequest, 
@@ -236,7 +238,86 @@ export function VacationManagement() {
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
             <span className="ml-2 text-gray-600 dark:text-gray-400">Cargando solicitudes...</span>
           </div>
+        ) : isMobile ? (
+          // Layout móvil: bloques
+          <div className="space-y-4">
+            {vacationRequests.map((request) => (
+              <div
+                key={request.id}
+                className="bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-4 shadow-sm"
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-center">
+                    <User className="w-5 h-5 text-gray-400 mr-2" />
+                    <div>
+                      <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                        {request.employeeName}
+                      </div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
+                        {format(new Date(request.startDate), 'dd/MM/yyyy', { locale: es })} - {format(new Date(request.endDate), 'dd/MM/yyyy', { locale: es })}
+                      </div>
+                    </div>
+                  </div>
+                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(request.status)}`}>
+                    {getStatusText(request.status)}
+                  </span>
+                </div>
+                
+                <div className="mb-3">
+                  <div className="flex items-center text-sm text-gray-600 dark:text-gray-300 mb-1">
+                    <Calendar className="w-4 h-4 mr-1" />
+                    <span>{calculateDays(request.startDate, request.endDate)} días</span>
+                  </div>
+                  {request.reason && (
+                    <div className="text-sm text-gray-600 dark:text-gray-300">
+                      <span className="font-medium">Motivo:</span> {request.reason}
+                    </div>
+                  )}
+                </div>
+                
+                <div className="flex items-center justify-end space-x-2">
+                  {request.status === 'pending' && (
+                    <>
+                      <button
+                        onClick={() => handleStatusChange(request.id, 'approved')}
+                        className="flex items-center px-3 py-1 text-xs bg-green-100 text-green-700 rounded hover:bg-green-200 dark:bg-green-900/20 dark:text-green-300 dark:hover:bg-green-900/30"
+                        title="Aprobar"
+                      >
+                        <Check className="w-3 h-3 mr-1" />
+                        Aprobar
+                      </button>
+                      <button
+                        onClick={() => handleStatusChange(request.id, 'rejected')}
+                        className="flex items-center px-3 py-1 text-xs bg-red-100 text-red-700 rounded hover:bg-red-200 dark:bg-red-900/20 dark:text-red-300 dark:hover:bg-red-900/30"
+                        title="Rechazar"
+                      >
+                        <X className="w-3 h-3 mr-1" />
+                        Rechazar
+                      </button>
+                    </>
+                  )}
+                  <button
+                    onClick={() => handleEdit(request)}
+                    className="flex items-center px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:hover:bg-blue-900/30"
+                    title="Editar"
+                  >
+                    <Edit className="w-3 h-3 mr-1" />
+                    Editar
+                  </button>
+                  <button
+                    onClick={() => handleDelete(request.id)}
+                    className="flex items-center px-3 py-1 text-xs bg-red-100 text-red-700 rounded hover:bg-red-200 dark:bg-red-900/20 dark:text-red-300 dark:hover:bg-red-900/30"
+                    title="Eliminar"
+                  >
+                    <Trash2 className="w-3 h-3 mr-1" />
+                    Eliminar
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
         ) : (
+          // Layout desktop: tabla
           <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead className="bg-gray-50 dark:bg-gray-700">
