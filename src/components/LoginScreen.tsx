@@ -97,16 +97,16 @@ export default function LoginScreen() {
                   required
                   value={formData.pin}
                   onChange={(e) => {
-                    const value = e.target.value.replace(/\D/g, '').slice(0, 5);
+                    // Permitir texto para encargados de distrito, números para empleados normales
+                    const value = e.target.value;
                     handleInputChange('pin', value);
                   }}
                   className="appearance-none block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm font-mono dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:placeholder-gray-400"
-                  placeholder="12345"
-                  maxLength={5}
+                  placeholder="12345 o admin123"
                 />
               </div>
               <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                Ingresa tu PIN de 5 dígitos
+                Ingresa tu PIN (5 dígitos) o clave de acceso
               </p>
             </div>
 
@@ -126,7 +126,7 @@ export default function LoginScreen() {
             <div className="space-y-3">
               <button
                 type="submit"
-                disabled={isLoading || !formData.name.trim() || formData.pin.length !== 5}
+                disabled={isLoading || !formData.name.trim() || !formData.pin.trim()}
                 className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
@@ -146,6 +146,7 @@ export default function LoginScreen() {
             </div>
 
             <div className="mt-4 text-xs text-gray-500 space-y-1">
+              <p><strong>Encargado de Distrito:</strong> admin - PIN: admin123</p>
               <p><strong>Encargado:</strong> Ana Perez - PIN: 12345</p>
               <p><strong>Empleados:</strong> Luis Gomez - PIN: 23456</p>
               <p className="text-gray-400">María Rodriguez - PIN: 34567</p>
