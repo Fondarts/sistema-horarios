@@ -668,7 +668,7 @@ export default function ScheduleManagement() {
               minWidth: 'max-content'
             }}
           >
-            <div className={`${isMobile ? 'p-1' : (isCompactMode ? 'p-2' : 'p-3')} font-medium text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700 ${isMobile ? 'text-xs' : (isCompactMode ? 'text-sm' : '')}`}>Día / Empleado</div>
+            <div className={`${isMobile ? 'p-1' : (isCompactMode ? 'p-2' : 'p-3')} font-medium text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700 ${isMobile ? 'text-xs' : (isCompactMode ? 'text-sm' : '')}`}>Día</div>
             {hours.map((hour) => {
               // Check if this hour is within store hours
               const isStoreHour = hour >= storeStartHour && hour <= storeEndHour;
