@@ -726,7 +726,7 @@ export default function ScheduleManagement() {
           <div 
             className="grid border-b border-gray-200 dark:border-gray-600" 
             style={{ 
-              gridTemplateColumns: `${isMobile ? '60px' : (isCompactMode ? '100px' : '120px')} repeat(${hours.length}, 1fr)`,
+              gridTemplateColumns: `${isMobile ? '60px' : (isCompactMode ? '100px' : '120px')} ${isMobile ? `repeat(${hours.length}, ${mobileHourColumnWidth}px)` : `repeat(${hours.length}, 1fr)`}`,
               minWidth: 'max-content'
             }}
           >
@@ -768,7 +768,7 @@ export default function ScheduleManagement() {
                     key={day.toISOString()} 
                     className="grid border-b border-gray-300 dark:border-gray-600 relative" 
                     style={{ 
-                      gridTemplateColumns: `${isMobile ? '60px' : (isCompactMode ? '100px' : '120px')} repeat(${hours.length}, 1fr)`, 
+                      gridTemplateColumns: `${isMobile ? '60px' : (isCompactMode ? '100px' : '120px')} ${isMobile ? `repeat(${hours.length}, ${mobileHourColumnWidth}px)` : `repeat(${hours.length}, 1fr)`}`, 
                       minHeight: '120px',
                       minWidth: 'max-content'
                     }}
@@ -917,7 +917,8 @@ export default function ScheduleManagement() {
                         width = (durationPosition * availableWidth) - 4;
                       } else {
                         // En móvil: usar columnas fijas como antes, pero con ancho correcto
-                        const columnWidth = 80; // Ancho fijo por columna en móvil
+                        const mobileHourColumnWidth = 57; // Ancho deseado por el usuario
+const columnWidth = mobileHourColumnWidth; // Usar el ancho fijo definido en móvil
                         
                         // Encontrar índice de columna de inicio
                         const startColumnIndex = hours.findIndex(hour => 
@@ -940,19 +941,6 @@ export default function ScheduleManagement() {
                         width = ((actualEndIndex - actualStartIndex) * columnWidth) - 4;
                         
                         // Debug log
-                        console.log('Mobile shift calculation:', {
-                          shiftStartTimeInHours,
-                          shiftEndTimeInHours,
-                          hours,
-                          startColumnIndex,
-                          endColumnIndex,
-                          actualStartIndex,
-                          actualEndIndex,
-                          left,
-                          width,
-                          dayColumnWidth,
-                          columnWidth
-                        });
                       }
                       
                       const top = (isHolidayDay ? 55 : 15) + (currentIndex * 35);
