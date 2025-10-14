@@ -31,13 +31,23 @@ export function StoreSelector({ onStoreSelect }: StoreSelectorProps) {
     }
 
     try {
-      const storeId = await createStore({
+      const storeData: any = {
         name: formData.name.trim(),
-        address: formData.address.trim() || undefined,
-        phone: formData.phone.trim() || undefined,
-        email: formData.email.trim() || undefined,
         isActive: true
-      });
+      };
+
+      // Solo agregar campos que no estén vacíos
+      if (formData.address.trim()) {
+        storeData.address = formData.address.trim();
+      }
+      if (formData.phone.trim()) {
+        storeData.phone = formData.phone.trim();
+      }
+      if (formData.email.trim()) {
+        storeData.email = formData.email.trim();
+      }
+
+      const storeId = await createStore(storeData);
 
       setFormData({ name: '', address: '', phone: '', email: '' });
       setShowCreateForm(false);
@@ -55,12 +65,22 @@ export function StoreSelector({ onStoreSelect }: StoreSelectorProps) {
     }
 
     try {
-      await updateStore(storeId, {
-        name: formData.name.trim(),
-        address: formData.address.trim() || undefined,
-        phone: formData.phone.trim() || undefined,
-        email: formData.email.trim() || undefined
-      });
+      const updateData: any = {
+        name: formData.name.trim()
+      };
+
+      // Solo agregar campos que no estén vacíos
+      if (formData.address.trim()) {
+        updateData.address = formData.address.trim();
+      }
+      if (formData.phone.trim()) {
+        updateData.phone = formData.phone.trim();
+      }
+      if (formData.email.trim()) {
+        updateData.email = formData.email.trim();
+      }
+
+      await updateStore(storeId, updateData);
 
       setEditingStore(null);
       setFormData({ name: '', address: '', phone: '', email: '' });
