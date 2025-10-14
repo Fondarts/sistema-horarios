@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Shift, StoreSchedule, StoreException, ValidationError, Template } from '../types';
 import { db } from '../firebase';
+import { VacationRequest } from './VacationContext';
 import { 
   collection, 
   doc, 
@@ -31,6 +32,7 @@ interface ScheduleContextType {
   saveTemplate: (name: string, shifts: Omit<Shift, 'id' | 'isPublished' | 'createdAt' | 'updatedAt'>[]) => void;
   applyTemplate: (templateId: string, startDate: string) => Promise<ValidationError[]>;
   copyWeekToNext: (startDate: string) => Promise<ValidationError[]>;
+  checkVacationConflict: (employeeId: string, date: string) => Promise<boolean>;
   isLoading: boolean;
 }
 
@@ -163,6 +165,36 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
     }
   }, [isLoading]);
 
+  const checkVacationConflict = async (employeeId: string, date: string): Promise<boolean> => {
+    try {
+      const vacationRequestsRef = collection(db, 'vacationRequests');
+      const q = query(
+        vacationRequestsRef,
+        where('employeeId', '==', employeeId),
+        where('status', '==', 'approved')
+      );
+      
+      const snapshot = await getDocs(q);
+      
+      for (const doc of snapshot.docs) {
+        const vacation = doc.data() as VacationRequest;
+        const vacationStart = new Date(vacation.startDate);
+        const vacationEnd = new Date(vacation.endDate);
+        const shiftDate = new Date(date);
+        
+        // Verificar si la fecha del turno está dentro del período de vacaciones
+        if (shiftDate >= vacationStart && shiftDate <= vacationEnd) {
+          return true; // Hay conflicto
+        }
+      }
+      
+      return false; // No hay conflicto
+    } catch (error) {
+      console.error('Error checking vacation conflict:', error);
+      return false; // En caso de error, permitir el turno
+    }
+  };
+
   const addShift = async (shiftData: Omit<Shift, 'id' | 'createdAt' | 'updatedAt'>): Promise<ValidationError[]> => {
     const errors: ValidationError[] = [];
     
@@ -181,6 +213,12 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
     // Validar que la hora de fin sea posterior a la de inicio
     if (startHour > endHour || (startHour === endHour && parseInt(shiftData.startTime.split(':')[1]) >= parseInt(shiftData.endTime.split(':')[1]))) {
       errors.push({ type: 'schedule', message: 'La hora de fin debe ser posterior a la hora de inicio' });
+    }
+    
+    // Validar que el empleado no esté de vacaciones en esa fecha
+    const hasVacationConflict = await checkVacationConflict(shiftData.employeeId, shiftData.date);
+    if (hasVacationConflict) {
+      errors.push({ type: 'schedule', message: 'No se puede asignar un turno durante las vacaciones aprobadas del empleado' });
     }
     
     if (errors.length > 0) {
@@ -234,6 +272,20 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
       
       if (startHour > endHour || (startHour === endHour && startMinute >= endMinute)) {
         errors.push({ type: 'schedule', message: 'La hora de fin debe ser posterior a la hora de inicio' });
+      }
+    }
+    
+    // Validar que el empleado no esté de vacaciones si se actualiza la fecha o el empleado
+    if (updates.date || updates.employeeId) {
+      const currentShift = shifts.find(s => s.id === id);
+      if (currentShift) {
+        const employeeId = updates.employeeId || currentShift.employeeId;
+        const date = updates.date || currentShift.date;
+        
+        const hasVacationConflict = await checkVacationConflict(employeeId, date);
+        if (hasVacationConflict) {
+          errors.push({ type: 'schedule', message: 'No se puede asignar un turno durante las vacaciones aprobadas del empleado' });
+        }
       }
     }
     
@@ -430,6 +482,7 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
       saveTemplate,
       applyTemplate,
       copyWeekToNext,
+      checkVacationConflict,
       isLoading
     }}>
       {children}

@@ -4,6 +4,7 @@ import { es } from 'date-fns/locale';
 import { Eye, EyeOff, Save, Copy } from 'lucide-react';
 import { useSchedule } from '../contexts/ScheduleContext';
 import { useEmployees } from '../contexts/EmployeeContext';
+import { useVacation } from '../contexts/VacationContext';
 import { Shift } from '../types';
 import TimeInput from './TimeInput';
 import { BirthdayNotification } from './BirthdayNotification';
@@ -11,6 +12,22 @@ import { BirthdayNotification } from './BirthdayNotification';
 export default function ScheduleManagement() {
   const { shifts, addShift, updateShift, deleteShift, publishShifts, storeSchedule } = useSchedule();
   const { employees } = useEmployees();
+  const { vacationRequests } = useVacation();
+  
+  // Función para verificar si un empleado está de vacaciones en una fecha específica
+  const isEmployeeOnVacation = (employeeId: string, date: string): boolean => {
+    const approvedVacations = vacationRequests.filter(vr => 
+      vr.employeeId === employeeId && vr.status === 'approved'
+    );
+    
+    const targetDate = new Date(date);
+    
+    return approvedVacations.some(vacation => {
+      const startDate = new Date(vacation.startDate);
+      const endDate = new Date(vacation.endDate);
+      return targetDate >= startDate && targetDate <= endDate;
+    });
+  };
   
   const [currentWeek, setCurrentWeek] = useState(new Date());
   const [showUnpublished, setShowUnpublished] = useState(true);
@@ -705,8 +722,16 @@ export default function ScheduleManagement() {
                     </div>
                     {employeesOnDay.map(employeeId => {
                       const employee = employees.find(emp => emp.id === employeeId);
+                      const isOnVacation = employee ? isEmployeeOnVacation(employee.id, format(day, 'yyyy-MM-dd')) : false;
                       return employee ? (
-                        <div key={employeeId} className="text-sm text-gray-600 dark:text-gray-300 mb-1">
+                        <div key={employeeId} className={`text-sm mb-1 flex items-center gap-1 ${
+                          isOnVacation 
+                            ? 'text-orange-600 dark:text-orange-400 font-medium' 
+                            : 'text-gray-600 dark:text-gray-300'
+                        }`}>
+                          {isOnVacation && (
+                            <span className="text-xs" title="Empleado de vacaciones">🏖️</span>
+                          )}
                           {employee.name}
                         </div>
                       ) : null;
