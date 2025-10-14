@@ -98,7 +98,7 @@ export function ManagerDashboard() {
               <Logo />
               <div className="ml-4">
                 <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                  Panel de Administración
+                  Panel de Administración de Horarios
                 </h1>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
                   Bienvenido, {currentEmployee?.name}
