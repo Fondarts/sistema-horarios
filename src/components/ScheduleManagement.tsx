@@ -733,7 +733,7 @@ export default function ScheduleManagement() {
               minWidth: 'max-content'
             }}
           >
-            <div className={`${isMobile ? 'p-1' : (isCompactMode ? 'p-2' : 'p-3')} font-medium text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700 ${isMobile ? 'text-xs' : (isCompactMode ? 'text-sm' : '')} ${isMobile ? 'sticky left-0 z-10' : ''}`}>Día</div>
+                <div className={`${isMobile ? 'p-1' : (isCompactMode ? 'p-2' : 'p-3')} font-medium text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700 ${isMobile ? 'text-xs' : (isCompactMode ? 'text-sm' : '')} ${isMobile ? 'sticky left-0 z-20' : ''}`}>Día</div>
             {hours.map((hour) => {
               // Check if this hour is within store hours
               const isStoreHour = hour >= storeStartHour && hour <= storeEndHour;
@@ -777,11 +777,11 @@ export default function ScheduleManagement() {
                     }}
                   >
                   {/* Day and employees */}
-                  <div className={`${isMobile ? 'p-1' : (isCompactMode ? 'p-2' : 'p-3')} border-r border-gray-200 dark:border-gray-600 ${
-                    isHolidayDay 
-                      ? 'bg-orange-50 dark:bg-orange-900/20' 
-                      : 'bg-gray-50 dark:bg-gray-700'
-                  } ${isMobile ? 'sticky left-0 z-10' : ''}`}>
+                        <div className={`${isMobile ? 'p-1' : (isCompactMode ? 'p-2' : 'p-3')} border-r border-gray-200 dark:border-gray-600 ${
+                          isHolidayDay 
+                            ? 'bg-orange-50 dark:bg-orange-900/20' 
+                            : 'bg-gray-50 dark:bg-gray-700'
+                        } ${isMobile ? 'sticky left-0 z-20' : ''}`}>
                     <div className={`font-medium ${isMobile ? 'mb-0' : 'mb-2'} ${
                       isHolidayDay
                         ? 'text-orange-700 dark:text-orange-300'
@@ -950,7 +950,7 @@ export default function ScheduleManagement() {
                             width: `${width}px`,
                             top: `${top}px`,
                             height: '32px',
-                            zIndex: 10,
+                            zIndex: 5,
                             backgroundColor: employee?.color || '#3B82F6',
                             color: getTextColorForBackground(employee?.color || '#3B82F6'),
                             padding: '6px 8px 6px 8px'
