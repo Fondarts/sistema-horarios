@@ -94,7 +94,55 @@
   - Eficiencia de cobertura
   - Tendencias semanales/mensuales
 
-#### **3.2 Transferencias de Empleados** (PRIORIDAD MEDIA)
+#### **3.2 Performance Review de Empleados** (PRIORIDAD ALTA) ⭐ **NUEVO**
+**Objetivo:** Sistema de evaluación y seguimiento del rendimiento
+
+**Funcionalidades a implementar:**
+- 📝 **Evaluaciones periódicas**:
+  - Formularios de evaluación por competencias
+  - Calificaciones numéricas y comentarios
+  - Historial de evaluaciones por empleado
+
+- 📊 **Métricas de rendimiento**:
+  - Puntualidad y asistencia
+  - Cumplimiento de horarios asignados
+  - Feedback de clientes (si se implementa integración)
+
+- 🎯 **Objetivos y metas**:
+  - Establecer objetivos individuales
+  - Seguimiento de progreso
+  - Planes de mejora
+
+- 📈 **Reportes de performance**:
+  - Comparativas entre empleados
+  - Tendencias de rendimiento
+  - Identificación de empleados destacados
+
+#### **3.3 Integración con Google Maps y Reviews** (PRIORIDAD MEDIA) ⭐ **NUEVO**
+**Objetivo:** Monitoreo de reputación y feedback de clientes
+
+**Funcionalidades a implementar:**
+- 🗺️ **Integración con Google Maps**:
+  - Link directo a la ubicación de la tienda
+  - Visualización en mapa integrado
+  - Información de contacto y horarios
+
+- ⭐ **Scraping de reviews de Google**:
+  - Extracción automática de comentarios
+  - Análisis de sentimientos
+  - Identificación de menciones a empleados
+
+- 👥 **Sistema de menciones**:
+  - Detección automática de nombres de empleados en reviews
+  - Almacenamiento en expediente del empleado
+  - Notificaciones de menciones positivas/negativas
+
+- 📊 **Dashboard de reputación**:
+  - Métricas de satisfacción por tienda
+  - Tendencias de reviews
+  - Comparativas entre tiendas
+
+#### **3.4 Transferencias de Empleados** (PRIORIDAD MEDIA)
 **Objetivo:** Mover empleados entre tiendas
 
 **Funcionalidades a implementar:**
@@ -108,7 +156,7 @@
   - Asignación masiva de turnos
   - Reportes de distribución de personal
 
-#### **3.3 Configuración Global** (PRIORIDAD BAJA)
+#### **3.5 Configuración Global** (PRIORIDAD BAJA)
 **Objetivo:** Configuraciones que se aplican a todas las tiendas
 
 **Funcionalidades a implementar:**
@@ -144,19 +192,31 @@
 
 ## 🎯 **PLAN DE TRABAJO PARA MAÑANA**
 
-### **Opción 1: Dashboard Global (Recomendado)**
+### **Opción 1: Performance Review de Empleados** (⭐ **NUEVO - RECOMENDADO**)
+1. **Crear componente `PerformanceReview.tsx`**
+2. **Implementar formularios de evaluación**
+3. **Sistema de métricas de rendimiento**
+4. **Historial y reportes de performance**
+
+### **Opción 2: Dashboard Global**
 1. **Crear componente `DistrictManagerDashboard.tsx`**
 2. **Implementar métricas consolidadas**
 3. **Agregar gráficos y visualizaciones**
 4. **Sistema de alertas básico**
 
-### **Opción 2: Transferencias de Empleados**
+### **Opción 3: Integración Google Maps + Reviews** (⭐ **NUEVO**)
+1. **Implementar link a Google Maps**
+2. **Sistema básico de scraping de reviews**
+3. **Detección de menciones de empleados**
+4. **Dashboard de reputación**
+
+### **Opción 4: Transferencias de Empleados**
 1. **Crear componente `EmployeeTransfer.tsx`**
 2. **Implementar lógica de transferencia**
 3. **Validaciones y confirmaciones**
 4. **Historial de transferencias**
 
-### **Opción 3: Configuración Global**
+### **Opción 5: Configuración Global**
 1. **Plantillas globales de horarios**
 2. **Configuración masiva de tiendas**
 3. **Sincronización de feriados**
@@ -195,6 +255,63 @@
 2. **Optimizar consultas Firebase** si el rendimiento se ve afectado
 3. **Implementar caché** para datos globales si es necesario
 4. **Agregar tests unitarios** para las nuevas funcionalidades
+
+## 🔍 **CONSULTAS TÉCNICAS - GOOGLE MAPS & REVIEWS**
+
+### **¿Es posible implementar scraping de Google Reviews?**
+
+**✅ SÍ, pero con consideraciones importantes:**
+
+#### **Opciones Técnicas:**
+
+1. **🌐 Google Places API (Recomendado)**:
+   - **Ventajas**: Oficial, confiable, sin problemas legales
+   - **Desventajas**: Costo por consulta, límites de rate
+   - **Implementación**: `google-places-api` npm package
+   - **Costo**: ~$0.017 por review
+
+2. **🕷️ Web Scraping (Puppeteer/Playwright)**:
+   - **Ventajas**: Gratuito, acceso completo
+   - **Desventajas**: Frágil, puede romperse con cambios de Google
+   - **Riesgos**: Posibles bloqueos de IP, términos de servicio
+
+3. **🔗 Google My Business API**:
+   - **Ventajas**: Oficial, datos de negocio
+   - **Desventajas**: Requiere verificación de negocio
+   - **Limitaciones**: Solo para negocios verificados
+
+#### **Implementación Recomendada:**
+
+```typescript
+// Ejemplo con Google Places API
+interface GoogleReview {
+  author_name: string;
+  rating: number;
+  text: string;
+  time: number;
+  mentions?: string[]; // Empleados mencionados
+}
+
+// Detección de menciones
+const detectEmployeeMentions = (reviewText: string, employees: Employee[]) => {
+  return employees.filter(emp => 
+    reviewText.toLowerCase().includes(emp.name.toLowerCase())
+  );
+};
+```
+
+#### **Consideraciones Legales:**
+- ✅ **Google Places API**: Completamente legal
+- ⚠️ **Web Scraping**: Revisar términos de servicio de Google
+- 📋 **GDPR**: Considerar privacidad de datos de empleados
+
+#### **Plan de Implementación Sugerido:**
+1. **Fase 1**: Link directo a Google Maps
+2. **Fase 2**: Google Places API para reviews básicos
+3. **Fase 3**: Sistema de detección de menciones
+4. **Fase 4**: Dashboard de reputación
+
+**¿Te parece bien empezar con Google Places API?** Es la opción más segura y confiable.
 
 ---
 
