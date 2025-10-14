@@ -601,17 +601,17 @@ export function HolidayIntegration() {
                           <>
                             <button
                               onClick={() => handleEditHoliday(holiday)}
-                              className="p-1 rounded-full bg-blue-500 text-white hover:bg-blue-600 transition-colors"
+                              className="text-primary-600 hover:text-primary-800"
                               title="Editar feriado"
                             >
-                              <Edit className="w-3 h-3" />
+                              <Edit className="w-4 h-4" />
                             </button>
                             <button
                               onClick={() => handleDeleteHoliday(holiday)}
-                              className="p-1 rounded-full bg-red-500 text-white hover:bg-red-600 transition-colors"
+                              className="text-red-600 hover:text-red-800"
                               title="Eliminar feriado"
                             >
-                              <Trash2 className="w-3 h-3" />
+                              <Trash2 className="w-4 h-4" />
                             </button>
                           </>
                         );
