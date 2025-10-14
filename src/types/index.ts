@@ -51,6 +51,18 @@ export interface StoreException {
   isHolidayException?: boolean; // Marca para identificar excepciones de feriados
 }
 
+export interface Store {
+  id: string;
+  name: string;
+  address?: string;
+  phone?: string;
+  email?: string;
+  employees?: Employee[]; // Opcional, para simulación o datos agregados
+  shifts?: Shift[];       // Opcional, para simulación o datos agregados
+  storeSchedule?: StoreSchedule[];
+  settings?: Record<string, any>; // Para futuras configuraciones específicas de la tienda
+}
+
 export interface Shift {
   id: string;
   employeeId: string;

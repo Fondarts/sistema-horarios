@@ -10,7 +10,7 @@ interface StoreSelectorProps {
 }
 
 export function StoreSelector({ onStoreSelect }: StoreSelectorProps) {
-  const { availableStores, createStore, updateStore, deleteStore } = useStore();
+  const { stores, createStore, updateStore, deleteStore } = useStore();
   const { currentEmployee } = useAuth();
   const { employees } = useEmployees();
   const { shifts } = useSchedule();
@@ -125,7 +125,7 @@ export function StoreSelector({ onStoreSelect }: StoreSelectorProps) {
               <Building2 className="w-8 h-8 text-blue-600 dark:text-blue-400" />
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Tiendas Activas</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{availableStores.length}</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{stores.length}</p>
               </div>
             </div>
           </div>
@@ -169,7 +169,7 @@ export function StoreSelector({ onStoreSelect }: StoreSelectorProps) {
           </div>
 
           <div className="p-6">
-            {availableStores.length === 0 ? (
+            {stores.length === 0 ? (
               <div className="text-center py-12">
                 <Building2 className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
@@ -188,7 +188,7 @@ export function StoreSelector({ onStoreSelect }: StoreSelectorProps) {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {availableStores.map((store) => {
+                {stores.map((store) => {
                   const stats = getStoreStats(store.id);
                   return (
                     <div
