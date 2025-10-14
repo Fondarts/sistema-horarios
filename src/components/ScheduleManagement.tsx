@@ -177,6 +177,7 @@ export default function ScheduleManagement() {
   };
 
       const handleDragStart = (e: React.MouseEvent | React.TouchEvent, shift: Shift) => {
+        e.preventDefault(); // Prevenir scroll del chart
         setDraggedShift(shift);
         const target = e.currentTarget as HTMLDivElement;
         const rect = target.getBoundingClientRect();
@@ -186,13 +187,13 @@ export default function ScheduleManagement() {
 
   const handleResizeStart = (e: React.MouseEvent | React.TouchEvent, shift: Shift, handle: 'start' | 'end') => {
     e.stopPropagation(); // Prevent triggering drag
+    e.preventDefault(); // Prevenir scroll del chart
     setResizingShift(shift);
     setResizeHandle(handle);
     const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
     const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
     setDragStart({ x: clientX, y: clientY });
     setIsDraggingOrResizing(true);
-    e.preventDefault();
   };
 
   const createShift = async (employeeId: string, date: string, hour: number) => {
@@ -490,6 +491,10 @@ export default function ScheduleManagement() {
       // Global event listeners for drag and resize functionality
       useEffect(() => {
         const handleGlobalMouseMove = async (e: MouseEvent | TouchEvent) => {
+          // Prevenir scroll del chart cuando se está arrastrando o redimensionando
+          if (draggedShift || resizingShift) {
+            e.preventDefault();
+          }
       if (!ganttRef.current) return;
 
       const rect = ganttRef.current.getBoundingClientRect();
@@ -603,8 +608,8 @@ export default function ScheduleManagement() {
   };
 
     if (draggedShift || resizingShift) {
-      document.addEventListener('mousemove', handleGlobalMouseMove);
-      document.addEventListener('mouseup', handleGlobalMouseUp);
+      document.addEventListener('mousemove', handleGlobalMouseMove, { passive: false });
+      document.addEventListener('mouseup', handleGlobalMouseUp, { passive: false });
       document.addEventListener('touchmove', handleGlobalMouseMove, { passive: false });
       document.addEventListener('touchend', handleGlobalMouseUp, { passive: false });
     }
