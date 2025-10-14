@@ -150,15 +150,16 @@ export default function EmployeeDashboard() {
                 </button>
               )}
               
-              {/* Menú hamburguesa - solo visible en móvil */}
-              <HamburgerMenu 
-                activeTab={activeTab}
-                onTabChange={(tab) => setActiveTab(tab as 'schedule' | 'vacations')}
-                isManager={false}
-                onShowKeyboardHelp={() => setShowKeyboardHelp(true)}
-                onLogout={logout}
-              />
             </div>
+            
+            {/* Menú hamburguesa - solo visible en móvil */}
+            <HamburgerMenu 
+              activeTab={activeTab}
+              onTabChange={(tab) => setActiveTab(tab as 'schedule' | 'vacations')}
+              isManager={false}
+              onShowKeyboardHelp={() => setShowKeyboardHelp(true)}
+              onLogout={logout}
+            />
           </div>
         </div>
       </div>

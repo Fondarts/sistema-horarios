@@ -176,15 +176,16 @@ export function ManagerDashboard() {
                 </button>
               )}
               
-              {/* Menú hamburguesa - solo visible en móvil */}
-              <HamburgerMenu 
-                activeTab={activeTab}
-                onTabChange={(tab) => setActiveTab(tab as TabType)}
-                isManager={true}
-                onShowKeyboardHelp={() => setShowKeyboardHelp(true)}
-                onLogout={logout}
-              />
             </div>
+            
+            {/* Menú hamburguesa - solo visible en móvil */}
+            <HamburgerMenu 
+              activeTab={activeTab}
+              onTabChange={(tab) => setActiveTab(tab as TabType)}
+              isManager={true}
+              onShowKeyboardHelp={() => setShowKeyboardHelp(true)}
+              onLogout={logout}
+            />
           </div>
         </div>
       </header>
