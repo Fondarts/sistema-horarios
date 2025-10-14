@@ -819,6 +819,119 @@ export default function ScheduleManagement() {
                             {hour}:00
                           </div>
                         </div>
+                        
+                        {/* Render shift bars for this hour */}
+                        {employeesOnDay.map((employeeId, empIndex) => {
+                          const employeeShifts = groupedShifts[dayString]?.[employeeId] || [];
+                          return employeeShifts.map((shift, shiftIndex) => {
+                            const employee = employees.find(emp => emp.id === shift.employeeId);
+                            const shiftStartHour = parseInt(shift.startTime.split(':')[0]);
+                            const shiftStartMinute = parseInt(shift.startTime.split(':')[1]);
+                            const shiftEndHour = parseInt(shift.endTime.split(':')[0]);
+                            const shiftEndMinute = parseInt(shift.endTime.split(':')[1]);
+                            
+                            // Calculate position and width based on the hour grid
+                            const shiftStartTimeInHours = shiftStartHour + (shiftStartMinute / 60);
+                            const shiftEndTimeInHours = shiftEndHour + (shiftEndMinute / 60);
+                            const durationInHours = shiftEndTimeInHours - shiftStartTimeInHours;
+                            
+                            // Check if this shift overlaps with this hour cell
+                            const hourStart = hour;
+                            const hourEnd = hour + (isMobile ? 2 : 1);
+                            
+                            if (shiftStartTimeInHours >= hourEnd || shiftEndTimeInHours <= hourStart) {
+                              return null; // Shift doesn't overlap with this hour
+                            }
+                            
+                            // Calculate position within this hour cell
+                            const startInCell = Math.max(0, shiftStartTimeInHours - hourStart);
+                            const endInCell = Math.min(hourEnd - hourStart, shiftEndTimeInHours - hourStart);
+                            const durationInCell = endInCell - startInCell;
+                            
+                            const leftPercent = (startInCell / (hourEnd - hourStart)) * 100;
+                            const widthPercent = (durationInCell / (hourEnd - hourStart)) * 100;
+                            
+                            const top = (isHolidayDay ? 55 : 15) + (shiftIndex * 35);
+                            
+                            return (
+                              <div
+                                key={shift.id}
+                                className="absolute rounded text-xs shift-bar"
+                                style={{
+                                  left: `${leftPercent}%`,
+                                  width: `${widthPercent}%`,
+                                  top: `${top}px`,
+                                  height: '32px',
+                                  zIndex: 10,
+                                  backgroundColor: employee?.color || '#3B82F6',
+                                  color: getTextColorForBackground(employee?.color || '#3B82F6'),
+                                  padding: '6px 8px 6px 8px'
+                                }}
+                                onMouseDown={(e) => handleDragStart(e, shift)}
+                                onDoubleClick={(e) => {
+                                  e.stopPropagation();
+                                  e.preventDefault();
+                                  openEditShiftModal(shift);
+                                }}
+                              >
+                                {/* Resize handle - Start (left) */}
+                                <div
+                                  className="absolute left-0 top-0 w-2 h-full cursor-ew-resize rounded-l"
+                                  style={{
+                                    backgroundColor: getTextColorForBackground(employee?.color || '#3B82F6'),
+                                    opacity: 0.3
+                                  }}
+                                  onMouseDown={(e) => {
+                                    e.stopPropagation();
+                                    handleResizeStart(e, shift, 'start');
+                                  }}
+                                  onMouseEnter={(e) => {
+                                    e.currentTarget.style.opacity = '0.5';
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    e.currentTarget.style.opacity = '0.3';
+                                  }}
+                                  title="Arrastra para cambiar hora de inicio"
+                                />
+                                
+                                {/* Main shift content */}
+                                <div className="w-full h-full cursor-move">
+                                  <div className="font-medium text-xs leading-tight">
+                                    {employee?.name}
+                                  </div>
+                                  <div className="text-xs opacity-90 leading-tight">
+                                    <div className="truncate">
+                                      {shift.startTime}-{shift.endTime}
+                                    </div>
+                                    <div className="text-xs opacity-75">
+                                      {formatHours(shift.hours)}
+                                    </div>
+                                  </div>
+                                </div>
+                                
+                                {/* Resize handle - End (right) */}
+                                <div
+                                  className="absolute right-0 top-0 w-2 h-full cursor-ew-resize rounded-r"
+                                  style={{
+                                    backgroundColor: getTextColorForBackground(employee?.color || '#3B82F6'),
+                                    opacity: 0.3
+                                  }}
+                                  onMouseDown={(e) => {
+                                    e.stopPropagation();
+                                    handleResizeStart(e, shift, 'end');
+                                  }}
+                                  onMouseEnter={(e) => {
+                                    e.currentTarget.style.opacity = '0.5';
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    e.currentTarget.style.opacity = '0.3';
+                                  }}
+                                  title="Arrastra para cambiar hora de fin"
+                                />
+                              </div>
+                            );
+                          });
+                        })}
                       </div>
                     );
                   })}
@@ -846,125 +959,6 @@ export default function ScheduleManagement() {
                     </div>
                   )}
 
-                  {/* Shift bars for this day */}
-                  {dayShifts.map((shift, shiftIndex) => {
-                    const employee = employees.find(emp => emp.id === shift.employeeId);
-                    const shiftStartHour = parseInt(shift.startTime.split(':')[0]);
-                    const shiftEndHour = parseInt(shift.endTime.split(':')[0]);
-                    const shiftStartMinute = parseInt(shift.startTime.split(':')[1]);
-                    const shiftEndMinute = parseInt(shift.endTime.split(':')[1]);
-                    
-                    // Calculate position and width based on the hour grid
-                    const shiftStartTimeInHours = shiftStartHour + (shiftStartMinute / 60);
-                    const shiftEndTimeInHours = shiftEndHour + (shiftEndMinute / 60);
-                    const durationInHours = shiftEndTimeInHours - shiftStartTimeInHours;
-                    
-                    // Position relative to the hour columns using dynamic pixel widths
-                    // The grid has 200px for day/employee + hour columns (dynamic width based on zoom)
-                    // Calculate position based on the actual shift start time relative to the visible range
-                    const columnWidth = getColumnWidth();
-                    const margin = 2; // Small margin to prevent overlapping with hour labels
-                    // Ajustar para móvil (cada 2 horas) vs desktop (cada hora)
-                    const dayColumnWidth = isMobile ? 60 : (isCompactMode ? 100 : 120);
-                    const hourDivisor = isMobile ? 2 : 1;
-                    
-                    // En desktop con 1fr, calcular posición basada en porcentaje
-                    let left, width;
-                    if (!isMobile) {
-                      const totalHours = endHour - startHour + 1;
-                      const startPosition = (shiftStartTimeInHours - startHour) / totalHours;
-                      const durationPosition = durationInHours / totalHours;
-                      const containerWidth = scrollContainerRef.current?.offsetWidth || 800; // Fallback width
-                      const availableWidth = containerWidth - dayColumnWidth;
-                      left = dayColumnWidth + (startPosition * availableWidth) + margin;
-                      width = (durationPosition * availableWidth) - (margin * 2);
-                    } else {
-                      // En móvil mantener cálculo con columnas fijas
-                      left = dayColumnWidth + (((shiftStartTimeInHours - startHour) / hourDivisor) * 80) + margin;
-                      width = ((durationInHours / hourDivisor) * 80) - (margin * 2);
-                    }
-                    const top = (isHolidayDay ? 55 : 15) + (shiftIndex * 35); // Offset for holiday block
-                    
-                    return (
-                      <div
-                        key={shift.id}
-                        className="absolute rounded text-xs shift-bar"
-                        style={{
-                          left: `${left}px`,
-                          width: `${width}px`,
-                          top: `${top}px`,
-                          height: '32px',
-                          zIndex: 10,
-                          backgroundColor: employee?.color || '#3B82F6',
-                          color: getTextColorForBackground(employee?.color || '#3B82F6'),
-                          padding: '6px 8px 6px 8px' // top right bottom left
-                        }}
-                      >
-                        {/* Resize handle - Start (left) */}
-                        <div
-                          className="absolute left-0 top-0 w-2 h-full cursor-ew-resize rounded-l"
-                          style={{
-                            backgroundColor: getTextColorForBackground(employee?.color || '#3B82F6'),
-                            opacity: 0.3
-                          }}
-                          onMouseDown={(e) => {
-                            e.stopPropagation();
-                            handleResizeStart(e, shift, 'start');
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.opacity = '0.5';
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.opacity = '0.3';
-                          }}
-                          title="Arrastra para cambiar hora de inicio"
-                        />
-                        
-                        {/* Main shift content */}
-                        <div
-                          className="w-full h-full cursor-move"
-                          onMouseDown={(e) => handleMouseDown(e, shift)}
-                          onDoubleClick={(e) => {
-                            e.stopPropagation();
-                            e.preventDefault();
-                            openEditShiftModal(shift);
-                          }}
-                        >
-                          <div className="font-medium text-xs leading-tight">
-                            {employee?.name}
-                          </div>
-                          <div className="text-xs opacity-90 leading-tight">
-                            <div className="truncate">
-                              {shift.startTime}-{shift.endTime}
-                            </div>
-                            <div className="text-xs opacity-75">
-                              {formatHours(shift.hours)}
-                            </div>
-                          </div>
-                        </div>
-                        
-                        {/* Resize handle - End (right) */}
-                        <div
-                          className="absolute right-0 top-0 w-2 h-full cursor-ew-resize rounded-r"
-                          style={{
-                            backgroundColor: getTextColorForBackground(employee?.color || '#3B82F6'),
-                            opacity: 0.3
-                          }}
-                          onMouseDown={(e) => {
-                            e.stopPropagation();
-                            handleResizeStart(e, shift, 'end');
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.opacity = '0.5';
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.opacity = '0.3';
-                          }}
-                          title="Arrastra para cambiar hora de fin"
-                        />
-                      </div>
-                    );
-                  })}
                 </div>
               );
             })}
