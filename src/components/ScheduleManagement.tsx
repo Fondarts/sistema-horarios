@@ -549,37 +549,9 @@ export default function ScheduleManagement() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Gestión de Horarios</h2>
-          <p className="text-gray-600 dark:text-gray-400">Planifica los turnos de tus empleados</p>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Gestión de Horarios - Planifica los turnos de tus empleados</h2>
         </div>
         <div className="flex items-center space-x-4">
-          {/* Zoom Controls */}
-          <div className="flex items-center space-x-2 bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
-            <button
-              onClick={zoomOut}
-              className="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-gray-700 dark:text-gray-300"
-              title="Alejar"
-            >
-              <span className="text-lg font-bold">−</span>
-            </button>
-            <span className="px-2 text-sm text-gray-600 dark:text-gray-300 min-w-[3rem] text-center">
-              {Math.round(zoomLevel * 100)}%
-            </span>
-            <button
-              onClick={zoomIn}
-              className="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-gray-700 dark:text-gray-300"
-              title="Acercar"
-            >
-              <span className="text-lg font-bold">+</span>
-            </button>
-            <button
-              onClick={resetZoom}
-              className="px-2 py-1 text-xs text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 transition-colors"
-              title="Resetear zoom"
-            >
-              Reset
-            </button>
-          </div>
           
           {/* 24h Toggle */}
           <div className="flex items-center space-x-2 bg-gray-100 rounded-lg p-2">
