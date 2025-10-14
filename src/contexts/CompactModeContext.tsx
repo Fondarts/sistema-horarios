@@ -13,9 +13,19 @@ const CompactModeContext = createContext<CompactModeContextType | undefined>(und
 export function CompactModeProvider({ children }: { children: ReactNode }) {
   const [isCompactMode, setIsCompactMode] = useState(false);
   const [screenSize, setScreenSize] = useState({
-    width: typeof window !== 'undefined' ? window.innerWidth : 1024,
-    height: typeof window !== 'undefined' ? window.innerHeight : 768
+    width: 1024,
+    height: 768
   });
+
+  // Inicializar tamaño de pantalla en el cliente
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setScreenSize({
+        width: window.innerWidth,
+        height: window.innerHeight
+      });
+    }
+  }, []);
 
   // Detectar tamaño de pantalla
   const isMobile = screenSize.width < 768;
@@ -24,10 +34,12 @@ export function CompactModeProvider({ children }: { children: ReactNode }) {
 
   // Auto-activar modo compacto en móviles
   useEffect(() => {
+    console.log('CompactMode: isMobile =', isMobile, 'screenSize =', screenSize);
     if (isMobile) {
+      console.log('CompactMode: Activando modo compacto automáticamente');
       setIsCompactMode(true);
     }
-  }, [isMobile]);
+  }, [isMobile, screenSize]);
 
   // Escuchar cambios de tamaño de ventana
   useEffect(() => {

@@ -347,6 +347,7 @@ export default function ScheduleManagement() {
   const getColumnWidth = () => {
     // En modo compacto, columnas más estrechas
     const baseWidth = isCompactMode ? 40 : 60;
+    console.log('ScheduleManagement: isCompactMode =', isCompactMode, 'baseWidth =', baseWidth, 'zoomLevel =', zoomLevel);
     return Math.round(baseWidth * zoomLevel);
   };
 
