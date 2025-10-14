@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Download, CheckCircle, AlertCircle, RefreshCw } from 'lucide-react';
+import { Calendar, Download, CheckCircle, AlertCircle, RefreshCw, Plus } from 'lucide-react';
 import { format, addYears, isSameDay, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -10,6 +10,7 @@ interface Holiday {
   type: 'national' | 'regional' | 'local';
   description?: string;
   isRecurring: boolean;
+  addedToCalendar?: boolean;
 }
 
 export function HolidayIntegration() {
@@ -27,7 +28,9 @@ export function HolidayIntegration() {
         name: 'Año Nuevo',
         type: 'national',
         description: 'Día de Año Nuevo',
-        isRecurring: true
+        isRecurring: true,
+        addedToCalendar: false,
+        addedToCalendar: false
       },
       {
         id: `epiphany-${year}`,
@@ -35,7 +38,9 @@ export function HolidayIntegration() {
         name: 'Epifanía del Señor',
         type: 'national',
         description: 'Día de Reyes',
-        isRecurring: true
+        isRecurring: true,
+        addedToCalendar: false,
+        addedToCalendar: false
       },
       {
         id: `good-friday-${year}`,
@@ -43,7 +48,8 @@ export function HolidayIntegration() {
         name: 'Viernes Santo',
         type: 'national',
         description: 'Viernes Santo',
-        isRecurring: true
+        isRecurring: true,
+        addedToCalendar: false
       },
       {
         id: `labour-day-${year}`,
@@ -51,7 +57,8 @@ export function HolidayIntegration() {
         name: 'Día del Trabajador',
         type: 'national',
         description: 'Día Internacional del Trabajador',
-        isRecurring: true
+        isRecurring: true,
+        addedToCalendar: false
       },
       {
         id: `assumption-${year}`,
@@ -59,7 +66,8 @@ export function HolidayIntegration() {
         name: 'Asunción de la Virgen',
         type: 'national',
         description: 'Asunción de la Virgen María',
-        isRecurring: true
+        isRecurring: true,
+        addedToCalendar: false
       },
       {
         id: `hispanic-day-${year}`,
@@ -67,7 +75,8 @@ export function HolidayIntegration() {
         name: 'Fiesta Nacional de España',
         type: 'national',
         description: 'Día de la Hispanidad',
-        isRecurring: true
+        isRecurring: true,
+        addedToCalendar: false
       },
       {
         id: `all-saints-${year}`,
@@ -75,7 +84,8 @@ export function HolidayIntegration() {
         name: 'Día de Todos los Santos',
         type: 'national',
         description: 'Día de Todos los Santos',
-        isRecurring: true
+        isRecurring: true,
+        addedToCalendar: false
       },
       {
         id: `constitution-day-${year}`,
@@ -83,7 +93,8 @@ export function HolidayIntegration() {
         name: 'Día de la Constitución',
         type: 'national',
         description: 'Día de la Constitución Española',
-        isRecurring: true
+        isRecurring: true,
+        addedToCalendar: false
       },
       {
         id: `immaculate-${year}`,
@@ -91,7 +102,8 @@ export function HolidayIntegration() {
         name: 'Inmaculada Concepción',
         type: 'national',
         description: 'Inmaculada Concepción',
-        isRecurring: true
+        isRecurring: true,
+        addedToCalendar: false
       },
       {
         id: `christmas-${year}`,
@@ -99,7 +111,8 @@ export function HolidayIntegration() {
         name: 'Navidad',
         type: 'national',
         description: 'Día de Navidad',
-        isRecurring: true
+        isRecurring: true,
+        addedToCalendar: false
       }
     ];
   };
@@ -137,7 +150,8 @@ export function HolidayIntegration() {
         name: 'Viernes Santo',
         type: 'national',
         description: 'Viernes Santo',
-        isRecurring: true
+        isRecurring: true,
+        addedToCalendar: false
       }
     ];
   };
@@ -173,6 +187,14 @@ export function HolidayIntegration() {
 
   const handleSyncHolidays = () => {
     loadHolidays(selectedYear);
+  };
+
+  const handleAddToCalendar = (holidayId: string) => {
+    setHolidays(prev => prev.map(holiday => 
+      holiday.id === holidayId 
+        ? { ...holiday, addedToCalendar: !holiday.addedToCalendar }
+        : holiday
+    ));
   };
 
   const getHolidayTypeColor = (type: string) => {
@@ -259,7 +281,11 @@ export function HolidayIntegration() {
             {holidays.map((holiday) => (
               <div
                 key={holiday.id}
-                className="bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-4 hover:shadow-md transition-shadow"
+                className={`bg-white dark:bg-gray-700 border rounded-lg p-4 hover:shadow-md transition-shadow ${
+                  holiday.addedToCalendar 
+                    ? 'border-orange-300 dark:border-orange-600 bg-orange-50 dark:bg-orange-900/20' 
+                    : 'border-gray-200 dark:border-gray-600'
+                }`}
               >
                 <div className="flex items-start justify-between mb-2">
                   <div className="flex items-center">
@@ -268,9 +294,22 @@ export function HolidayIntegration() {
                       {format(parseISO(holiday.date), 'dd/MM', { locale: es })}
                     </span>
                   </div>
-                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getHolidayTypeColor(holiday.type)}`}>
-                    {getHolidayTypeText(holiday.type)}
-                  </span>
+                  <div className="flex items-center space-x-2">
+                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getHolidayTypeColor(holiday.type)}`}>
+                      {getHolidayTypeText(holiday.type)}
+                    </span>
+                    <button
+                      onClick={() => handleAddToCalendar(holiday.id)}
+                      className={`p-1 rounded-full transition-colors ${
+                        holiday.addedToCalendar
+                          ? 'bg-orange-500 text-white hover:bg-orange-600'
+                          : 'bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-500'
+                      }`}
+                      title={holiday.addedToCalendar ? 'Quitar del calendario' : 'Agregar al calendario'}
+                    >
+                      <Plus className="w-3 h-3" />
+                    </button>
+                  </div>
                 </div>
                 
                 <h4 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">

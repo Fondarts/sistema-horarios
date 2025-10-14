@@ -1,52 +1,27 @@
 import React, { useState } from 'react';
 import { Calendar, Plus, Edit, Trash2, Check, X, Clock, User } from 'lucide-react';
 import { useEmployees } from '../contexts/EmployeeContext';
+import { useVacation, VacationRequest } from '../contexts/VacationContext';
+import { useAuth } from '../contexts/AuthContext';
 import { format, addDays, isAfter, isBefore, differenceInDays } from 'date-fns';
 import { es } from 'date-fns/locale';
 
-interface VacationRequest {
-  id: string;
-  employeeId: string;
-  employeeName: string;
-  startDate: string;
-  endDate: string;
-  reason: string;
-  status: 'pending' | 'approved' | 'rejected';
-  requestedAt: string;
-  approvedBy?: string;
-  approvedAt?: string;
-}
-
 export function VacationManagement() {
   const { employees } = useEmployees();
+  const { currentEmployee } = useAuth();
+  const { 
+    vacationRequests, 
+    addVacationRequest, 
+    updateVacationRequest, 
+    deleteVacationRequest,
+    approveVacationRequest,
+    rejectVacationRequest,
+    isLoading 
+  } = useVacation();
+  
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingRequest, setEditingRequest] = useState<VacationRequest | null>(null);
   const [selectedEmployee, setSelectedEmployee] = useState<string>('');
-  const [vacationRequests, setVacationRequests] = useState<VacationRequest[]>([
-    // Datos de ejemplo
-    {
-      id: '1',
-      employeeId: '1',
-      employeeName: 'Ana García',
-      startDate: '2024-12-25',
-      endDate: '2024-12-31',
-      reason: 'Vacaciones de Navidad',
-      status: 'pending',
-      requestedAt: '2024-12-01'
-    },
-    {
-      id: '2',
-      employeeId: '2',
-      employeeName: 'Carlos López',
-      startDate: '2024-12-20',
-      endDate: '2024-12-22',
-      reason: 'Días libres personales',
-      status: 'approved',
-      requestedAt: '2024-11-28',
-      approvedBy: 'Manager',
-      approvedAt: '2024-11-30'
-    }
-  ]);
 
   const [formData, setFormData] = useState({
     employeeId: '',
@@ -55,35 +30,39 @@ export function VacationManagement() {
     reason: ''
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (editingRequest) {
-      // Editar solicitud existente
-      setVacationRequests(prev => prev.map(req => 
-        req.id === editingRequest.id 
-          ? { ...req, ...formData, employeeName: employees.find(emp => emp.id === formData.employeeId)?.name || '' }
-          : req
-      ));
-    } else {
-      // Crear nueva solicitud
-      const newRequest: VacationRequest = {
-        id: Date.now().toString(),
-        employeeId: formData.employeeId,
-        employeeName: employees.find(emp => emp.id === formData.employeeId)?.name || '',
-        startDate: formData.startDate,
-        endDate: formData.endDate,
-        reason: formData.reason,
-        status: 'pending',
-        requestedAt: new Date().toISOString()
-      };
+    try {
+      if (editingRequest) {
+        // Editar solicitud existente
+        await updateVacationRequest(editingRequest.id, {
+          employeeId: formData.employeeId,
+          employeeName: employees.find(emp => emp.id === formData.employeeId)?.name || '',
+          startDate: formData.startDate,
+          endDate: formData.endDate,
+          reason: formData.reason
+        });
+      } else {
+        // Crear nueva solicitud
+        const newRequest = {
+          employeeId: formData.employeeId,
+          employeeName: employees.find(emp => emp.id === formData.employeeId)?.name || '',
+          startDate: formData.startDate,
+          endDate: formData.endDate,
+          reason: formData.reason,
+          status: 'pending' as const
+        };
+        
+        await addVacationRequest(newRequest);
+      }
       
-      setVacationRequests(prev => [...prev, newRequest]);
+      setFormData({ employeeId: '', startDate: '', endDate: '', reason: '' });
+      setShowAddForm(false);
+      setEditingRequest(null);
+    } catch (error) {
+      console.error('Error saving vacation request:', error);
     }
-    
-    setFormData({ employeeId: '', startDate: '', endDate: '', reason: '' });
-    setShowAddForm(false);
-    setEditingRequest(null);
   };
 
   const handleEdit = (request: VacationRequest) => {
@@ -97,21 +76,26 @@ export function VacationManagement() {
     setShowAddForm(true);
   };
 
-  const handleDelete = (id: string) => {
-    setVacationRequests(prev => prev.filter(req => req.id !== id));
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteVacationRequest(id);
+    } catch (error) {
+      console.error('Error deleting vacation request:', error);
+    }
   };
 
-  const handleStatusChange = (id: string, status: 'approved' | 'rejected') => {
-    setVacationRequests(prev => prev.map(req => 
-      req.id === id 
-        ? { 
-            ...req, 
-            status, 
-            approvedBy: 'Manager', // En una app real sería el usuario actual
-            approvedAt: new Date().toISOString()
-          }
-        : req
-    ));
+  const handleStatusChange = async (id: string, status: 'approved' | 'rejected') => {
+    try {
+      const approvedBy = currentEmployee?.name || 'Manager';
+      
+      if (status === 'approved') {
+        await approveVacationRequest(id, approvedBy);
+      } else {
+        await rejectVacationRequest(id, approvedBy);
+      }
+    } catch (error) {
+      console.error('Error updating vacation request status:', error);
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -247,7 +231,13 @@ export function VacationManagement() {
       <div className="card">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-6">Solicitudes de Vacaciones</h3>
         
-        <div className="overflow-x-auto">
+        {isLoading ? (
+          <div className="flex items-center justify-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+            <span className="ml-2 text-gray-600 dark:text-gray-400">Cargando solicitudes...</span>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead className="bg-gray-50 dark:bg-gray-700">
               <tr>
@@ -345,7 +335,8 @@ export function VacationManagement() {
               ))}
             </tbody>
           </table>
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );
