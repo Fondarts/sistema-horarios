@@ -29,7 +29,6 @@ export function HolidayIntegration() {
         type: 'national',
         description: 'Día de Año Nuevo',
         isRecurring: true,
-        addedToCalendar: false,
         addedToCalendar: false
       },
       {
@@ -39,7 +38,6 @@ export function HolidayIntegration() {
         type: 'national',
         description: 'Día de Reyes',
         isRecurring: true,
-        addedToCalendar: false,
         addedToCalendar: false
       },
       {
