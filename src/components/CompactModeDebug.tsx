@@ -14,12 +14,34 @@ export function CompactModeDebug() {
         <div>isDesktop: <span className="font-mono">{isDesktop ? 'true' : 'false'}</span></div>
         <div>Screen: <span className="font-mono">{typeof window !== 'undefined' ? `${window.innerWidth}x${window.innerHeight}` : 'N/A'}</span></div>
       </div>
-      <button
-        onClick={toggleCompactMode}
-        className="mt-2 px-3 py-1 bg-yellow-500 text-white rounded text-sm hover:bg-yellow-600"
-      >
-        Toggle Compacto
-      </button>
+      <div className="mt-2 space-y-1">
+        <button
+          onClick={toggleCompactMode}
+          className="w-full px-3 py-1 bg-yellow-500 text-white rounded text-sm hover:bg-yellow-600"
+        >
+          Toggle Compacto
+        </button>
+        <button
+          onClick={() => {
+            // Force compact mode
+            const event = new CustomEvent('forceCompactMode', { detail: true });
+            window.dispatchEvent(event);
+          }}
+          className="w-full px-3 py-1 bg-green-500 text-white rounded text-sm hover:bg-green-600"
+        >
+          Force Compacto
+        </button>
+        <button
+          onClick={() => {
+            // Force normal mode
+            const event = new CustomEvent('forceCompactMode', { detail: false });
+            window.dispatchEvent(event);
+          }}
+          className="w-full px-3 py-1 bg-blue-500 text-white rounded text-sm hover:bg-blue-600"
+        >
+          Force Normal
+        </button>
+      </div>
     </div>
   );
 }
