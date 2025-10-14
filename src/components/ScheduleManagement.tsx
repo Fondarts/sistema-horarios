@@ -176,18 +176,21 @@ export default function ScheduleManagement() {
     e.preventDefault();
   };
 
-  const handleDragStart = (e: React.MouseEvent, shift: Shift) => {
-    setDraggedShift(shift);
-    const target = e.currentTarget as HTMLDivElement;
-    const rect = target.getBoundingClientRect();
-    setDragOffset(e.clientX - rect.left);
-  };
+      const handleDragStart = (e: React.MouseEvent | React.TouchEvent, shift: Shift) => {
+        setDraggedShift(shift);
+        const target = e.currentTarget as HTMLDivElement;
+        const rect = target.getBoundingClientRect();
+        const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+        setDragOffset(clientX - rect.left);
+      };
 
-  const handleResizeStart = (e: React.MouseEvent, shift: Shift, handle: 'start' | 'end') => {
+  const handleResizeStart = (e: React.MouseEvent | React.TouchEvent, shift: Shift, handle: 'start' | 'end') => {
     e.stopPropagation(); // Prevent triggering drag
     setResizingShift(shift);
     setResizeHandle(handle);
-    setDragStart({ x: e.clientX, y: e.clientY });
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    setDragStart({ x: clientX, y: clientY });
     setIsDraggingOrResizing(true);
     e.preventDefault();
   };
@@ -484,14 +487,16 @@ export default function ScheduleManagement() {
     return () => window.removeEventListener('resize', handleResize);
   }, [zoomLevel, show24Hours, hours.length]);
 
-  // Global event listeners for drag and resize functionality
-  useEffect(() => {
-    const handleGlobalMouseMove = async (e: MouseEvent) => {
+      // Global event listeners for drag and resize functionality
+      useEffect(() => {
+        const handleGlobalMouseMove = async (e: MouseEvent | TouchEvent) => {
       if (!ganttRef.current) return;
 
       const rect = ganttRef.current.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
+      const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+      const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+      const x = clientX - rect.left;
+      const y = clientY - rect.top;
 
       // Calculate which day column we're in (200px for day column + hour columns)
       const dayColumnWidth = 200;
@@ -600,11 +605,15 @@ export default function ScheduleManagement() {
     if (draggedShift || resizingShift) {
       document.addEventListener('mousemove', handleGlobalMouseMove);
       document.addEventListener('mouseup', handleGlobalMouseUp);
+      document.addEventListener('touchmove', handleGlobalMouseMove, { passive: false });
+      document.addEventListener('touchend', handleGlobalMouseUp, { passive: false });
     }
 
     return () => {
       document.removeEventListener('mousemove', handleGlobalMouseMove);
       document.removeEventListener('mouseup', handleGlobalMouseUp);
+      document.removeEventListener('touchmove', handleGlobalMouseMove);
+      document.removeEventListener('touchend', handleGlobalMouseUp);
     };
   }, [draggedShift, resizingShift, resizeHandle, hours, updateShift, timeToMinutes, minutesToTime, roundToIncrement]);
 
@@ -956,6 +965,7 @@ export default function ScheduleManagement() {
                             padding: '6px 8px 6px 8px'
                           }}
                           onMouseDown={(e) => handleDragStart(e, shift)}
+                          onTouchStart={(e) => handleDragStart(e, shift)}
                           onDoubleClick={(e) => {
                             e.stopPropagation();
                             e.preventDefault();
@@ -969,10 +979,14 @@ export default function ScheduleManagement() {
                               backgroundColor: getTextColorForBackground(employee?.color || '#3B82F6'),
                               opacity: 0.3
                             }}
-                            onMouseDown={(e) => {
-                              e.stopPropagation();
-                              handleResizeStart(e, shift, 'start');
-                            }}
+                                  onMouseDown={(e) => {
+                                    e.stopPropagation();
+                                    handleResizeStart(e, shift, 'start');
+                                  }}
+                                  onTouchStart={(e) => {
+                                    e.stopPropagation();
+                                    handleResizeStart(e, shift, 'start');
+                                  }}
                             onMouseEnter={(e) => {
                               e.currentTarget.style.opacity = '0.5';
                             }}
@@ -1000,10 +1014,14 @@ export default function ScheduleManagement() {
                               backgroundColor: getTextColorForBackground(employee?.color || '#3B82F6'),
                               opacity: 0.3
                             }}
-                            onMouseDown={(e) => {
-                              e.stopPropagation();
-                              handleResizeStart(e, shift, 'end');
-                            }}
+                                  onMouseDown={(e) => {
+                                    e.stopPropagation();
+                                    handleResizeStart(e, shift, 'end');
+                                  }}
+                                  onTouchStart={(e) => {
+                                    e.stopPropagation();
+                                    handleResizeStart(e, shift, 'end');
+                                  }}
                             onMouseEnter={(e) => {
                               e.currentTarget.style.opacity = '0.5';
                             }}
