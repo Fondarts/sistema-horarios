@@ -8,8 +8,8 @@ import { Logo } from './Logo';
 export default function LoginScreen() {
   const { login } = useAuth();
   const [formData, setFormData] = useState({
-    name: '',
-    pin: ''
+    username: '',
+    password: ''
   });
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -20,7 +20,7 @@ export default function LoginScreen() {
     setIsLoading(true);
 
     try {
-      const result = await login(formData.name, formData.pin);
+      const result = await login(formData.username, formData.password);
       
       if (!result.success) {
         setError(result.message);
@@ -32,7 +32,7 @@ export default function LoginScreen() {
     }
   };
 
-  const handleInputChange = (field: 'name' | 'pin', value: string) => {
+  const handleInputChange = (field: 'username' | 'password', value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     if (error) setError(''); // Limpiar error al escribir
   };
@@ -53,7 +53,7 @@ export default function LoginScreen() {
             Sistema de Horarios
           </h2>
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-            Inicia sesión con tu nombre y PIN
+            Inicia sesión con tu usuario y contraseña
           </p>
         </div>
       </div>
@@ -62,52 +62,45 @@ export default function LoginScreen() {
         <div className="bg-white dark:bg-gray-800 py-8 px-4 shadow sm:rounded-lg sm:px-10 dark:border dark:border-gray-700">
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Nombre Completo
+              <label htmlFor="username" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Usuario
               </label>
               <div className="mt-1 relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <User className="h-5 w-5 text-gray-400 dark:text-gray-500" />
                 </div>
                 <input
-                  id="name"
-                  name="name"
+                  id="username"
+                  name="username"
                   type="text"
                   required
-                  value={formData.name}
-                  onChange={(e) => handleInputChange('name', e.target.value)}
+                  value={formData.username}
+                  onChange={(e) => handleInputChange('username', e.target.value)}
                   className="appearance-none block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:placeholder-gray-400"
-                  placeholder="Ej: Ana Perez"
+                  placeholder="Ej: ana.perez"
                 />
               </div>
             </div>
 
             <div>
-              <label htmlFor="pin" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                PIN de Acceso
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Contraseña
               </label>
               <div className="mt-1 relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <Lock className="h-5 w-5 text-gray-400 dark:text-gray-500" />
                 </div>
                 <input
-                  id="pin"
-                  name="pin"
-                  type="text"
+                  id="password"
+                  name="password"
+                  type="password"
                   required
-                  value={formData.pin}
-                  onChange={(e) => {
-                    // Permitir texto para encargados de distrito, números para empleados normales
-                    const value = e.target.value;
-                    handleInputChange('pin', value);
-                  }}
-                  className="appearance-none block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm font-mono dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:placeholder-gray-400"
-                  placeholder="12345 o admin123"
+                  value={formData.password}
+                  onChange={(e) => handleInputChange('password', e.target.value)}
+                  className="appearance-none block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:placeholder-gray-400"
+                  placeholder="Tu contraseña"
                 />
               </div>
-              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                Ingresa tu PIN (5 dígitos) o clave de acceso
-              </p>
             </div>
 
             {error && (
@@ -126,7 +119,7 @@ export default function LoginScreen() {
             <div className="space-y-3">
               <button
                 type="submit"
-                disabled={isLoading || !formData.name.trim() || !formData.pin.trim()}
+                disabled={isLoading || !formData.username.trim() || !formData.password.trim()}
                 className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
@@ -146,10 +139,10 @@ export default function LoginScreen() {
             </div>
 
             <div className="mt-4 text-xs text-gray-500 space-y-1">
-              <p><strong>Encargado de Distrito:</strong> admin - PIN: admin123</p>
-              <p><strong>Encargado:</strong> Ana Perez - PIN: 12345</p>
-              <p><strong>Empleados:</strong> Luis Gomez - PIN: 23456</p>
-              <p className="text-gray-400">María Rodriguez - PIN: 34567</p>
+              <p><strong>Encargado de Distrito:</strong> admin / admin123</p>
+              <p><strong>Encargado:</strong> ana.perez / 12345</p>
+              <p><strong>Empleados:</strong> luis.gomez / 23456</p>
+              <p className="text-gray-400">maria.rodriguez / 34567</p>
             </div>
           </div>
         </div>

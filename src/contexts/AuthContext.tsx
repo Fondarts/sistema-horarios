@@ -7,7 +7,7 @@ export type UserRole = 'employee' | 'manager' | 'district-manager';
 interface AuthContextType {
   currentEmployee: Employee | null;
   userRole: UserRole | null;
-  login: (name: string, pin: string) => Promise<{ success: boolean; message: string }>;
+  login: (username: string, password: string) => Promise<{ success: boolean; message: string }>;
   logout: () => void;
   isAuthenticated: boolean;
   isManager: boolean;
@@ -58,16 +58,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, [currentEmployee]);
 
-  const login = async (name: string, pin: string): Promise<{ success: boolean; message: string }> => {
+  const login = async (username: string, password: string): Promise<{ success: boolean; message: string }> => {
     try {
       // Verificar si es un encargado de distrito (usuarios especiales)
       const districtManagers = [
-        { name: 'admin', pin: 'admin123', role: 'district-manager' as UserRole },
-        { name: 'distrito', pin: 'distrito123', role: 'district-manager' as UserRole }
+        { username: 'admin', password: 'admin123', role: 'district-manager' as UserRole },
+        { username: 'distrito', password: 'distrito123', role: 'district-manager' as UserRole }
       ];
 
       const districtManager = districtManagers.find(dm => 
-        dm.name.toLowerCase() === name.toLowerCase() && dm.pin === pin
+        dm.username.toLowerCase() === username.toLowerCase() && dm.password === password
       );
 
       if (districtManager) {
@@ -75,8 +75,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
         const tempEmployee: Employee = {
           id: 'district-manager',
           name: 'Encargado de Distrito',
+          username: username,
+          password: password,
           role: 'encargado',
-          pin: pin,
           color: '#8B5CF6',
           weeklyLimit: 0,
           monthlyHoursLimit: 0,
@@ -95,10 +96,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
         };
       }
 
-      // Buscar empleado normal por nombre y PIN
+      // Buscar empleado normal por username y password
       const employee = employees.find(emp => 
-        emp.name.toLowerCase().trim() === name.toLowerCase().trim() && 
-        emp.pin === pin &&
+        emp.username.toLowerCase().trim() === username.toLowerCase().trim() && 
+        emp.password === password &&
         emp.isActive
       );
 

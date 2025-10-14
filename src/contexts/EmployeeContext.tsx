@@ -63,6 +63,8 @@ const mockEmployees: Employee[] = [
   {
     id: '1',
     name: 'Ana Perez',
+    username: 'ana.perez',
+    password: '12345',
     weeklyLimit: 40,
     unavailableTimes: [
       {
@@ -75,23 +77,25 @@ const mockEmployees: Employee[] = [
     birthday: '10/04/1995',
     isActive: true,
     color: '#3B82F6', // Azul
-    pin: '12345',
     role: 'encargado'
   },
   {
     id: '2',
     name: 'Luis Gomez',
+    username: 'luis.gomez',
+    password: '23456',
     weeklyLimit: 35,
     unavailableTimes: [],
     birthday: '15/08/1990',
     isActive: true,
     color: '#10B981', // Verde
-    pin: '23456',
     role: 'empleado'
   },
   {
     id: '3',
     name: 'María Rodriguez',
+    username: 'maria.rodriguez',
+    password: '34567',
     weeklyLimit: 30,
     unavailableTimes: [
       {
@@ -104,18 +108,18 @@ const mockEmployees: Employee[] = [
     birthday: '22/03/1988',
     isActive: true,
     color: '#F59E0B', // Amarillo
-    pin: '34567',
     role: 'empleado'
   },
   {
     id: '4',
     name: 'Carlos Martinez',
+    username: 'carlos.martinez',
+    password: '45678',
     weeklyLimit: 25,
     unavailableTimes: [],
     birthday: '05/12/1992',
     isActive: true,
     color: '#EF4444', // Rojo
-    pin: '45678',
     role: 'empleado'
   },
   {
@@ -133,18 +137,20 @@ const mockEmployees: Employee[] = [
     birthday: '18/07/1996',
     isActive: true,
     color: '#8B5CF6', // Púrpura
-    pin: '56789',
+    username: 'sofia.lopez',
+    password: '56789',
     role: 'empleado'
   },
   {
     id: '6',
     name: 'Diego Fernandez',
+    username: 'diego.fernandez',
+    password: '67890',
     weeklyLimit: 28,
     unavailableTimes: [],
     birthday: '03/11/1991',
     isActive: true,
     color: '#06B6D4', // Cian
-    pin: '67890',
     role: 'empleado'
   },
   {
@@ -162,18 +168,20 @@ const mockEmployees: Employee[] = [
     birthday: '14/09/1994',
     isActive: true,
     color: '#F97316', // Naranja
-    pin: '78901',
+    username: 'valentina.torres',
+    password: '78901',
     role: 'empleado'
   },
   {
     id: '8',
     name: 'Roberto Silva',
+    username: 'roberto.silva',
+    password: '89012',
     weeklyLimit: 30,
     unavailableTimes: [],
     birthday: '28/01/1989',
     isActive: true,
     color: '#84CC16', // Lima
-    pin: '89012',
     role: 'empleado'
   },
   {
@@ -191,18 +199,20 @@ const mockEmployees: Employee[] = [
     birthday: '12/06/1993',
     isActive: true,
     color: '#EC4899', // Rosa
-    pin: '90123',
+    username: 'camila.herrera',
+    password: '90123',
     role: 'empleado'
   },
   {
     id: '10',
     name: 'Andres Morales',
+    username: 'andres.morales',
+    password: '01234',
     weeklyLimit: 35,
     unavailableTimes: [],
     birthday: '07/02/1990',
     isActive: true,
     color: '#6B7280', // Gris
-    pin: '01234',
     role: 'empleado'
   }
 ];
@@ -263,7 +273,6 @@ export function EmployeeProvider({ children }: { children: ReactNode }) {
         ...employeeData,
         storeId: currentStore.id,
         color: employeeData.color || getNextAvailableColor(employees),
-        pin: employeeData.pin || generateUniquePin(employees),
         role: employeeData.role || 'empleado'
       };
 

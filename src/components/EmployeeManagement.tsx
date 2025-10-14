@@ -37,10 +37,11 @@ export function EmployeeManagement() {
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
   const [formData, setFormData] = useState({
     name: '',
+    username: '',
+    password: '',
     weeklyLimit: 40,
     birthday: '',
     color: '#3B82F6',
-    pin: '',
     isActive: true,
     role: 'empleado' as 'encargado' | 'empleado',
     unavailableTimes: [] as UnavailableTime[]
@@ -144,10 +145,11 @@ export function EmployeeManagement() {
     setEditingEmployee(employee);
     setFormData({
       name: employee.name,
+      username: employee.username,
+      password: employee.password,
       weeklyLimit: employee.weeklyLimit,
       birthday: employee.birthday,
       color: employee.color,
-      pin: employee.pin,
       isActive: employee.isActive,
       role: employee.role,
       unavailableTimes: employee.unavailableTimes
@@ -170,10 +172,11 @@ export function EmployeeManagement() {
   const resetForm = () => {
     setFormData({
       name: '',
+      username: '',
+      password: '',
       weeklyLimit: 40,
       birthday: '',
       color: '#3B82F6',
-      pin: '',
       isActive: true,
       role: 'empleado',
       unavailableTimes: []
@@ -225,23 +228,35 @@ export function EmployeeManagement() {
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  PIN de Acceso (5 dígitos)
+                  Usuario
                 </label>
                 <input
                   type="text"
-                  value={formData.pin}
-                  onChange={(e) => {
-                    const value = e.target.value.replace(/\D/g, '').slice(0, 5); // Solo números, máximo 5
-                    setFormData(prev => ({ ...prev, pin: value }));
-                  }}
+                  value={formData.username}
+                  onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}
                   className="input-field"
-                  placeholder="12345"
-                  pattern="[0-9]{5}"
-                  maxLength={5}
+                  placeholder="Ej: ana.perez"
                   required
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  Clave de 5 dígitos para el login del empleado
+                  Usuario único para el login del empleado
+                </p>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Contraseña
+                </label>
+                <input
+                  type="password"
+                  value={formData.password}
+                  onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+                  className="input-field"
+                  placeholder="Mínimo 4 caracteres"
+                  required
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Contraseña para el login del empleado
                 </p>
               </div>
               

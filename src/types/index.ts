@@ -12,18 +12,21 @@ export interface User {
 
 export interface Employee {
   id: string;
-  name: string;
+  name: string; // Nombre completo del empleado
+  username: string; // Usuario único para login
+  password: string; // Contraseña para login
   weeklyLimit: number; // horas semanales
   unavailableTimes: UnavailableTime[];
   birthday: string; // formato YYYY-MM-DD
   isActive: boolean;
   color: string; // color hexadecimal para las barras del empleado
-  pin: string; // clave de 5 dígitos para login
   role: 'encargado' | 'empleado'; // rol del empleado
   isManager?: boolean; // para compatibilidad con el sistema multitiendas
   storeId?: string; // ID de la tienda a la que pertenece el empleado
   monthlyHoursLimit?: number; // límite mensual de horas
   unavailableHours?: UnavailableTime[]; // horas no disponibles (alias para compatibilidad)
+  // Campos legacy para compatibilidad (se pueden remover después)
+  pin?: string; // DEPRECATED: usar username/password
 }
 
 export interface UnavailableTime {
