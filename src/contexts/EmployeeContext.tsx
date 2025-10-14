@@ -233,8 +233,7 @@ export function EmployeeProvider({ children }: { children: ReactNode }) {
     const employeesRef = collection(db, 'employees');
     const q = query(
       employeesRef, 
-      where('storeId', '==', currentStore.id),
-      orderBy('name')
+      where('storeId', '==', currentStore.id)
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -247,6 +246,9 @@ export function EmployeeProvider({ children }: { children: ReactNode }) {
         console.log('EmployeeContext: Employee data:', employeeData);
         employeesData.push(employeeData);
       });
+      
+      // Ordenar por nombre en JavaScript
+      employeesData.sort((a, b) => a.name.localeCompare(b.name));
       
       console.log('EmployeeContext: Setting employees:', employeesData);
       setEmployees(employeesData);
