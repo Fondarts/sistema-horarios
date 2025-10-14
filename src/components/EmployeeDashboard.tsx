@@ -114,7 +114,7 @@ export default function EmployeeDashboard() {
               {/* Menú hamburguesa - solo visible en móvil */}
               <HamburgerMenu 
                 activeTab={activeTab}
-                onTabChange={setActiveTab}
+                onTabChange={(tab) => setActiveTab(tab as 'schedule' | 'vacations')}
                 isManager={false}
               />
               

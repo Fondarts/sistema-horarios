@@ -134,7 +134,7 @@ export function ManagerDashboard() {
               {/* Menú hamburguesa - solo visible en móvil */}
               <HamburgerMenu 
                 activeTab={activeTab}
-                onTabChange={setActiveTab}
+                onTabChange={(tab) => setActiveTab(tab as TabType)}
                 isManager={true}
               />
               
