@@ -690,7 +690,7 @@ export default function ScheduleManagement() {
           <div 
             className="grid border-b border-gray-200 dark:border-gray-600" 
             style={{ 
-              gridTemplateColumns: `${isMobile ? '60px' : (isCompactMode ? '100px' : '120px')} repeat(${hours.length}, ${getColumnWidth()}px)`,
+              gridTemplateColumns: `${isMobile ? '60px' : (isCompactMode ? '100px' : '120px')} repeat(${hours.length}, 1fr)`,
               minWidth: 'max-content'
             }}
           >
@@ -701,8 +701,7 @@ export default function ScheduleManagement() {
               return (
                 <div 
                   key={hour} 
-                  className={`${isMobile ? 'px-2' : 'px-1'} border-l border-gray-200 dark:border-gray-600 flex items-center justify-center ${isStoreHour ? 'bg-blue-50 dark:bg-blue-900/20' : 'bg-gray-50 dark:bg-gray-700'}`} 
-                  style={{ width: `${getColumnWidth()}px`, minWidth: `${getColumnWidth()}px` }}
+                  className={`${isMobile ? 'px-2' : 'px-1'} border-l border-gray-200 dark:border-gray-600 flex items-center justify-center ${isStoreHour ? 'bg-blue-50 dark:bg-blue-900/20' : 'bg-gray-50 dark:bg-gray-700'}`}
                 >
                   <div className={`${isMobile ? 'text-sm font-semibold' : 'text-xs font-medium'} ${isStoreHour ? 'text-blue-700 dark:text-blue-300' : 'text-gray-600 dark:text-gray-300'}`}>
                     {isMobile ? `${hour}:00` : hour}
@@ -729,15 +728,15 @@ export default function ScheduleManagement() {
               const holiday = getHolidayForDate(dayString);
 
               return (
-                <div 
-                  key={day.toISOString()} 
-                  className="grid border-b border-gray-300 dark:border-gray-600 relative" 
-                  style={{ 
-                    gridTemplateColumns: `${isMobile ? '60px' : (isCompactMode ? '100px' : '120px')} repeat(${hours.length}, ${getColumnWidth()}px)`, 
-                    minHeight: '120px',
-                    minWidth: 'max-content'
-                  }}
-                >
+                  <div 
+                    key={day.toISOString()} 
+                    className="grid border-b border-gray-300 dark:border-gray-600 relative" 
+                    style={{ 
+                      gridTemplateColumns: `${isMobile ? '60px' : (isCompactMode ? '100px' : '120px')} repeat(${hours.length}, 1fr)`, 
+                      minHeight: '120px',
+                      minWidth: 'max-content'
+                    }}
+                  >
                   {/* Day and employees */}
                   <div className={`${isMobile ? 'p-1' : (isCompactMode ? 'p-2' : 'p-3')} border-r border-gray-200 dark:border-gray-600 ${
                     isHolidayDay 
@@ -805,7 +804,7 @@ export default function ScheduleManagement() {
                       <div 
                         key={`${day.toISOString()}-${hour}`} 
                         className={`relative border-r border-gray-200 dark:border-gray-600 ${backgroundColor}`} 
-                        style={{ height: '120px', width: `${getColumnWidth()}px` }}
+                        style={{ height: '120px' }}
                         title={isHolidayDay ? `Feriado: ${holiday?.name}` : ''}
                       >
                         {/* Hour line */}
@@ -868,8 +867,20 @@ export default function ScheduleManagement() {
                     // Ajustar para móvil (cada 2 horas) vs desktop (cada hora)
                     const dayColumnWidth = isMobile ? 60 : (isCompactMode ? 100 : 120);
                     const hourDivisor = isMobile ? 2 : 1;
-                    const left = dayColumnWidth + (((shiftStartTimeInHours - startHour) / hourDivisor) * columnWidth) + margin;
-                    const width = ((durationInHours / hourDivisor) * columnWidth) - (margin * 2);
+                    
+                    // En desktop con 1fr, calcular posición basada en porcentaje
+                    let left, width;
+                    if (!isMobile) {
+                      const totalHours = endHour - startHour + 1;
+                      const startPosition = (shiftStartTimeInHours - startHour) / totalHours;
+                      const durationPosition = durationInHours / totalHours;
+                      left = dayColumnWidth + (startPosition * (scrollContainerRef.current?.offsetWidth - dayColumnWidth || 0)) + margin;
+                      width = (durationPosition * (scrollContainerRef.current?.offsetWidth - dayColumnWidth || 0)) - (margin * 2);
+                    } else {
+                      // En móvil mantener cálculo con columnas fijas
+                      left = dayColumnWidth + (((shiftStartTimeInHours - startHour) / hourDivisor) * 80) + margin;
+                      width = ((durationInHours / hourDivisor) * 80) - (margin * 2);
+                    }
                     const top = (isHolidayDay ? 55 : 15) + (shiftIndex * 35); // Offset for holiday block
                     
                     return (
