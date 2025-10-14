@@ -117,6 +117,7 @@ export default function EmployeeDashboard() {
                 onTabChange={(tab) => setActiveTab(tab as 'schedule' | 'vacations')}
                 isManager={false}
                 onShowKeyboardHelp={() => setShowKeyboardHelp(true)}
+                onLogout={logout}
               />
               
               <NotificationCenter 
@@ -134,13 +135,17 @@ export default function EmployeeDashboard() {
                   <ThemeToggle />
                 </>
               )}
-              <button
-                onClick={logout}
-                className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
-              >
-                <LogOut className="w-4 h-4" />
-                <span>Cerrar Sesión</span>
-              </button>
+              
+              {/* Botón de cerrar sesión - solo visible en desktop */}
+              {!isMobile && (
+                <button
+                  onClick={logout}
+                  className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span>Cerrar Sesión</span>
+                </button>
+              )}
             </div>
           </div>
         </div>

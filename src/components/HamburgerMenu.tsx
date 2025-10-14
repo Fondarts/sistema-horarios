@@ -1,16 +1,18 @@
 import React, { useState } from 'react';
-import { Menu, X, Calendar, Users, Plane, CalendarDays, Home, BarChart3, FileText, Sun, Moon, HelpCircle } from 'lucide-react';
+import { Menu, X, Calendar, Users, Plane, CalendarDays, Home, BarChart3, FileText, Sun, Moon, HelpCircle, LogOut } from 'lucide-react';
 import { useCompactMode } from '../contexts/CompactModeContext';
 import { useTheme } from '../contexts/ThemeContext';
+import { Logo } from './Logo';
 
 interface HamburgerMenuProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
   isManager?: boolean;
   onShowKeyboardHelp?: () => void;
+  onLogout?: () => void;
 }
 
-export function HamburgerMenu({ activeTab, onTabChange, isManager = false, onShowKeyboardHelp }: HamburgerMenuProps) {
+export function HamburgerMenu({ activeTab, onTabChange, isManager = false, onShowKeyboardHelp, onLogout }: HamburgerMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const { isMobile } = useCompactMode();
   const { theme, toggleTheme } = useTheme();
@@ -49,6 +51,13 @@ export function HamburgerMenu({ activeTab, onTabChange, isManager = false, onSho
     setIsOpen(false);
   };
 
+  const handleLogout = () => {
+    if (onLogout) {
+      onLogout();
+    }
+    setIsOpen(false);
+  };
+
   // Solo mostrar en móvil
   if (!isMobile) {
     return null;
@@ -78,17 +87,31 @@ export function HamburgerMenu({ activeTab, onTabChange, isManager = false, onSho
         isOpen ? 'translate-x-0' : '-translate-x-full'
       }`}>
         {/* Header del menú */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-            {isManager ? 'Administración' : 'Mi Panel'}
-          </h2>
-          <button
-            onClick={() => setIsOpen(false)}
-            className="p-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
-            aria-label="Cerrar menú"
-          >
-            <X className="w-5 h-5" />
-          </button>
+        <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+              {isManager ? 'Administración' : 'Mi Panel'}
+            </h2>
+            <button
+              onClick={() => setIsOpen(false)}
+              className="p-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
+              aria-label="Cerrar menú"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+          
+          {/* Logo */}
+          <div className="flex justify-center mb-3">
+            <Logo size="small" />
+          </div>
+          
+          {/* Título */}
+          <div className="text-center">
+            <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              Panel de Administración de Horarios
+            </h3>
+          </div>
         </div>
 
         {/* Lista de opciones */}
@@ -143,6 +166,19 @@ export function HamburgerMenu({ activeTab, onTabChange, isManager = false, onSho
             )}
           </ul>
         </nav>
+        
+        {/* Footer con cerrar sesión */}
+        {onLogout && (
+          <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+            <button
+              onClick={handleLogout}
+              className="w-full flex items-center justify-center px-4 py-3 rounded-lg text-left transition-colors text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
+            >
+              <LogOut className="w-5 h-5 mr-3" />
+              Cerrar Sesión
+            </button>
+          </div>
+        )}
       </div>
     </>
   );

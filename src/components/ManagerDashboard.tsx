@@ -135,6 +135,7 @@ export function ManagerDashboard() {
                 onTabChange={(tab) => setActiveTab(tab as TabType)}
                 isManager={true}
                 onShowKeyboardHelp={() => setShowKeyboardHelp(true)}
+                onLogout={logout}
               />
               
               <NotificationCenter 
@@ -160,13 +161,17 @@ export function ManagerDashboard() {
                   <ThemeToggle />
                 </>
               )}
-              <button
-                onClick={logout}
-                className="flex items-center text-gray-600 hover:text-gray-900 transition-colors dark:text-gray-400 dark:hover:text-gray-100"
-              >
-                <LogOut className="w-5 h-5 mr-2" />
-                Cerrar Sesión
-              </button>
+              
+              {/* Botón de cerrar sesión - solo visible en desktop */}
+              {!isMobile && (
+                <button
+                  onClick={logout}
+                  className="flex items-center text-gray-600 hover:text-gray-900 transition-colors dark:text-gray-400 dark:hover:text-gray-100"
+                >
+                  <LogOut className="w-5 h-5 mr-2" />
+                  Cerrar Sesión
+                </button>
+              )}
             </div>
           </div>
         </div>
