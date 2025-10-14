@@ -94,8 +94,10 @@ export default function ScheduleManagement() {
   const { startHour: storeStartHour, endHour: storeEndHour } = getStoreHoursRange();
   const startHour = show24Hours ? 0 : storeStartHour; // 0 si 24h, o horario de tienda si enfocado
   const endHour = show24Hours ? 23 : storeEndHour;    // 23 si 24h, o horario de tienda si enfocado
-  // Mostrar solo cada 2 horas para reducir densidad
-  const hours = Array.from({ length: Math.ceil((endHour - startHour + 1) / 2) }, (_, i) => startHour + (i * 2));
+  // En móvil mostrar cada 2 horas, en desktop cada hora
+  const hours = isMobile 
+    ? Array.from({ length: Math.ceil((endHour - startHour + 1) / 2) }, (_, i) => startHour + (i * 2))
+    : Array.from({ length: endHour - startHour + 1 }, (_, i) => startHour + i);
 
   // Filtrar turnos de la semana actual
   const weekShifts = shifts.filter(shift => {
@@ -347,8 +349,12 @@ export default function ScheduleManagement() {
 
   // Calculate column width based on zoom level
   const getColumnWidth = () => {
+    // En móvil, columnas más anchas para legibilidad
+    if (isMobile) {
+      return Math.round(80 * zoomLevel);
+    }
     // En modo compacto, columnas más estrechas
-    const baseWidth = isCompactMode ? 80 : 100;
+    const baseWidth = isCompactMode ? 40 : 60;
     return Math.round(baseWidth * zoomLevel);
   };
 
@@ -676,11 +682,11 @@ export default function ScheduleManagement() {
               return (
                 <div 
                   key={hour} 
-                  className={`px-2 border-l border-gray-200 dark:border-gray-600 flex items-center justify-center ${isStoreHour ? 'bg-blue-50 dark:bg-blue-900/20' : 'bg-gray-50 dark:bg-gray-700'}`} 
+                  className={`${isMobile ? 'px-2' : 'px-1'} border-l border-gray-200 dark:border-gray-600 flex items-center justify-center ${isStoreHour ? 'bg-blue-50 dark:bg-blue-900/20' : 'bg-gray-50 dark:bg-gray-700'}`} 
                   style={{ width: `${getColumnWidth()}px`, minWidth: `${getColumnWidth()}px` }}
                 >
-                  <div className={`text-sm font-semibold ${isStoreHour ? 'text-blue-700 dark:text-blue-300' : 'text-gray-600 dark:text-gray-300'}`}>
-                    {hour}:00
+                  <div className={`${isMobile ? 'text-sm font-semibold' : 'text-xs font-medium'} ${isStoreHour ? 'text-blue-700 dark:text-blue-300' : 'text-gray-600 dark:text-gray-300'}`}>
+                    {isMobile ? `${hour}:00` : hour}
                   </div>
                 </div>
               );
@@ -724,9 +730,25 @@ export default function ScheduleManagement() {
                         ? 'text-orange-700 dark:text-orange-300'
                         : 'text-gray-900 dark:text-gray-100'
                     }`}>
-                      {format(day, 'EEE d', { locale: es })}
-                      {isHolidayDay && (
-                        <span className="ml-2 text-xs">🎉</span>
+                      {isMobile ? (
+                        <div className="text-center">
+                          <div className="text-xs font-semibold">
+                            {format(day, 'EEE', { locale: es })}
+                          </div>
+                          <div className="text-sm font-bold">
+                            {format(day, 'd', { locale: es })}
+                          </div>
+                          {isHolidayDay && (
+                            <div className="text-xs">🎉</div>
+                          )}
+                        </div>
+                      ) : (
+                        <>
+                          {format(day, 'EEE d', { locale: es })}
+                          {isHolidayDay && (
+                            <span className="ml-2 text-xs">🎉</span>
+                          )}
+                        </>
                       )}
                     </div>
                     {/* Solo mostrar nombres de empleados en desktop */}
@@ -824,10 +846,11 @@ export default function ScheduleManagement() {
                     // Calculate position based on the actual shift start time relative to the visible range
                     const columnWidth = getColumnWidth();
                     const margin = 2; // Small margin to prevent overlapping with hour labels
-                    // Ajustar para el nuevo sistema de cada 2 horas
+                    // Ajustar para móvil (cada 2 horas) vs desktop (cada hora)
                     const dayColumnWidth = isMobile ? 60 : (isCompactMode ? 100 : 120);
-                    const left = dayColumnWidth + (((shiftStartTimeInHours - startHour) / 2) * columnWidth) + margin; // dayColumnWidth + (actual shift time - visible start time) / 2 * columnWidth + margin
-                    const width = ((durationInHours / 2) * columnWidth) - (margin * 2); // hours / 2 * columnWidth - margins on both sides
+                    const hourDivisor = isMobile ? 2 : 1;
+                    const left = dayColumnWidth + (((shiftStartTimeInHours - startHour) / hourDivisor) * columnWidth) + margin;
+                    const width = ((durationInHours / hourDivisor) * columnWidth) - (margin * 2);
                     const top = (isHolidayDay ? 55 : 15) + (shiftIndex * 35); // Offset for holiday block
                     
                     return (
