@@ -18,6 +18,9 @@ export default function ScheduleManagement() {
   const { isHoliday, getHolidayForDate } = useHolidays();
   const { isCompactMode, isMobile } = useCompactMode();
   
+  // Debug log
+  console.log('ScheduleManagement render: isCompactMode =', isCompactMode, 'isMobile =', isMobile);
+  
   // Función para verificar si un empleado está de vacaciones en una fecha específica
   const isEmployeeOnVacation = (employeeId: string, date: string): boolean => {
     const approvedVacations = vacationRequests.filter(vr => 

@@ -74,7 +74,15 @@ export function CompactModeProvider({ children }: { children: ReactNode }) {
 export function useCompactMode() {
   const context = useContext(CompactModeContext);
   if (context === undefined) {
-    throw new Error('useCompactMode must be used within a CompactModeProvider');
+    console.error('useCompactMode must be used within a CompactModeProvider');
+    // Retornar valores por defecto en lugar de lanzar error
+    return {
+      isCompactMode: false,
+      toggleCompactMode: () => {},
+      isMobile: false,
+      isTablet: false,
+      isDesktop: true
+    };
   }
   return context;
 }
