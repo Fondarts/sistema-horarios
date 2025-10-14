@@ -789,6 +789,29 @@ export default function ScheduleManagement() {
                     );
                   })}
 
+                  {/* Holiday block for this day */}
+                  {isHolidayDay && (
+                    <div
+                      className="absolute rounded text-xs holiday-block"
+                      style={{
+                        left: '200px', // Start after the day column
+                        width: `${hours.length * getColumnWidth()}px`,
+                        top: '15px',
+                        height: '32px',
+                        zIndex: 5,
+                        backgroundColor: '#F97316', // Orange color for holidays
+                        color: '#FFFFFF',
+                        padding: '4px 8px',
+                        border: '2px solid #EA580C',
+                        boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                      }}
+                    >
+                      <div className="flex items-center justify-center h-full">
+                        <span className="font-bold text-sm">🎉 {holiday?.name}</span>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Shift bars for this day */}
                   {dayShifts.map((shift, shiftIndex) => {
                     const employee = employees.find(emp => emp.id === shift.employeeId);
@@ -809,7 +832,7 @@ export default function ScheduleManagement() {
                     const margin = 2; // Small margin to prevent overlapping with hour labels
                     const left = 200 + ((shiftStartTimeInHours - startHour) * columnWidth) + margin; // 200px + (actual shift time - visible start time) * columnWidth + margin
                     const width = (durationInHours * columnWidth) - (margin * 2); // hours * columnWidth - margins on both sides
-                    const top = shiftIndex * 35 + 15; // Increased from 5 to 15 for better vertical spacing
+                    const top = (isHolidayDay ? 55 : 15) + (shiftIndex * 35); // Offset for holiday block
                     
                     return (
                       <div

@@ -25,8 +25,14 @@ export function StoreSettings() {
   });
 
   const daysOfWeek = [
-    'Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'
+    'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo', 'Feriados'
   ];
+
+  // Función para obtener el nombre del día, manejando el caso especial de "Feriados"
+  const getDayName = (dayOfWeek: number) => {
+    if (dayOfWeek === 7) return 'Feriados'; // Caso especial para feriados
+    return daysOfWeek[dayOfWeek];
+  };
 
   const handleScheduleChange = (id: string, updates: Partial<StoreSchedule>) => {
     updateStoreSchedule(id, updates);
@@ -65,7 +71,7 @@ export function StoreSettings() {
             <div key={schedule.id} className="flex items-center space-x-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
               <div className="w-24">
                 <span className="font-medium text-gray-900 dark:text-gray-100">
-                  {daysOfWeek[schedule.dayOfWeek]}
+                  {getDayName(schedule.dayOfWeek)}
                 </span>
               </div>
               

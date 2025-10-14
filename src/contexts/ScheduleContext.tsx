@@ -38,7 +38,7 @@ interface ScheduleContextType {
 
 const ScheduleContext = createContext<ScheduleContextType | undefined>(undefined);
 
-// Horario de tienda por defecto
+// Horario de tienda por defecto (Lunes a Domingo + Feriados)
 const defaultStoreSchedule: StoreSchedule[] = [
   { id: '1', dayOfWeek: 1, isOpen: true, openTime: '09:00', closeTime: '20:00' }, // Lunes
   { id: '2', dayOfWeek: 2, isOpen: true, openTime: '09:00', closeTime: '20:00' }, // Martes
@@ -47,6 +47,7 @@ const defaultStoreSchedule: StoreSchedule[] = [
   { id: '5', dayOfWeek: 5, isOpen: true, openTime: '09:00', closeTime: '20:00' }, // Viernes
   { id: '6', dayOfWeek: 6, isOpen: true, openTime: '09:00', closeTime: '20:00' }, // Sábado
   { id: '7', dayOfWeek: 0, isOpen: false }, // Domingo cerrado
+  { id: '8', dayOfWeek: 7, isOpen: false }, // Feriados cerrado por defecto
 ];
 
 // Función para calcular horas entre dos tiempos
