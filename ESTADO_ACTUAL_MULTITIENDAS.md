@@ -156,7 +156,58 @@
   - Asignación masiva de turnos
   - Reportes de distribución de personal
 
-#### **3.5 Configuración Global** (PRIORIDAD BAJA)
+#### **3.5 Administración de Ausencias** (PRIORIDAD ALTA) ⭐ **NUEVO**
+**Objetivo:** Control completo de ausencias justificadas y no justificadas
+
+**Funcionalidades a implementar:**
+- 📋 **Tipos de ausencias**:
+  - Enfermedad (con justificante médico)
+  - Vacaciones (ya implementado)
+  - Permisos personales
+  - Ausencias no justificadas
+  - Licencias especiales
+
+- 📝 **Gestión de ausencias**:
+  - Solicitud de ausencias por empleados
+  - Aprobación/rechazo por managers
+  - Justificantes médicos (upload de archivos)
+  - Historial completo de ausencias
+
+- 📊 **Reportes de ausentismo**:
+  - Estadísticas por empleado
+  - Tendencias de ausencias por tienda
+  - Alertas de ausentismo excesivo
+  - Comparativas entre tiendas
+
+#### **3.6 Sistema de Fichajes** (PRIORIDAD ALTA) ⭐ **NUEVO**
+**Objetivo:** Control de entrada y salida de empleados
+
+**Funcionalidades a implementar:**
+- ⏰ **Registro de fichajes**:
+  - Fichaje de entrada y salida
+  - Geolocalización del fichaje
+  - Fotos de verificación (opcional)
+  - Timestamp preciso
+
+- 📱 **Múltiples métodos de fichaje**:
+  - App móvil con GPS
+  - QR codes en la tienda
+  - PIN personal
+  - Reconocimiento facial (futuro)
+
+- 📈 **Control de horarios**:
+  - Comparación con horarios asignados
+  - Detección de retrasos
+  - Horas extra automáticas
+  - Alertas de fichajes faltantes
+
+- 📊 **Reportes de asistencia**:
+  - Puntualidad por empleado
+  - Horas trabajadas vs asignadas
+  - Patrones de asistencia
+  - Exportación para nóminas
+
+#### **3.7 Configuración Global** (PRIORIDAD BAJA)
 **Objetivo:** Configuraciones que se aplican a todas las tiendas
 
 **Funcionalidades a implementar:**
@@ -198,25 +249,37 @@
 3. **Sistema de métricas de rendimiento**
 4. **Historial y reportes de performance**
 
-### **Opción 2: Dashboard Global**
+### **Opción 2: Sistema de Fichajes** (⭐ **NUEVO - ALTA PRIORIDAD**)
+1. **Crear componente `TimeTracking.tsx`**
+2. **Implementar fichaje de entrada/salida**
+3. **Sistema de geolocalización**
+4. **Reportes de asistencia y puntualidad**
+
+### **Opción 3: Administración de Ausencias** (⭐ **NUEVO - ALTA PRIORIDAD**)
+1. **Crear componente `AbsenceManagement.tsx`**
+2. **Sistema de solicitudes de ausencias**
+3. **Upload de justificantes médicos**
+4. **Reportes de ausentismo**
+
+### **Opción 4: Dashboard Global**
 1. **Crear componente `DistrictManagerDashboard.tsx`**
 2. **Implementar métricas consolidadas**
 3. **Agregar gráficos y visualizaciones**
 4. **Sistema de alertas básico**
 
-### **Opción 3: Integración Google Maps + Reviews** (⭐ **NUEVO**)
+### **Opción 5: Integración Google Maps + Reviews** (⭐ **NUEVO**)
 1. **Implementar link a Google Maps**
 2. **Sistema básico de scraping de reviews**
 3. **Detección de menciones de empleados**
 4. **Dashboard de reputación**
 
-### **Opción 4: Transferencias de Empleados**
+### **Opción 6: Transferencias de Empleados**
 1. **Crear componente `EmployeeTransfer.tsx`**
 2. **Implementar lógica de transferencia**
 3. **Validaciones y confirmaciones**
 4. **Historial de transferencias**
 
-### **Opción 5: Configuración Global**
+### **Opción 7: Configuración Global**
 1. **Plantillas globales de horarios**
 2. **Configuración masiva de tiendas**
 3. **Sincronización de feriados**
@@ -255,6 +318,53 @@
 2. **Optimizar consultas Firebase** si el rendimiento se ve afectado
 3. **Implementar caché** para datos globales si es necesario
 4. **Agregar tests unitarios** para las nuevas funcionalidades
+
+## 📋 **NUEVAS FUNCIONALIDADES AGREGADAS A LA LISTA**
+
+### **🎯 Funcionalidades de Alta Prioridad:**
+
+#### **📝 Performance Review de Empleados**
+- Sistema de evaluaciones periódicas
+- Métricas de rendimiento y objetivos
+- Historial y reportes de performance
+
+#### **⏰ Sistema de Fichajes**
+- Control de entrada y salida
+- Geolocalización y verificación
+- Reportes de asistencia y puntualidad
+- Integración con horarios asignados
+
+#### **📋 Administración de Ausencias**
+- Gestión de ausencias justificadas/no justificadas
+- Upload de justificantes médicos
+- Reportes de ausentismo
+- Alertas de ausentismo excesivo
+
+#### **🗺️ Integración Google Maps + Reviews**
+- Link directo a ubicaciones
+- Scraping de reviews de Google
+- Detección de menciones de empleados
+- Dashboard de reputación
+
+### **🔧 Consideraciones Técnicas:**
+
+#### **Para Sistema de Fichajes:**
+- **Geolocalización**: `navigator.geolocation` API
+- **Almacenamiento**: Firebase con timestamps
+- **Validación**: Verificar ubicación vs tienda
+- **Offline**: Cache local para fichajes sin conexión
+
+#### **Para Administración de Ausencias:**
+- **Upload de archivos**: Firebase Storage
+- **Tipos de ausencias**: Enum con categorías
+- **Workflow**: Solicitud → Aprobación → Registro
+- **Notificaciones**: Alertas automáticas
+
+#### **Para Performance Review:**
+- **Formularios dinámicos**: Por competencias
+- **Escalas de calificación**: 1-5, 1-10, etc.
+- **Historial**: Timeline de evaluaciones
+- **Reportes**: Gráficos y comparativas
 
 ## 🔍 **CONSULTAS TÉCNICAS - GOOGLE MAPS & REVIEWS**
 
