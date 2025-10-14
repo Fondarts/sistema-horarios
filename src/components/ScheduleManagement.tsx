@@ -169,21 +169,13 @@ export default function ScheduleManagement() {
     return luminance > 0.5 ? '#000000' : '#ffffff';
   };
 
-  const handleMouseDown = (e: React.MouseEvent, shift: Shift) => {
-    setDraggedShift(shift);
-    setDragStart({ x: e.clientX, y: e.clientY });
-    setIsDraggingOrResizing(true);
-    e.preventDefault();
-  };
-
       const handleDragStart = (e: React.MouseEvent | React.TouchEvent, shift: Shift) => {
         e.preventDefault(); // Prevenir scroll del chart
         setDraggedShift(shift);
-        const target = e.currentTarget as HTMLDivElement;
-        const rect = target.getBoundingClientRect();
         const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
-        setDragOffset(clientX - rect.left);
-        setDragStart({ x: clientX, y: 'touches' in e ? e.touches[0].clientY : e.clientY });
+        const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+        setDragStart({ x: clientX, y: clientY });
+        setIsDraggingOrResizing(true);
       };
 
   const handleResizeStart = (e: React.MouseEvent | React.TouchEvent, shift: Shift, handle: 'start' | 'end') => {
