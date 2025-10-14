@@ -599,9 +599,6 @@ export default function ScheduleManagement() {
             >
               ← Anterior
             </button>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-              {format(weekStart, 'd MMM', { locale: es })} - {format(weekEnd, 'd MMM yyyy', { locale: es })}
-            </h3>
             <button
               onClick={() => navigateWeek('next')}
               className="px-3 py-1 bg-gray-200 hover:bg-gray-300 text-gray-800 text-sm rounded transition-colors dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200"
@@ -622,6 +619,14 @@ export default function ScheduleManagement() {
               <span>{isCopyingShifts ? 'Copiando...' : 'Repetir'}</span>
             </button>
           </div>
+          
+          {/* Fecha centrada */}
+          <div className="flex-1 text-center">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 whitespace-nowrap">
+              {format(weekStart, 'd MMM', { locale: es })} - {format(weekEnd, 'd MMM yyyy', { locale: es })}
+            </h3>
+          </div>
+          
           <button
             onClick={() => setCurrentWeek(new Date())}
             className="px-3 py-1 bg-gray-200 hover:bg-gray-300 text-gray-800 text-sm rounded transition-colors dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200"
