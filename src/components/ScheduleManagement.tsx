@@ -969,8 +969,8 @@ export default function ScheduleManagement() {
                     <div
                       className="absolute rounded text-xs holiday-block"
                       style={{
-                        left: '200px', // Start after the day column
-                        width: `${hours.length * getColumnWidth()}px`,
+                        left: isMobile ? '60px' : (isCompactMode ? '100px' : '120px'), // Start after the day column
+                        right: '0px', // Extend to the end
                         top: '15px',
                         height: '32px',
                         zIndex: 5,
