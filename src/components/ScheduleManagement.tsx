@@ -661,11 +661,11 @@ export default function ScheduleManagement() {
           <div 
             className="grid border-b border-gray-200 dark:border-gray-600" 
             style={{ 
-              gridTemplateColumns: `${isCompactMode ? '150px' : '200px'} repeat(${hours.length}, ${getColumnWidth()}px)`,
+              gridTemplateColumns: `${isMobile ? '80px' : (isCompactMode ? '150px' : '200px')} repeat(${hours.length}, ${getColumnWidth()}px)`,
               minWidth: 'max-content'
             }}
           >
-            <div className={`${isCompactMode ? 'p-2' : 'p-3'} font-medium text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700 ${isCompactMode ? 'text-sm' : ''}`}>Día / Empleado</div>
+            <div className={`${isMobile ? 'p-1' : (isCompactMode ? 'p-2' : 'p-3')} font-medium text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700 ${isMobile ? 'text-xs' : (isCompactMode ? 'text-sm' : '')}`}>Día / Empleado</div>
             {hours.map((hour) => {
               // Check if this hour is within store hours
               const isStoreHour = hour >= storeStartHour && hour <= storeEndHour;
@@ -704,18 +704,18 @@ export default function ScheduleManagement() {
                   key={day.toISOString()} 
                   className="grid border-b border-gray-300 dark:border-gray-600 relative" 
                   style={{ 
-                    gridTemplateColumns: `${isCompactMode ? '150px' : '200px'} repeat(${hours.length}, ${getColumnWidth()}px)`, 
+                    gridTemplateColumns: `${isMobile ? '80px' : (isCompactMode ? '150px' : '200px')} repeat(${hours.length}, ${getColumnWidth()}px)`, 
                     minHeight: '120px',
                     minWidth: 'max-content'
                   }}
                 >
                   {/* Day and employees */}
-                  <div className={`${isCompactMode ? 'p-2' : 'p-3'} border-r border-gray-200 dark:border-gray-600 ${
+                  <div className={`${isMobile ? 'p-1' : (isCompactMode ? 'p-2' : 'p-3')} border-r border-gray-200 dark:border-gray-600 ${
                     isHolidayDay 
                       ? 'bg-orange-50 dark:bg-orange-900/20' 
                       : 'bg-gray-50 dark:bg-gray-700'
                   }`}>
-                    <div className={`font-medium mb-2 ${
+                    <div className={`font-medium ${isMobile ? 'mb-0' : 'mb-2'} ${
                       isHolidayDay
                         ? 'text-orange-700 dark:text-orange-300'
                         : 'text-gray-900 dark:text-gray-100'
@@ -725,7 +725,8 @@ export default function ScheduleManagement() {
                         <span className="ml-2 text-xs">🎉</span>
                       )}
                     </div>
-                    {employeesOnDay.map(employeeId => {
+                    {/* Solo mostrar nombres de empleados en desktop */}
+                    {!isMobile && employeesOnDay.map(employeeId => {
                       const employee = employees.find(emp => emp.id === employeeId);
                       const isOnVacation = employee ? isEmployeeOnVacation(employee.id, format(day, 'yyyy-MM-dd')) : false;
                       return employee ? (
