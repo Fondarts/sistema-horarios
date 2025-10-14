@@ -169,15 +169,14 @@ export function HolidayIntegration() {
   };
 
   const loadHolidays = async (year: number, forceSync = false) => {
-    // Verificar si ya se sincronizó este mes
-    const lastSyncKey = `holidays_sync_${year}_${new Date().getMonth()}`;
+    // Verificar si ya se sincronizó hoy
+    const lastSyncKey = `holidays_sync_${year}_${format(new Date(), 'yyyy-MM-dd')}`;
     const lastSyncDate = localStorage.getItem(lastSyncKey);
-    const currentMonth = new Date().getMonth();
-    const lastSyncMonth = lastSyncDate ? new Date(lastSyncDate).getMonth() : -1;
+    const today = format(new Date(), 'yyyy-MM-dd');
     
-    // Solo sincronizar si es un mes diferente o si se fuerza
-    if (!forceSync && lastSyncMonth === currentMonth && localHolidays.length > 0) {
-      return; // Ya se sincronizó este mes
+    // Solo sincronizar si no se ha sincronizado hoy o si se fuerza
+    if (!forceSync && lastSyncDate === today && localHolidays.length > 0) {
+      return; // Ya se sincronizó hoy
     }
     
     setIsLoadingLocal(true);
@@ -195,11 +194,11 @@ export function HolidayIntegration() {
         index === self.findIndex(h => h.id === holiday.id)
       );
       
-      setLocalHolidays(uniqueHolidays);
-      setLastSync(new Date().toISOString());
-      
-      // Guardar fecha de sincronización
-      localStorage.setItem(lastSyncKey, new Date().toISOString());
+        setLocalHolidays(uniqueHolidays);
+        setLastSync(new Date().toISOString());
+        
+        // Guardar fecha de sincronización (hoy)
+        localStorage.setItem(lastSyncKey, today);
     } catch (error) {
       console.error('Error loading holidays:', error);
     } finally {
@@ -211,9 +210,6 @@ export function HolidayIntegration() {
     loadHolidays(selectedYear);
   }, [selectedYear]);
 
-  const handleSyncHolidays = () => {
-    loadHolidays(selectedYear, true); // Forzar sincronización
-  };
 
   const handleAddCustomHoliday = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -431,18 +427,6 @@ export function HolidayIntegration() {
           >
             <CalendarPlus className="w-5 h-5 mr-2" />
             Agregar Feriado
-          </button>
-          <button
-            onClick={handleSyncHolidays}
-            disabled={isLoadingLocal}
-            className="btn-primary flex items-center"
-          >
-            {isLoadingLocal ? (
-              <RefreshCw className="w-5 h-5 mr-2 animate-spin" />
-            ) : (
-              <Download className="w-5 h-5 mr-2" />
-            )}
-            {isLoadingLocal ? 'Sincronizando...' : 'Sincronizar'}
           </button>
         </div>
       </div>

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useEmployees } from '../contexts/EmployeeContext';
-import { LogOut, Calendar, Users, Settings, BarChart3, FileText, Plane, CalendarDays } from 'lucide-react';
+import { LogOut, Calendar, Users, Home, BarChart3, FileText, Plane, CalendarDays } from 'lucide-react';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { EmployeeManagement } from './EmployeeManagement';
 import ScheduleManagement from './ScheduleManagement';
@@ -30,7 +30,7 @@ export function ManagerDashboard() {
     { id: 'employees' as TabType, label: 'Empleados', icon: Users },
     { id: 'vacations' as TabType, label: 'Vacaciones', icon: Plane },
     { id: 'holidays' as TabType, label: 'Feriados', icon: CalendarDays },
-    { id: 'settings' as TabType, label: 'Tienda', icon: Settings },
+    { id: 'settings' as TabType, label: 'Tienda', icon: Home },
     { id: 'statistics' as TabType, label: 'Estadísticas', icon: BarChart3 },
     { id: 'export' as TabType, label: 'Exportar', icon: FileText },
   ];
