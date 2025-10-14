@@ -956,9 +956,9 @@ export default function ScheduleManagement() {
                       const top = (isHolidayDay ? 55 : 15) + (currentIndex * 35);
                       
                       return (
-                        <div
-                          key={shift.id}
-                          className="absolute rounded text-xs shift-bar"
+                              <div
+                                key={shift.id}
+                                className="absolute rounded text-xs shift-bar select-none"
                           style={{
                             left: `${left}px`,
                             width: `${width}px`,
