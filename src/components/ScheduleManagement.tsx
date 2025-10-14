@@ -971,6 +971,7 @@ export default function ScheduleManagement() {
                           }}
                           onMouseDown={(e) => handleDragStart(e, shift)}
                           onTouchStart={(e) => handleDragStart(e, shift)}
+                          style={{ touchAction: 'none' }}
                           onDoubleClick={(e) => {
                             e.stopPropagation();
                             e.preventDefault();
@@ -992,6 +993,7 @@ export default function ScheduleManagement() {
                                     e.stopPropagation();
                                     handleResizeStart(e, shift, 'start');
                                   }}
+                                  style={{ touchAction: 'none' }}
                             onMouseEnter={(e) => {
                               e.currentTarget.style.opacity = '0.5';
                             }}
@@ -1027,6 +1029,7 @@ export default function ScheduleManagement() {
                                     e.stopPropagation();
                                     handleResizeStart(e, shift, 'end');
                                   }}
+                                  style={{ touchAction: 'none' }}
                             onMouseEnter={(e) => {
                               e.currentTarget.style.opacity = '0.5';
                             }}
