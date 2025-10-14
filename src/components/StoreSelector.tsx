@@ -12,8 +12,8 @@ interface StoreSelectorProps {
 export function StoreSelector({ onStoreSelect }: StoreSelectorProps) {
   const { stores, createStore, updateStore, deleteStore } = useStore();
   const { currentEmployee } = useAuth();
-  const { employees } = useEmployees();
-  const { shifts } = useSchedule();
+  const { getAllEmployees, getEmployeesByStore } = useEmployees();
+  const { getAllShifts, getShiftsByStore } = useSchedule();
   
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingStore, setEditingStore] = useState<string | null>(null);
@@ -114,10 +114,8 @@ export function StoreSelector({ onStoreSelect }: StoreSelectorProps) {
   };
 
   const getStoreStats = (storeId: string) => {
-    // En una implementación real, estos datos vendrían de la base de datos
-    // Por ahora, simulamos algunos datos
-    const storeEmployees = employees.filter(emp => emp.storeId === storeId);
-    const storeShifts = shifts.filter(shift => shift.storeId === storeId);
+    const storeEmployees = getEmployeesByStore(storeId);
+    const storeShifts = getShiftsByStore(storeId);
     
     return {
       employees: storeEmployees.length,
@@ -155,7 +153,7 @@ export function StoreSelector({ onStoreSelect }: StoreSelectorProps) {
               <Users className="w-8 h-8 text-green-600 dark:text-green-400" />
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Empleados Total</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{employees.length}</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{getAllEmployees().length}</p>
               </div>
             </div>
           </div>
@@ -164,8 +162,8 @@ export function StoreSelector({ onStoreSelect }: StoreSelectorProps) {
             <div className="flex items-center">
               <Calendar className="w-8 h-8 text-purple-600 dark:text-purple-400" />
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Turnos Esta Semana</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{shifts.length}</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Turnos Total</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{getAllShifts().length}</p>
               </div>
             </div>
           </div>

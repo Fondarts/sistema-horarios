@@ -34,6 +34,8 @@ interface ScheduleContextType {
   applyTemplate: (templateId: string, startDate: string) => Promise<ValidationError[]>;
   copyWeekToNext: (startDate: string) => Promise<ValidationError[]>;
   checkVacationConflict: (employeeId: string, date: string) => Promise<boolean>;
+  getShiftsByStore: (storeId: string) => Shift[];
+  getAllShifts: () => Shift[];
   isLoading: boolean;
 }
 
@@ -64,11 +66,40 @@ const calculateHours = (startTime: string, endTime: string): number => {
 
 export function ScheduleProvider({ children }: { children: ReactNode }) {
   const [shifts, setShifts] = useState<Shift[]>([]);
+  const [allShifts, setAllShifts] = useState<Shift[]>([]);
   const [storeSchedule, setStoreSchedule] = useState<StoreSchedule[]>([]);
   const [storeExceptions, setStoreExceptions] = useState<StoreException[]>([]);
   const [templates, setTemplates] = useState<Template[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { currentStore } = useStore();
+
+  // Cargar todos los turnos para estadísticas globales
+  useEffect(() => {
+    const shiftsRef = collection(db, 'shifts');
+    const shiftsQuery = query(shiftsRef);
+
+    const unsubscribe = onSnapshot(shiftsQuery, (snapshot) => {
+      const allShiftsData: Shift[] = [];
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        allShiftsData.push({
+          id: doc.id,
+          ...data,
+          createdAt: data.createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
+          updatedAt: data.updatedAt?.toDate?.()?.toISOString() || new Date().toISOString()
+        } as Shift);
+      });
+      
+      // Ordenar por fecha en JavaScript
+      allShiftsData.sort((a, b) => a.date.localeCompare(b.date));
+      
+      setAllShifts(allShiftsData);
+    }, (error) => {
+      console.error('Error loading all shifts:', error);
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   // Cargar datos desde Firebase
   useEffect(() => {
@@ -83,29 +114,9 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
 
     const loadData = async () => {
       try {
-        // Cargar shifts filtrados por tienda
-        const shiftsRef = collection(db, 'shifts');
-        const shiftsQuery = query(
-          shiftsRef, 
-          where('storeId', '==', currentStore.id)
-        );
-        const shiftsUnsubscribe = onSnapshot(shiftsQuery, (snapshot) => {
-          const shiftsData: Shift[] = [];
-          snapshot.forEach((doc) => {
-            const data = doc.data();
-            shiftsData.push({
-              id: doc.id,
-              ...data,
-              createdAt: data.createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
-              updatedAt: data.updatedAt?.toDate?.()?.toISOString() || new Date().toISOString()
-            } as Shift);
-          });
-          
-          // Ordenar por fecha en JavaScript
-          shiftsData.sort((a, b) => a.date.localeCompare(b.date));
-          
-          setShifts(shiftsData);
-        });
+        // Filtrar shifts de la tienda actual desde allShifts
+        const storeShifts = allShifts.filter(shift => shift.storeId === currentStore.id);
+        setShifts(storeShifts);
 
         // Cargar store schedule
         const storeScheduleRef = collection(db, 'storeSchedule');
@@ -198,7 +209,7 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
     };
 
     loadData();
-  }, [currentStore]);
+  }, [currentStore, allShifts]);
 
   // Inicializar datos por defecto si no existen
   useEffect(() => {
@@ -254,6 +265,14 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
       console.error('Error checking vacation conflict:', error);
       return false; // En caso de error, permitir el turno
     }
+  };
+
+  const getShiftsByStore = (storeId: string): Shift[] => {
+    return allShifts.filter(shift => shift.storeId === storeId);
+  };
+
+  const getAllShifts = (): Shift[] => {
+    return allShifts;
   };
 
   const addShift = async (shiftData: Omit<Shift, 'id' | 'createdAt' | 'updatedAt'>): Promise<ValidationError[]> => {
@@ -572,6 +591,8 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
       applyTemplate,
       copyWeekToNext,
       checkVacationConflict,
+      getShiftsByStore,
+      getAllShifts,
       isLoading
     }}>
       {children}

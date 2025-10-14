@@ -22,6 +22,8 @@ interface EmployeeContextType {
   deleteEmployee: (id: string) => void;
   getEmployee: (id: string) => Employee | undefined;
   resetToMockEmployees: () => void;
+  getEmployeesByStore: (storeId: string) => Employee[];
+  getAllEmployees: () => Employee[];
   isLoading: boolean;
 }
 
@@ -219,8 +221,33 @@ const mockEmployees: Employee[] = [
 
 export function EmployeeProvider({ children }: { children: ReactNode }) {
   const [employees, setEmployees] = useState<Employee[]>([]);
+  const [allEmployees, setAllEmployees] = useState<Employee[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { currentStore } = useStore();
+
+  // Cargar todos los empleados para estadísticas globales
+  useEffect(() => {
+    const employeesRef = collection(db, 'employees');
+    const q = query(employeesRef);
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const allEmployeesData: Employee[] = [];
+      
+      snapshot.forEach((doc) => {
+        const employeeData = { id: doc.id, ...doc.data() } as Employee;
+        allEmployeesData.push(employeeData);
+      });
+      
+      // Ordenar por nombre en JavaScript
+      allEmployeesData.sort((a, b) => a.name.localeCompare(b.name));
+      
+      setAllEmployees(allEmployeesData);
+    }, (error) => {
+      console.error('Error loading all employees:', error);
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   // Cargar empleados desde Firebase filtrados por tienda
   useEffect(() => {
@@ -230,36 +257,11 @@ export function EmployeeProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    const employeesRef = collection(db, 'employees');
-    const q = query(
-      employeesRef, 
-      where('storeId', '==', currentStore.id)
-    );
-
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const employeesData: Employee[] = [];
-      console.log('EmployeeContext: Received snapshot with', snapshot.size, 'employees');
-      console.log('EmployeeContext: Current store ID:', currentStore.id);
-      
-      snapshot.forEach((doc) => {
-        const employeeData = { id: doc.id, ...doc.data() } as Employee;
-        console.log('EmployeeContext: Employee data:', employeeData);
-        employeesData.push(employeeData);
-      });
-      
-      // Ordenar por nombre en JavaScript
-      employeesData.sort((a, b) => a.name.localeCompare(b.name));
-      
-      console.log('EmployeeContext: Setting employees:', employeesData);
-      setEmployees(employeesData);
-      setIsLoading(false);
-    }, (error) => {
-      console.error('Error loading employees:', error);
-      setIsLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, [currentStore]);
+    // Filtrar empleados de la tienda actual desde allEmployees
+    const storeEmployees = allEmployees.filter(emp => emp.storeId === currentStore.id);
+    setEmployees(storeEmployees);
+    setIsLoading(false);
+  }, [currentStore, allEmployees]);
 
   const addEmployee = async (employeeData: Omit<Employee, 'id'>) => {
     if (!currentStore) {
@@ -304,6 +306,14 @@ export function EmployeeProvider({ children }: { children: ReactNode }) {
     return employees.find(emp => emp.id === id);
   };
 
+  const getEmployeesByStore = (storeId: string): Employee[] => {
+    return allEmployees.filter(emp => emp.storeId === storeId);
+  };
+
+  const getAllEmployees = (): Employee[] => {
+    return allEmployees;
+  };
+
   const resetToMockEmployees = async () => {
     if (!currentStore) {
       throw new Error('No hay tienda seleccionada');
@@ -342,6 +352,8 @@ export function EmployeeProvider({ children }: { children: ReactNode }) {
       deleteEmployee,
       getEmployee,
       resetToMockEmployees,
+      getEmployeesByStore,
+      getAllEmployees,
       isLoading
     }}>
       {children}
