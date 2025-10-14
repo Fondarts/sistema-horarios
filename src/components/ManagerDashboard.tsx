@@ -6,6 +6,7 @@ import ScheduleManagement from './ScheduleManagement';
 import { StoreSettings } from './StoreSettings';
 import { Statistics } from './Statistics';
 import { ExportTools } from './ExportTools';
+import { ThemeToggle } from './ThemeToggle';
 
 type TabType = 'schedule' | 'employees' | 'settings' | 'statistics' | 'export';
 
@@ -39,35 +40,38 @@ export function ManagerDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
+      <header className="bg-white shadow-sm border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
               <Calendar className="w-8 h-8 text-primary-600 mr-3" />
               <div>
-                <h1 className="text-xl font-semibold text-gray-900">
+                <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
                   Panel de Administración
                 </h1>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-600 dark:text-gray-400">
                   Bienvenido, {currentEmployee?.name}
                 </p>
               </div>
             </div>
-            <button
-              onClick={logout}
-              className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
-            >
-              <LogOut className="w-5 h-5 mr-2" />
-              Cerrar Sesión
-            </button>
+            <div className="flex items-center space-x-4">
+              <ThemeToggle />
+              <button
+                onClick={logout}
+                className="flex items-center text-gray-600 hover:text-gray-900 transition-colors dark:text-gray-400 dark:hover:text-gray-100"
+              >
+                <LogOut className="w-5 h-5 mr-2" />
+                Cerrar Sesión
+              </button>
+            </div>
           </div>
         </div>
       </header>
 
       {/* Navigation Tabs */}
-      <nav className="bg-white border-b border-gray-200">
+      <nav className="bg-white border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex space-x-8">
             {tabs.map((tab) => {
@@ -78,8 +82,8 @@ export function ManagerDashboard() {
                   onClick={() => setActiveTab(tab.id)}
                   className={`flex items-center py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
                     activeTab === tab.id
-                      ? 'border-primary-500 text-primary-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
                   }`}
                 >
                   <Icon className="w-5 h-5 mr-2" />

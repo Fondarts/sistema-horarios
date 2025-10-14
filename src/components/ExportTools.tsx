@@ -304,13 +304,13 @@ export function ExportTools() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h2 className="text-2xl font-bold text-gray-900">Exportar Horarios</h2>
-        <p className="text-gray-600">Exporta los horarios publicados en diferentes formatos</p>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Exportar Horarios</h2>
+        <p className="text-gray-600 dark:text-gray-400">Exporta los horarios publicados en diferentes formatos</p>
       </div>
 
       {/* Date Range Selector */}
-      <div className="bg-white p-6 rounded-lg shadow">
-        <h3 className="text-lg font-semibold mb-4">Rango de Fechas</h3>
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow dark:border dark:border-gray-700">
+        <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Rango de Fechas</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -338,8 +338,8 @@ export function ExportTools() {
       </div>
 
       {/* Format Selection */}
-      <div className="bg-white p-6 rounded-lg shadow">
-        <h3 className="text-lg font-semibold mb-4">Formato de Exportación</h3>
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow dark:border dark:border-gray-700">
+        <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Formato de Exportación</h3>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <label className="flex items-center space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
             <input
@@ -393,7 +393,7 @@ export function ExportTools() {
       </div>
 
       {/* Export Button */}
-      <div className="bg-white p-6 rounded-lg shadow">
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow dark:border dark:border-gray-700">
         <button
           onClick={handleExport}
           disabled={publishedShifts.length === 0}

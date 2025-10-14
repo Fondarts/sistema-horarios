@@ -227,8 +227,8 @@ export function Statistics() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h2 className="text-2xl font-bold text-gray-900">Estadísticas</h2>
-        <p className="text-gray-600">Métricas de cobertura y carga de trabajo</p>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Estadísticas</h2>
+        <p className="text-gray-600 dark:text-gray-400">Métricas de cobertura y carga de trabajo</p>
       </div>
 
       {/* Week Navigation */}
@@ -268,8 +268,8 @@ export function Statistics() {
           <div className="flex items-center">
             <Users className="w-8 h-8 text-primary-600 mr-3" />
             <div>
-              <p className="text-sm text-gray-600">Empleados Activos</p>
-              <p className="text-2xl font-bold text-gray-900">{employees.length}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Empleados Activos</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{employees.length}</p>
             </div>
           </div>
         </div>
@@ -278,8 +278,8 @@ export function Statistics() {
           <div className="flex items-center">
             <BarChart3 className="w-8 h-8 text-green-600 mr-3" />
             <div>
-              <p className="text-sm text-gray-600">Turnos Esta Semana</p>
-              <p className="text-2xl font-bold text-gray-900">{weeklyShifts.length}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Turnos Esta Semana</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{weeklyShifts.length}</p>
             </div>
           </div>
         </div>
@@ -288,8 +288,8 @@ export function Statistics() {
           <div className="flex items-center">
             <TrendingUp className="w-8 h-8 text-blue-600 mr-3" />
             <div>
-              <p className="text-sm text-gray-600">Horas Totales</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-sm text-gray-600 dark:text-gray-400">Horas Totales</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                 {formatHours(weeklyShifts.reduce((total, shift) => total + shift.hours, 0))}
               </p>
             </div>
@@ -299,11 +299,11 @@ export function Statistics() {
 
       {/* Employee Statistics */}
       <div className="card">
-        <h3 className="text-lg font-semibold text-gray-900 mb-6">Estadísticas por Empleado</h3>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-6">Estadísticas por Empleado</h3>
         
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+            <thead className="bg-gray-50 dark:bg-gray-700">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Empleado
@@ -325,7 +325,7 @@ export function Statistics() {
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {employeeStats.map((stat) => {
                 const utilization = (stat.weeklyAssignedHours / stat.weeklyLimit) * 100;
                 const isNearLimit = utilization > 90;

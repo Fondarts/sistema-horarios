@@ -49,22 +49,22 @@ export function StoreSettings() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h2 className="text-2xl font-bold text-gray-900">Configuración de Tienda</h2>
-        <p className="text-gray-600">Define el horario de apertura y excepciones</p>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Configuración de Tienda</h2>
+        <p className="text-gray-600 dark:text-gray-400">Define el horario de apertura y excepciones</p>
       </div>
 
       {/* Store Schedule */}
       <div className="card">
         <div className="flex items-center mb-4">
           <Clock className="w-6 h-6 text-primary-600 mr-3" />
-          <h3 className="text-lg font-semibold text-gray-900">Horario Semanal</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Horario Semanal</h3>
         </div>
 
         <div className="space-y-4">
           {storeSchedule.map((schedule) => (
-            <div key={schedule.id} className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
+            <div key={schedule.id} className="flex items-center space-x-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
               <div className="w-24">
-                <span className="font-medium text-gray-900">
+                <span className="font-medium text-gray-900 dark:text-gray-100">
                   {daysOfWeek[schedule.dayOfWeek]}
                 </span>
               </div>
@@ -86,7 +86,7 @@ export function StoreSettings() {
               {schedule.isOpen && (
                 <div className="flex items-center space-x-3">
                   <div>
-                    <label className="block text-xs text-gray-600 mb-1">Abre</label>
+                    <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Abre</label>
                     <TimeInput
                       value={schedule.openTime || '09:00'}
                       onChange={(value) => handleScheduleChange(schedule.id, { openTime: value })}
@@ -94,9 +94,9 @@ export function StoreSettings() {
                       placeholder="HH:MM"
                     />
                   </div>
-                  <span className="text-gray-500">-</span>
+                  <span className="text-gray-500 dark:text-gray-400">-</span>
                   <div>
-                    <label className="block text-xs text-gray-600 mb-1">Cierra</label>
+                    <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Cierra</label>
                     <TimeInput
                       value={schedule.closeTime || '20:00'}
                       onChange={(value) => handleScheduleChange(schedule.id, { closeTime: value })}
