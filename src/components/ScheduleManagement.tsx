@@ -884,9 +884,12 @@ export default function ScheduleManagement() {
                   )}
 
                   {/* Shift bars for this day */}
-                  {employeesOnDay.map((employeeId, empIndex) => {
-                    const employeeShifts = groupedShifts[dayString]?.[employeeId] || [];
-                    return employeeShifts.map((shift, shiftIndex) => {
+                  {(() => {
+                    let globalShiftIndex = 0;
+                    return employeesOnDay.map((employeeId, empIndex) => {
+                      const employeeShifts = groupedShifts[dayString]?.[employeeId] || [];
+                      return employeeShifts.map((shift, shiftIndex) => {
+                        const currentIndex = globalShiftIndex++;
                       const employee = employees.find(emp => emp.id === shift.employeeId);
                       const shiftStartHour = parseInt(shift.startTime.split(':')[0]);
                       const shiftStartMinute = parseInt(shift.startTime.split(':')[1]);
@@ -918,7 +921,7 @@ export default function ScheduleManagement() {
                         width = ((durationInHours / hourDivisor) * 80) - 4;
                       }
                       
-                      const top = (isHolidayDay ? 55 : 15) + (shiftIndex * 35);
+                      const top = (isHolidayDay ? 55 : 15) + (currentIndex * 35);
                       
                       return (
                         <div
@@ -998,7 +1001,8 @@ export default function ScheduleManagement() {
                         </div>
                       );
                     });
-                  })}
+                    });
+                  })()}
 
                 </div>
               );
