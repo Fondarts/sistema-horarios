@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Download, CheckCircle, AlertCircle, RefreshCw, Plus, CalendarPlus } from 'lucide-react';
+import { Calendar, Download, CheckCircle, AlertCircle, RefreshCw, Plus, CalendarPlus, Edit, Trash2, Minus } from 'lucide-react';
 import { format, addYears, isSameDay, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useHolidays, Holiday } from '../contexts/HolidayContext';
@@ -14,6 +14,7 @@ export function HolidayIntegration() {
   const [lastSync, setLastSync] = useState<string | null>(null);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [showCustomHolidayForm, setShowCustomHolidayForm] = useState(false);
+  const [editingHoliday, setEditingHoliday] = useState<Holiday | null>(null);
   const [customHolidayForm, setCustomHolidayForm] = useState({
     name: '',
     date: '',
@@ -218,37 +219,100 @@ export function HolidayIntegration() {
     e.preventDefault();
     
     try {
-      await addHolidayToCalendar({
-        date: customHolidayForm.date,
-        name: customHolidayForm.name,
-        type: customHolidayForm.type,
-        description: customHolidayForm.description,
-        isRecurring: false,
-        addedToCalendar: true,
-        year: selectedYear
-      });
+      if (editingHoliday) {
+        // Editar feriado existente
+        await addHolidayToCalendar({
+          date: customHolidayForm.date,
+          name: customHolidayForm.name,
+          type: customHolidayForm.type,
+          description: customHolidayForm.description,
+          isRecurring: false,
+          addedToCalendar: editingHoliday.addedToCalendar,
+          year: selectedYear
+        });
+      } else {
+        // Crear nuevo feriado
+        await addHolidayToCalendar({
+          date: customHolidayForm.date,
+          name: customHolidayForm.name,
+          type: customHolidayForm.type,
+          description: customHolidayForm.description,
+          isRecurring: false,
+          addedToCalendar: true,
+          year: selectedYear
+        });
 
-      // También agregar a storeExceptions
-      await addDoc(collection(db, 'storeExceptions'), {
-        date: customHolidayForm.date,
-        isOpen: false, // Los feriados están cerrados por defecto
-        openTime: null,
-        closeTime: null,
-        reason: customHolidayForm.name,
-        isHolidayException: true // Marcar como excepción de feriado
-      });
+        // También agregar a storeExceptions
+        await addDoc(collection(db, 'storeExceptions'), {
+          date: customHolidayForm.date,
+          isOpen: false, // Los feriados están cerrados por defecto
+          openTime: null,
+          closeTime: null,
+          reason: customHolidayForm.name,
+          isHolidayException: true // Marcar como excepción de feriado
+        });
+      }
       
       setCustomHolidayForm({ name: '', date: '', description: '', type: 'local' });
       setShowCustomHolidayForm(false);
+      setEditingHoliday(null);
     } catch (error) {
       console.error('Error adding custom holiday:', error);
     }
   };
 
-  const handleAddToCalendar = async (holiday: Holiday) => {
+  const handleEditHoliday = (holiday: Holiday) => {
+    // Solo permitir editar feriados personalizados (no nacionales)
+    const isCustomHoliday = !localHolidays.some(localHoliday => 
+      localHoliday.date === holiday.date && localHoliday.name === holiday.name
+    );
+    
+    if (isCustomHoliday) {
+      setEditingHoliday(holiday);
+      setCustomHolidayForm({
+        name: holiday.name,
+        date: holiday.date,
+        description: holiday.description || '',
+        type: holiday.type
+      });
+      setShowCustomHolidayForm(true);
+    }
+  };
+
+  const handleDeleteHoliday = async (holiday: Holiday) => {
+    // Solo permitir eliminar feriados personalizados
+    const isCustomHoliday = !localHolidays.some(localHoliday => 
+      localHoliday.date === holiday.date && localHoliday.name === holiday.name
+    );
+    
+    if (isCustomHoliday && window.confirm(`¿Estás seguro de que quieres eliminar el feriado "${holiday.name}"?`)) {
+      try {
+        // Eliminar de Firebase holidays
+        const firebaseHoliday = firebaseHolidays.find(fh => fh.id === holiday.id);
+        if (firebaseHoliday) {
+          await removeHolidayFromCalendar(firebaseHoliday.id);
+        }
+
+        // También eliminar de storeExceptions
+        const q = query(
+          collection(db, 'storeExceptions'), 
+          where('date', '==', holiday.date), 
+          where('reason', '==', holiday.name)
+        );
+        const snapshot = await getDocs(q);
+        snapshot.forEach(async (doc) => {
+          await deleteDoc(doc.ref);
+        });
+      } catch (error) {
+        console.error('Error deleting holiday:', error);
+      }
+    }
+  };
+
+  const handleToggleCalendar = async (holiday: Holiday) => {
     try {
       if (holiday.addedToCalendar) {
-        // Si ya está en el calendario, removerlo
+        // Si ya está en el calendario, removerlo (pero no eliminar el feriado)
         const firebaseHoliday = firebaseHolidays.find(fh => fh.date === holiday.date && fh.name === holiday.name);
         if (firebaseHoliday) {
           await removeHolidayFromCalendar(firebaseHoliday.id);
@@ -399,7 +463,7 @@ export function HolidayIntegration() {
       {showCustomHolidayForm && (
         <div className="card">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
-            Agregar Feriado Personalizado
+            {editingHoliday ? 'Editar Feriado Personalizado' : 'Agregar Feriado Personalizado'}
           </h3>
           
           <form onSubmit={handleAddCustomHoliday} className="space-y-4">
@@ -461,13 +525,14 @@ export function HolidayIntegration() {
 
             <div className="flex gap-3">
               <button type="submit" className="btn-primary">
-                Agregar Feriado
+                {editingHoliday ? 'Actualizar Feriado' : 'Agregar Feriado'}
               </button>
               <button
                 type="button"
                 onClick={() => {
                   setShowCustomHolidayForm(false);
                   setCustomHolidayForm({ name: '', date: '', description: '', type: 'local' });
+                  setEditingHoliday(null);
                 }}
                 className="btn-secondary"
               >
@@ -511,8 +576,10 @@ export function HolidayIntegration() {
                     <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getHolidayTypeColor(holiday.type)}`}>
                       {getHolidayTypeText(holiday.type)}
                     </span>
+                    
+                    {/* Botón de toggle calendario (+ o -) */}
                     <button
-                      onClick={() => handleAddToCalendar(holiday)}
+                      onClick={() => handleToggleCalendar(holiday)}
                       className={`p-1 rounded-full transition-colors ${
                         holiday.addedToCalendar
                           ? 'bg-orange-500 text-white hover:bg-orange-600'
@@ -520,8 +587,37 @@ export function HolidayIntegration() {
                       }`}
                       title={holiday.addedToCalendar ? 'Quitar del calendario' : 'Agregar al calendario'}
                     >
-                      <Plus className="w-3 h-3" />
+                      {holiday.addedToCalendar ? <Minus className="w-3 h-3" /> : <Plus className="w-3 h-3" />}
                     </button>
+
+                    {/* Botones de editar y eliminar (solo para feriados personalizados) */}
+                    {(() => {
+                      const isCustomHoliday = !localHolidays.some(localHoliday => 
+                        localHoliday.date === holiday.date && localHoliday.name === holiday.name
+                      );
+                      
+                      if (isCustomHoliday) {
+                        return (
+                          <>
+                            <button
+                              onClick={() => handleEditHoliday(holiday)}
+                              className="p-1 rounded-full bg-blue-500 text-white hover:bg-blue-600 transition-colors"
+                              title="Editar feriado"
+                            >
+                              <Edit className="w-3 h-3" />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteHoliday(holiday)}
+                              className="p-1 rounded-full bg-red-500 text-white hover:bg-red-600 transition-colors"
+                              title="Eliminar feriado"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </button>
+                          </>
+                        );
+                      }
+                      return null;
+                    })()}
                   </div>
                 </div>
                 
