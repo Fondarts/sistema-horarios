@@ -521,24 +521,12 @@ export default function ScheduleManagement() {
 
       // Handle dragging
       if (draggedShift) {
-        // Calculate movement delta from initial click position
-        const deltaX = x - dragStart.x;
+        // Calculate new start time based on mouse position
+        const newStartTime = newTime;
         
-        // Convert current shift time to minutes
-        const currentStartMinutes = timeToMinutes(draggedShift.startTime);
-        const currentEndMinutes = timeToMinutes(draggedShift.endTime);
-        const duration = currentEndMinutes - currentStartMinutes;
-        
-        // Convert pixel movement to time movement (assuming 1 hour = hourColumnWidth pixels)
-        const minutesPerPixel = 60 / hourColumnWidth;
-        const deltaMinutes = Math.round(deltaX * minutesPerPixel);
-        
-        // Calculate new times
-        const newStartMinutes = currentStartMinutes + deltaMinutes;
-        const newEndMinutes = newStartMinutes + duration;
-        
-        // Convert back to time strings
-        const newStartTime = minutesToTime(roundToIncrement(newStartMinutes, 10));
+        // Calculate new end time maintaining the same duration
+        const originalDuration = timeToMinutes(draggedShift.endTime) - timeToMinutes(draggedShift.startTime);
+        const newEndMinutes = newTimeMinutes + originalDuration;
         const newEndTime = minutesToTime(roundToIncrement(newEndMinutes, 10));
 
         // Validate that times are within visible range
@@ -550,12 +538,14 @@ export default function ScheduleManagement() {
         const maxHour = show24Hours ? 23 : endHour;
         
         if (newStartHour >= minHour && newStartHour <= maxHour && newEndHour >= minHour && newEndHour <= maxHour) {
-          // Update local state for real-time preview
-          setDraggedShift(prev => prev ? {
-            ...prev,
+          // Update shift in real time
+          await updateShift(draggedShift.id, {
+            date: draggedShift.date,
             startTime: newStartTime,
-            endTime: newEndTime
-          } : null);
+            endTime: newEndTime,
+            employeeId: draggedShift.employeeId,
+            isPublished: false, // Mark as unpublished after drag
+          });
         }
       }
 
@@ -601,30 +591,10 @@ export default function ScheduleManagement() {
       }
     };
 
-  const handleGlobalMouseUp = async () => {
-    if (draggedShift) {
-      // Save the final position to the database
-      await updateShift(draggedShift.id, {
-        date: draggedShift.date,
-        startTime: draggedShift.startTime,
-        endTime: draggedShift.endTime,
-        employeeId: draggedShift.employeeId,
-        isPublished: false, // Mark as unpublished after drag
-      });
-      setDraggedShift(null);
-    }
-    if (resizingShift) {
-      // Save the final position to the database
-      await updateShift(resizingShift.id, {
-        date: resizingShift.date,
-        startTime: resizingShift.startTime,
-        endTime: resizingShift.endTime,
-        employeeId: resizingShift.employeeId,
-        isPublished: false, // Mark as unpublished after resize
-      });
-      setResizingShift(null);
-      setResizeHandle(null);
-    }
+  const handleGlobalMouseUp = () => {
+    setDraggedShift(null);
+    setResizingShift(null);
+    setResizeHandle(null);
     // Usar setTimeout para asegurar que el estado se actualice antes de que se procese el click
     setTimeout(() => {
       setIsDraggingOrResizing(false);
