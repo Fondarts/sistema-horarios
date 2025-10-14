@@ -44,10 +44,12 @@ export function CompactModeProvider({ children }: { children: ReactNode }) {
   // Escuchar cambios de tamaño de ventana
   useEffect(() => {
     const handleResize = () => {
-      setScreenSize({
+      const newSize = {
         width: window.innerWidth,
         height: window.innerHeight
-      });
+      };
+      console.log('CompactMode: Resize detected:', newSize);
+      setScreenSize(newSize);
     };
 
     window.addEventListener('resize', handleResize);

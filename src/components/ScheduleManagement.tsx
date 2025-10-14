@@ -354,6 +354,10 @@ export default function ScheduleManagement() {
     return Math.round(baseWidth * zoomLevel);
   };
 
+  // Debug log después de definir getColumnWidth
+  console.log('ScheduleManagement: getColumnWidth() =', getColumnWidth());
+  console.log('ScheduleManagement: sidebar width =', isCompactMode ? '150px' : '200px');
+
   // Calculate minimum zoom level to fit visible hours in available width
   const getMinimumZoomForVisibleHours = () => {
     if (!scrollContainerRef.current) return 0.3;
