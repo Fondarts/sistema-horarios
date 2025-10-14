@@ -92,12 +92,54 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
         // Cargar store schedule
         const storeScheduleRef = collection(db, 'storeSchedule');
         const storeScheduleQuery = query(storeScheduleRef, orderBy('dayOfWeek'));
-        const storeScheduleUnsubscribe = onSnapshot(storeScheduleQuery, (snapshot) => {
+        const storeScheduleUnsubscribe = onSnapshot(storeScheduleQuery, async (snapshot) => {
           const scheduleData: StoreSchedule[] = [];
           snapshot.forEach((doc) => {
             scheduleData.push({ id: doc.id, ...doc.data() } as StoreSchedule);
           });
-          setStoreSchedule(scheduleData);
+
+          // Verificar si faltan horarios por defecto y agregarlos
+          const missingDefaultDays = defaultStoreSchedule.filter(defaultDay =>
+            !scheduleData.some(s => s.dayOfWeek === defaultDay.dayOfWeek)
+          );
+
+          // Agregar días faltantes a Firebase
+          for (const missingDay of missingDefaultDays) {
+            try {
+              await addDoc(collection(db, 'storeSchedule'), {
+                dayOfWeek: missingDay.dayOfWeek,
+                isOpen: missingDay.isOpen,
+                openTime: missingDay.openTime || null,
+                closeTime: missingDay.closeTime || null,
+              });
+            } catch (error) {
+              console.error(`Error adding default store schedule for day ${missingDay.dayOfWeek}:`, error);
+            }
+          }
+
+          // Combinar datos existentes con defaults
+          const completeSchedule = defaultStoreSchedule.map(defaultDay => {
+            const existing = scheduleData.find(s => s.dayOfWeek === defaultDay.dayOfWeek);
+            return existing || defaultDay;
+          });
+
+          // Ordenar: Lunes -> Domingo -> Feriados
+          const sortedSchedule = completeSchedule.sort((a, b) => {
+            const order = (day: number) => {
+              if (day === 1) return 0; // Lunes
+              if (day === 2) return 1; // Martes
+              if (day === 3) return 2; // Miércoles
+              if (day === 4) return 3; // Jueves
+              if (day === 5) return 4; // Viernes
+              if (day === 6) return 5; // Sábado
+              if (day === 0) return 6; // Domingo
+              if (day === 7) return 7; // Feriados
+              return day;
+            };
+            return order(a.dayOfWeek) - order(b.dayOfWeek);
+          });
+
+          setStoreSchedule(sortedSchedule);
         });
 
         // Cargar store exceptions

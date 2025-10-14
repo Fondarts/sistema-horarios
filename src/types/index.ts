@@ -44,6 +44,7 @@ export interface StoreException {
   openTime?: string;
   closeTime?: string;
   reason?: string; // ej: "Feriado", "Mantenimiento"
+  isHolidayException?: boolean; // Marca para identificar excepciones de feriados
 }
 
 export interface Shift {

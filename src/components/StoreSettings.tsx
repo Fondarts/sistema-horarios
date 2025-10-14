@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { useSchedule } from '../contexts/ScheduleContext';
-import { Settings, Clock, Calendar, Plus, Trash2 } from 'lucide-react';
+import { Settings, Clock, Calendar, Plus, Trash2, Edit, X } from 'lucide-react';
 import { StoreSchedule, StoreException } from '../types';
 import TimeInput from './TimeInput';
+import { format, parseISO } from 'date-fns';
+import { es } from 'date-fns/locale';
 
 export function StoreSettings() {
   const { 
@@ -16,6 +18,7 @@ export function StoreSettings() {
   } = useSchedule();
 
   const [showExceptionForm, setShowExceptionForm] = useState(false);
+  const [editingException, setEditingException] = useState<StoreException | null>(null);
   const [exceptionForm, setExceptionForm] = useState({
     date: '',
     isOpen: false,
@@ -38,9 +41,8 @@ export function StoreSettings() {
     updateStoreSchedule(id, updates);
   };
 
-  const handleExceptionSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    addStoreException(exceptionForm);
+  const handleAddException = () => {
+    setEditingException(null);
     setExceptionForm({
       date: '',
       isOpen: false,
@@ -48,7 +50,44 @@ export function StoreSettings() {
       closeTime: '20:00',
       reason: ''
     });
-    setShowExceptionForm(false);
+    setShowExceptionForm(true);
+  };
+
+  const handleEditException = (exception: StoreException) => {
+    setEditingException(exception);
+    setExceptionForm({
+      date: exception.date,
+      isOpen: exception.isOpen,
+      openTime: exception.openTime || '09:00',
+      closeTime: exception.closeTime || '20:00',
+      reason: exception.reason || ''
+    });
+    setShowExceptionForm(true);
+  };
+
+  const handleDeleteException = async (id: string) => {
+    if (window.confirm('¿Estás seguro de que quieres eliminar esta excepción de horario?')) {
+      try {
+        await deleteStoreException(id);
+      } catch (error) {
+        console.error('Error deleting store exception:', error);
+      }
+    }
+  };
+
+  const handleExceptionSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      if (editingException) {
+        await updateStoreException(editingException.id, exceptionForm);
+      } else {
+        await addStoreException(exceptionForm);
+      }
+      setShowExceptionForm(false);
+      setEditingException(null);
+    } catch (error) {
+      console.error('Error saving store exception:', error);
+    }
   };
 
   return (
@@ -122,10 +161,10 @@ export function StoreSettings() {
         <div className="flex justify-between items-center mb-4">
           <div className="flex items-center">
             <Calendar className="w-6 h-6 text-primary-600 mr-3" />
-            <h3 className="text-lg font-semibold text-gray-900">Excepciones</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Excepciones de Horario</h3>
           </div>
           <button
-            onClick={() => setShowExceptionForm(true)}
+            onClick={handleAddException}
             className="btn-primary flex items-center"
           >
             <Plus className="w-5 h-5 mr-2" />
@@ -249,17 +288,126 @@ export function StoreSettings() {
                     )}
                   </div>
                 </div>
-                <button
-                  onClick={() => deleteStoreException(exception.id)}
-                  className="text-red-600 hover:text-red-800"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => handleEditException(exception)}
+                    className="text-blue-600 hover:text-blue-800"
+                    title="Editar"
+                  >
+                    <Edit className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => handleDeleteException(exception.id)}
+                    className="text-red-600 hover:text-red-800"
+                    title="Eliminar"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
             ))}
           </div>
         )}
       </div>
+
+      {/* Exception Add/Edit Modal */}
+      {showExceptionForm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4 shadow-xl">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+                {editingException ? 'Editar Excepción de Horario' : 'Agregar Excepción de Horario'}
+              </h3>
+              <button
+                onClick={() => setShowExceptionForm(false)}
+                className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleExceptionSubmit}>
+              <div className="space-y-4">
+                <div>
+                  <label htmlFor="exceptionDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Fecha
+                  </label>
+                  <input
+                    type="date"
+                    id="exceptionDate"
+                    value={exceptionForm.date}
+                    onChange={(e) => setExceptionForm(prev => ({ ...prev, date: e.target.value }))}
+                    className="input-field"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      className="form-checkbox h-5 w-5 text-primary-600 dark:text-primary-400 rounded"
+                      checked={exceptionForm.isOpen}
+                      onChange={(e) => setExceptionForm(prev => ({ ...prev, isOpen: e.target.checked }))}
+                    />
+                    <span className="ml-2 text-gray-700 dark:text-gray-300">Abierto</span>
+                  </label>
+                </div>
+                {exceptionForm.isOpen && (
+                  <div className="flex space-x-4">
+                    <div className="flex-1">
+                      <label htmlFor="exceptionOpenTime" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Abre
+                      </label>
+                      <TimeInput
+                        value={exceptionForm.openTime}
+                        onChange={(time) => setExceptionForm(prev => ({ ...prev, openTime: time }))}
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <label htmlFor="exceptionCloseTime" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Cierra
+                      </label>
+                      <TimeInput
+                        value={exceptionForm.closeTime}
+                        onChange={(time) => setExceptionForm(prev => ({ ...prev, closeTime: time }))}
+                      />
+                    </div>
+                  </div>
+                )}
+                <div>
+                  <label htmlFor="exceptionReason" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Motivo
+                  </label>
+                  <textarea
+                    id="exceptionReason"
+                    value={exceptionForm.reason}
+                    onChange={(e) => setExceptionForm(prev => ({ ...prev, reason: e.target.value }))}
+                    className="input-field"
+                    rows={3}
+                    placeholder="Ej: Feriado nacional, evento especial, etc."
+                  ></textarea>
+                </div>
+              </div>
+
+              <div className="flex justify-end space-x-3 mt-6">
+                <button
+                  type="button"
+                  onClick={() => setShowExceptionForm(false)}
+                  className="btn-secondary"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="btn-primary"
+                >
+                  {editingException ? 'Actualizar Excepción' : 'Agregar Excepción'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

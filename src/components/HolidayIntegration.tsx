@@ -3,6 +3,9 @@ import { Calendar, Download, CheckCircle, AlertCircle, RefreshCw, Plus, Calendar
 import { format, addYears, isSameDay, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useHolidays, Holiday } from '../contexts/HolidayContext';
+import { useSchedule } from '../contexts/ScheduleContext';
+import { db } from '../firebase';
+import { collection, addDoc, deleteDoc, query, where, getDocs } from 'firebase/firestore';
 
 export function HolidayIntegration() {
   const { holidays: firebaseHolidays, addHolidayToCalendar, removeHolidayFromCalendar, isLoading } = useHolidays();
@@ -224,6 +227,16 @@ export function HolidayIntegration() {
         addedToCalendar: true,
         year: selectedYear
       });
+
+      // También agregar a storeExceptions
+      await addDoc(collection(db, 'storeExceptions'), {
+        date: customHolidayForm.date,
+        isOpen: false, // Los feriados están cerrados por defecto
+        openTime: null,
+        closeTime: null,
+        reason: customHolidayForm.name,
+        isHolidayException: true // Marcar como excepción de feriado
+      });
       
       setCustomHolidayForm({ name: '', date: '', description: '', type: 'local' });
       setShowCustomHolidayForm(false);
@@ -239,6 +252,17 @@ export function HolidayIntegration() {
         const firebaseHoliday = firebaseHolidays.find(fh => fh.date === holiday.date && fh.name === holiday.name);
         if (firebaseHoliday) {
           await removeHolidayFromCalendar(firebaseHoliday.id);
+          
+          // También remover de storeExceptions
+          const q = query(
+            collection(db, 'storeExceptions'), 
+            where('date', '==', holiday.date), 
+            where('reason', '==', holiday.name)
+          );
+          const snapshot = await getDocs(q);
+          snapshot.forEach(async (doc) => {
+            await deleteDoc(doc.ref);
+          });
         }
       } else {
         // Si no está en el calendario, agregarlo
@@ -250,6 +274,16 @@ export function HolidayIntegration() {
           isRecurring: holiday.isRecurring,
           addedToCalendar: true,
           year: selectedYear
+        });
+
+        // También agregar a storeExceptions
+        await addDoc(collection(db, 'storeExceptions'), {
+          date: holiday.date,
+          isOpen: false, // Los feriados están cerrados por defecto
+          openTime: null,
+          closeTime: null,
+          reason: holiday.name,
+          isHolidayException: true // Marcar como excepción de feriado
         });
       }
     } catch (error) {
