@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useSchedule } from '../contexts/ScheduleContext';
 import { useEmployees } from '../contexts/EmployeeContext';
+import { useCompactMode } from '../contexts/CompactModeContext';
 import { BarChart3, TrendingUp, AlertTriangle, Users, Clock, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Statistics as StatisticsType, Shift, Employee } from '../types';
 import { format, startOfWeek, endOfWeek, addWeeks, subWeeks } from 'date-fns';
@@ -170,6 +171,7 @@ const detectCoverageProblems = (shifts: Shift[], employees: Employee[], storeSch
 export function Statistics() {
   const { shifts, storeSchedule } = useSchedule();
   const { employees } = useEmployees();
+  const { isMobile } = useCompactMode();
   
   const [selectedWeek, setSelectedWeek] = useState(new Date());
 
@@ -233,29 +235,30 @@ export function Statistics() {
 
       {/* Week Navigation */}
       <div className="card">
-        <div className="flex justify-between items-center">
-          <div className="flex items-center space-x-4">
-            <button
-              onClick={() => navigateWeek('prev')}
-              className="btn-secondary flex items-center space-x-2"
-            >
-              <ChevronLeft className="w-4 h-4" />
-              <span>Semana Anterior</span>
-            </button>
-            <h3 className="text-lg font-semibold">
-              {format(weekStart, 'd MMM', { locale: es })} - {format(weekEnd, 'd MMM yyyy', { locale: es })}
-            </h3>
-            <button
-              onClick={() => navigateWeek('next')}
-              className="btn-secondary flex items-center space-x-2"
-            >
-              <span>Semana Siguiente</span>
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          </div>
+        {/* Fecha centrada */}
+        <div className="text-center mb-4">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 whitespace-nowrap">
+            {format(weekStart, 'd MMM', { locale: es })} - {format(weekEnd, 'd MMM yyyy', { locale: es })}
+          </h3>
+        </div>
+
+        {/* Botones de navegación */}
+        <div className="flex justify-center items-center space-x-2">
+          <button
+            onClick={() => navigateWeek('prev')}
+            className="px-3 py-1 bg-gray-200 hover:bg-gray-300 text-gray-800 text-sm rounded transition-colors dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200"
+          >
+            ← Anterior
+          </button>
+          <button
+            onClick={() => navigateWeek('next')}
+            className="px-3 py-1 bg-gray-200 hover:bg-gray-300 text-gray-800 text-sm rounded transition-colors dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200"
+          >
+            Siguiente →
+          </button>
           <button
             onClick={() => setSelectedWeek(new Date())}
-            className="btn-secondary"
+            className="px-3 py-1 bg-gray-200 hover:bg-gray-300 text-gray-800 text-sm rounded transition-colors dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200"
           >
             Esta Semana
           </button>
