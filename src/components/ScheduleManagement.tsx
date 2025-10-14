@@ -689,7 +689,13 @@ export default function ScheduleManagement() {
       <div ref={scrollContainerRef} className="overflow-x-auto">
         <div className="min-w-full">
           {/* Header with hours */}
-          <div className="grid border-b border-gray-200 dark:border-gray-600" style={{ gridTemplateColumns: `${isCompactMode ? '150px' : '200px'} repeat(${hours.length}, ${getColumnWidth()}px)` }}>
+          <div 
+            className="grid border-b border-gray-200 dark:border-gray-600" 
+            style={{ 
+              gridTemplateColumns: `${isCompactMode ? '150px' : '200px'} repeat(${hours.length}, ${getColumnWidth()}px)`,
+              minWidth: 'max-content'
+            }}
+          >
             <div className={`${isCompactMode ? 'p-2' : 'p-3'} font-medium text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700 ${isCompactMode ? 'text-sm' : ''}`}>Día / Empleado</div>
             {hours.map((hour) => {
               // Check if this hour is within store hours
@@ -725,10 +731,15 @@ export default function ScheduleManagement() {
               const holiday = getHolidayForDate(dayString);
 
               return (
-                <div key={day.toISOString()} className="grid border-b border-gray-300 dark:border-gray-600 relative" style={{ 
-                  gridTemplateColumns: `${isCompactMode ? '150px' : '200px'} repeat(${hours.length}, ${getColumnWidth()}px)`, 
-                  minHeight: '120px'
-                }}>
+                <div 
+                  key={day.toISOString()} 
+                  className="grid border-b border-gray-300 dark:border-gray-600 relative" 
+                  style={{ 
+                    gridTemplateColumns: `${isCompactMode ? '150px' : '200px'} repeat(${hours.length}, ${getColumnWidth()}px)`, 
+                    minHeight: '120px',
+                    minWidth: 'max-content'
+                  }}
+                >
                   {/* Day and employees */}
                   <div className={`${isCompactMode ? 'p-2' : 'p-3'} border-r border-gray-200 dark:border-gray-600 ${
                     isHolidayDay 
