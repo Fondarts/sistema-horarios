@@ -10,7 +10,6 @@ import { LoadingSpinner } from './LoadingSpinner';
 export function AppRouter() {
   const { currentEmployee, isLoading, isManager, isDistrictManager } = useAuth();
   const { currentStore, setCurrentStore } = useStore();
-  const [selectedStore, setSelectedStore] = useState<string | null>(null);
 
   if (isLoading) {
     return <LoadingSpinner />;
@@ -21,11 +20,10 @@ export function AppRouter() {
   }
 
   // Si es encargado de distrito y no ha seleccionado una tienda
-  if (isDistrictManager && !selectedStore) {
+  if (isDistrictManager && !currentStore) {
     return (
       <StoreSelector 
         onStoreSelect={(storeId) => {
-          setSelectedStore(storeId);
           setCurrentStore(storeId);
         }} 
       />
@@ -33,7 +31,7 @@ export function AppRouter() {
   }
 
   // Si es encargado de distrito y ya seleccionó una tienda
-  if (isDistrictManager && selectedStore) {
+  if (isDistrictManager && currentStore) {
     return <ManagerDashboard />;
   }
 

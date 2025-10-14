@@ -100,6 +100,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   // Ya no necesitamos sincronizar con localStorage, Firebase maneja todo
 
   const setCurrentStore = (storeId: string) => {
+    if (storeId === '') {
+      // Limpiar la tienda actual
+      setCurrentStoreState(null);
+      localStorage.removeItem('horarios_current_store_id');
+      return;
+    }
+    
     const store = stores.find(s => s.id === storeId);
     if (store) {
       setCurrentStoreState(store);

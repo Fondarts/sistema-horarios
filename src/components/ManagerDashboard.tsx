@@ -44,10 +44,8 @@ export function ManagerDashboard() {
   const handleBackToStoreSelector = () => {
     // Limpiar la tienda seleccionada para volver al selector
     localStorage.removeItem('horarios_current_store_id');
-    // Limpiar el estado de la tienda actual
+    // Limpiar el estado de la tienda actual - esto hará que AppRouter muestre el selector
     setCurrentStore('');
-    // Recargar la página para volver al selector de tiendas
-    window.location.reload();
   };
 
   // Atajos de teclado
