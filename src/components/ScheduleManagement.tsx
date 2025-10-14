@@ -7,7 +7,7 @@ import { useEmployees } from '../contexts/EmployeeContext';
 import { useVacation } from '../contexts/VacationContext';
 import { useHolidays } from '../contexts/HolidayContext';
 import { useCompactMode } from '../contexts/CompactModeContext';
-import { Shift } from '../types';
+import { Shift, Employee } from '../types';
 import TimeInput from './TimeInput';
 import { BirthdayNotification } from './BirthdayNotification';
 
@@ -105,6 +105,34 @@ export default function ScheduleManagement() {
     return shiftDate >= weekStart && shiftDate <= weekEnd && 
            (showUnpublished || shift.isPublished);
   });
+
+  // Agrupar turnos por día y empleado
+  const groupedShifts = days.reduce((acc, day) => {
+    const dayString = format(day, 'yyyy-MM-dd');
+    acc[dayString] = employees.reduce((empAcc, employee) => {
+      empAcc[employee.id] = weekShifts.filter(shift => 
+        shift.employeeId === employee.id && format(new Date(shift.date), 'yyyy-MM-dd') === dayString
+      ).sort((a, b) => {
+        const timeA = parseInt(a.startTime.replace(':', ''));
+        const timeB = parseInt(b.startTime.replace(':', ''));
+        return timeA - timeB;
+      });
+      return empAcc;
+    }, {} as Record<string, Shift[]>);
+    return acc;
+  }, {} as Record<string, Record<string, Shift[]>>);
+
+  // Obtener empleados que tienen turnos asignados para un día específico
+  const getEmployeesWithShiftsForDay = (day: Date) => {
+    const dayString = format(day, 'yyyy-MM-dd');
+    const employeeIdsWithShifts = new Set<string>();
+    employees.forEach(employee => {
+      if (groupedShifts[dayString] && groupedShifts[dayString][employee.id] && groupedShifts[dayString][employee.id].length > 0) {
+        employeeIdsWithShifts.add(employee.id);
+      }
+    });
+    return Array.from(employeeIdsWithShifts).map(id => employees.find(emp => emp.id === id)).filter(Boolean) as Employee[];
+  };
 
   // Utility functions for time calculations
   const timeToMinutes = (time: string): number => {
