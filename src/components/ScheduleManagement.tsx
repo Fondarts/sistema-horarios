@@ -916,24 +916,20 @@ export default function ScheduleManagement() {
                         left = dayColumnWidth + (startPosition * availableWidth) + 2;
                         width = (durationPosition * availableWidth) - 4;
                       } else {
-                        // En móvil: limitar barras al rango de horas visible
-                        const visibleStartHour = startHour;
-                        const visibleEndHour = startHour + (hours.length * hourDivisor) - 1;
+                        // En móvil: usar el array hours para alineación correcta
+                        const hourIndex = hours.findIndex(h => h === Math.floor(shiftStartTimeInHours));
+                        const endHourIndex = hours.findIndex(h => h === Math.floor(shiftEndTimeInHours));
                         
-                        // Limitar el turno al rango visible
-                        const clampedStartTime = Math.max(shiftStartTimeInHours, visibleStartHour);
-                        const clampedEndTime = Math.min(shiftEndTimeInHours, visibleEndHour);
-                        const clampedDuration = Math.max(0, clampedEndTime - clampedStartTime);
+                        if (hourIndex === -1) return null; // Turno fuera del rango visible
                         
-                        // Calcular posición basada en horas visibles
-                        const totalVisibleHours = visibleEndHour - visibleStartHour + 1;
-                        const startPosition = (clampedStartTime - visibleStartHour) / totalVisibleHours;
-                        const durationPosition = clampedDuration / totalVisibleHours;
+                        // Calcular posición basada en índices de horas
+                        const columnWidth = 80; // Ancho fijo por columna en móvil
+                        left = dayColumnWidth + (hourIndex * columnWidth) + 2;
                         
-                        // Usar ancho fijo de 80px por columna de 2 horas
-                        const totalWidth = hours.length * 80;
-                        left = dayColumnWidth + (startPosition * totalWidth) + 2;
-                        width = (durationPosition * totalWidth) - 4;
+                        // Calcular ancho basado en duración
+                        const actualEndIndex = endHourIndex !== -1 ? endHourIndex + 1 : hours.length;
+                        const spanColumns = actualEndIndex - hourIndex;
+                        width = (spanColumns * columnWidth) - 4;
                       }
                       
                       const top = (isHolidayDay ? 55 : 15) + (currentIndex * 35);
