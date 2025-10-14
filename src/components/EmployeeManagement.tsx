@@ -471,7 +471,10 @@ export function EmployeeManagement() {
                       <Edit className="w-4 h-4" />
                     </button>
                     <button
-                      onClick={() => deleteEmployee(employee.id)}
+                      onClick={() => {
+                        console.log('Delete button clicked for employee:', employee.id);
+                        deleteEmployee(employee.id);
+                      }}
                       className="text-red-600 hover:text-red-800"
                     >
                       <Trash2 className="w-4 h-4" />
