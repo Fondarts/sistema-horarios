@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
 import { useSchedule } from '../contexts/ScheduleContext';
-import { Download, Calendar, FileText, ExternalLink } from 'lucide-react';
-import { format, startOfWeek, endOfWeek } from 'date-fns';
+import { useEmployees } from '../contexts/EmployeeContext';
+import { Download, Calendar, FileText, ExternalLink, Table } from 'lucide-react';
+import { format, startOfWeek, endOfWeek, eachDayOfInterval, addDays } from 'date-fns';
 import { es } from 'date-fns/locale';
+import ExcelJS from 'exceljs';
 
 export function ExportTools() {
   const { shifts } = useSchedule();
-  const [selectedFormat, setSelectedFormat] = useState<'ical' | 'csv' | 'google'>('ical');
+  const { employees } = useEmployees();
+  const [selectedFormat, setSelectedFormat] = useState<'ical' | 'csv' | 'excel' | 'google'>('ical');
   const [dateRange, setDateRange] = useState({
     start: format(startOfWeek(new Date(), { weekStartsOn: 1 }), 'yyyy-MM-dd'),
     end: format(endOfWeek(new Date(), { weekStartsOn: 1 }), 'yyyy-MM-dd')
@@ -16,23 +19,28 @@ export function ExportTools() {
 
   const exportToCSV = () => {
     const csvContent = [
-      ['Empleado', 'Fecha', 'Desde', 'Hasta', 'Horas'],
-      ...publishedShifts.map(shift => [
-        shift.employeeId, // En una app real, obtendrías el nombre del empleado
-        shift.date,
-        shift.startTime,
-        shift.endTime,
-        shift.hours.toString()
-      ])
+      ['Empleado', 'Fecha', 'Hora Inicio', 'Hora Fin', 'Horas'],
+      ...publishedShifts.map(shift => {
+        const employee = employees.find(emp => emp.id === shift.employeeId);
+        return [
+          employee?.name || 'Desconocido',
+          shift.date,
+          shift.startTime,
+          shift.endTime,
+          shift.hours
+        ];
+      })
     ].map(row => row.join(',')).join('\n');
 
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `horarios_${dateRange.start}_${dateRange.end}.csv`;
-    a.click();
-    window.URL.revokeObjectURL(url);
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `horarios_${dateRange.start}_${dateRange.end}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const exportToICal = () => {
@@ -41,23 +49,231 @@ export function ExportTools() {
       'VERSION:2.0',
       'PRODID:-//Horarios App//ES',
       'CALSCALE:GREGORIAN',
-      ...publishedShifts.map(shift => [
-        'BEGIN:VEVENT',
-        `UID:${shift.id}@horarios-app.com`,
-        `DTSTART:${shift.date.replace(/-/g, '')}T${shift.startTime.replace(':', '')}00`,
-        `DTEND:${shift.date.replace(/-/g, '')}T${shift.endTime.replace(':', '')}00`,
-        `SUMMARY:Turno de trabajo`,
-        `DESCRIPTION:Turno asignado`,
-        'END:VEVENT'
-      ]).flat(),
+      'METHOD:PUBLISH',
+      ...publishedShifts.map(shift => {
+        const employee = employees.find(emp => emp.id === shift.employeeId);
+        const startDateTime = `${shift.date.replace(/-/g, '')}T${shift.startTime.replace(':', '')}00`;
+        const endDateTime = `${shift.date.replace(/-/g, '')}T${shift.endTime.replace(':', '')}00`;
+        
+        return [
+          'BEGIN:VEVENT',
+          `UID:${shift.id}@horarios-app.com`,
+          `DTSTART:${startDateTime}`,
+          `DTEND:${endDateTime}`,
+          `SUMMARY:${employee?.name || 'Desconocido'}`,
+          `DESCRIPTION:Turno de ${shift.startTime} a ${shift.endTime}`,
+          'END:VEVENT'
+        ].join('\r\n');
+      }),
       'END:VCALENDAR'
-    ].join('\n');
+    ].join('\r\n');
 
-    const blob = new Blob([icalContent], { type: 'text/calendar' });
+    const blob = new Blob([icalContent], { type: 'text/calendar;charset=utf-8;' });
+    const a = document.createElement('a');
+    const url = window.URL.createObjectURL(blob);
+    a.href = url;
+    a.download = `horarios_${dateRange.start}_${dateRange.end}.ics`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
+
+  // Función para convertir horas decimales a formato HH:MM
+  const formatHoursToHHMM = (decimalHours: number): string => {
+    const hours = Math.floor(decimalHours);
+    const minutes = Math.round((decimalHours - hours) * 60);
+    return `${hours}:${minutes.toString().padStart(2, '0')}`;
+  };
+
+  const exportToExcel = async () => {
+    const startDate = new Date(dateRange.start);
+    const endDate = new Date(dateRange.end);
+    const days = eachDayOfInterval({ start: startDate, end: endDate });
+    
+    // Crear un solo workbook con una sola hoja
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Horarios Semana');
+    
+    // Crear headers para todos los días
+    const headerRow1 = ['TARGET'];
+    const headerRow2 = [''];
+    const headerRow3 = [''];
+    
+    days.forEach(day => {
+      const dayNumber = day.getDate();
+      const dayName = format(day, 'EEEE', { locale: es });
+      
+      // Para cada día: número del día (unificado en 5 columnas) + HOURS
+      headerRow1.push(dayNumber.toString(), '', '', '', '', 'HOURS');
+      headerRow2.push(dayName.toUpperCase(), '', '', '', '', '');
+      headerRow3.push('', '', '', '', '', '');
+    });
+    
+    // Agregar filas de headers
+    const row1 = worksheet.addRow(headerRow1);
+    const row2 = worksheet.addRow(headerRow2);
+    const row3 = worksheet.addRow(headerRow3);
+    
+    // Configurar celdas unificadas para cada día
+    days.forEach((day, dayIndex) => {
+      const startCol = 2 + (dayIndex * 6); // Columna B del día actual
+      const endCol = startCol + 4; // Columna F del día actual
+      
+      // Unificar celdas para cada día
+      worksheet.mergeCells(1, startCol, 1, endCol); // Fila 1: número del día
+      worksheet.mergeCells(2, startCol, 2, endCol); // Fila 2: día de la semana
+      worksheet.mergeCells(3, startCol, 3, endCol); // Fila 3: vacía
+    });
+    
+    // Filas de empleados
+    employees.forEach(employee => {
+      const employeeRow = [employee.name]; // Columna A: nombre del empleado
+      
+      // Para cada día, agregar los datos del empleado
+      days.forEach(day => {
+        const dayStr = format(day, 'yyyy-MM-dd');
+        const dayShifts = publishedShifts.filter(shift => 
+          shift.date === dayStr && shift.employeeId === employee.id
+        );
+        
+        // Llenar horarios para hasta 2 turnos (4 columnas)
+        if (dayShifts.length > 0) {
+          employeeRow.push(dayShifts[0].startTime, dayShifts[0].endTime);
+        } else {
+          employeeRow.push('', '');
+        }
+        
+        if (dayShifts.length > 1) {
+          employeeRow.push(dayShifts[1].startTime, dayShifts[1].endTime);
+        } else {
+          employeeRow.push('', '');
+        }
+        
+        // Calcular total de horas del empleado en este día
+        const totalDayHours = dayShifts.reduce((sum, shift) => sum + shift.hours, 0);
+        employeeRow.push(totalDayHours > 0 ? formatHoursToHHMM(totalDayHours) : '0:00');
+      });
+      
+      worksheet.addRow(employeeRow);
+    });
+    
+    // Fila de totales
+    const totalRow = ['TOTAL'];
+    days.forEach(day => {
+      const dayStr = format(day, 'yyyy-MM-dd');
+      const dayShifts = publishedShifts.filter(shift => shift.date === dayStr);
+      const totalDayHours = dayShifts.reduce((sum, shift) => sum + shift.hours, 0);
+      
+      // Agregar celdas vacías para horarios + total en columna HOURS
+      totalRow.push('', '', '', '', formatHoursToHHMM(totalDayHours));
+    });
+    const totalRowAdded = worksheet.addRow(totalRow);
+    
+    // Aplicar estilos
+    // Colores para empleados
+    const employeeColors = [
+      '#FFFFFF', // Blanco
+      '#E8E8E8', // Gris claro
+      '#FFFFFF', // Blanco
+      '#FFE4E1', // Rosa claro
+      '#E0F0FF', // Azul claro
+      '#FFFFFF'  // Blanco
+    ];
+    
+    // Aplicar colores a las filas de empleados (empezando desde la fila 4)
+    for (let i = 0; i < employees.length; i++) {
+      const row = worksheet.getRow(4 + i);
+      const color = employeeColors[i % employeeColors.length];
+      
+      row.eachCell((cell) => {
+        cell.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: color.replace('#', 'FF') }
+        };
+        cell.alignment = { horizontal: 'center', vertical: 'middle' };
+        cell.border = {
+          top: { style: 'thin', color: { argb: 'FF808080' } },
+          bottom: { style: 'thin', color: { argb: 'FF808080' } },
+          left: { style: 'thin', color: { argb: 'FF808080' } },
+          right: { style: 'thin', color: { argb: 'FF808080' } }
+        };
+      });
+    }
+    
+    // Estilos para fila 1 (TARGET + números de días + HOURS)
+    row1.eachCell((cell, colNumber) => {
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FFD3D3D3' }
+      };
+      cell.font = { bold: true };
+      cell.alignment = { horizontal: 'center', vertical: 'middle' };
+      cell.border = {
+        top: { style: 'thin', color: { argb: 'FF808080' } },
+        bottom: { style: 'thin', color: { argb: 'FF808080' } },
+        left: { style: 'thin', color: { argb: 'FF808080' } },
+        right: { style: 'thin', color: { argb: 'FF808080' } }
+      };
+    });
+    
+    // Estilos para fila 2 (días de la semana)
+    row2.eachCell((cell, colNumber) => {
+      if (colNumber > 1) { // Todas las columnas excepto TARGET
+        cell.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FFA9A9A9' }
+        };
+        cell.font = { bold: true };
+        cell.alignment = { horizontal: 'center', vertical: 'middle' };
+        cell.border = {
+          top: { style: 'thin', color: { argb: 'FF808080' } },
+          bottom: { style: 'thin', color: { argb: 'FF808080' } },
+          left: { style: 'thin', color: { argb: 'FF808080' } },
+          right: { style: 'thin', color: { argb: 'FF808080' } }
+        };
+      }
+    });
+    
+    // Estilos para fila 3 (unificada - mismo formato que fila 1)
+    row3.eachCell((cell, colNumber) => {
+      if (colNumber > 1) { // Todas las columnas excepto TARGET
+        cell.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FFD3D3D3' }
+        };
+        cell.font = { bold: true };
+        cell.alignment = { horizontal: 'center', vertical: 'middle' };
+        cell.border = {
+          top: { style: 'thin', color: { argb: 'FF808080' } },
+          bottom: { style: 'thin', color: { argb: 'FF808080' } },
+          left: { style: 'thin', color: { argb: 'FF808080' } },
+          right: { style: 'thin', color: { argb: 'FF808080' } }
+        };
+      }
+    });
+    
+    // Estilos para fila de totales
+    totalRowAdded.eachCell((cell) => {
+      cell.font = { bold: true };
+      cell.alignment = { horizontal: 'center', vertical: 'middle' };
+      cell.border = {
+        top: { style: 'thin', color: { argb: 'FF808080' } },
+        bottom: { style: 'thin', color: { argb: 'FF808080' } },
+        left: { style: 'thin', color: { argb: 'FF808080' } },
+        right: { style: 'thin', color: { argb: 'FF808080' } }
+      };
+    });
+    
+    // Generar y descargar el archivo único con todas las hojas
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `horarios_${dateRange.start}_${dateRange.end}.ics`;
+    a.download = `horarios_semana_${format(startDate, 'dd-MM')}_${format(endDate, 'dd-MM')}.xlsx`;
     a.click();
     window.URL.revokeObjectURL(url);
   };
@@ -67,10 +283,13 @@ export function ExportTools() {
     alert('Funcionalidad de Google Calendar en desarrollo. Por ahora, usa la exportación iCal.');
   };
 
-  const handleExport = () => {
+  const handleExport = async () => {
     switch (selectedFormat) {
       case 'csv':
         exportToCSV();
+        break;
+      case 'excel':
+        await exportToExcel();
         break;
       case 'ical':
         exportToICal();
@@ -89,140 +308,106 @@ export function ExportTools() {
         <p className="text-gray-600">Exporta los horarios publicados en diferentes formatos</p>
       </div>
 
-      {/* Export Options */}
-      <div className="card">
-        <h3 className="text-lg font-semibold text-gray-900 mb-6">Opciones de Exportación</h3>
-
-        {/* Format Selection */}
-        <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-3">
-            Formato de Exportación
-          </label>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <label className="relative">
-              <input
-                type="radio"
-                name="format"
-                value="ical"
-                checked={selectedFormat === 'ical'}
-                onChange={(e) => setSelectedFormat(e.target.value as 'ical')}
-                className="sr-only"
-              />
-              <div className={`p-4 border-2 rounded-lg cursor-pointer transition-colors ${
-                selectedFormat === 'ical' 
-                  ? 'border-primary-500 bg-primary-50' 
-                  : 'border-gray-200 hover:border-gray-300'
-              }`}>
-                <Calendar className="w-8 h-8 text-primary-600 mx-auto mb-2" />
-                <div className="text-center">
-                  <div className="font-medium text-gray-900">iCal</div>
-                  <div className="text-sm text-gray-600">Archivo .ics</div>
-                </div>
-              </div>
+      {/* Date Range Selector */}
+      <div className="bg-white p-6 rounded-lg shadow">
+        <h3 className="text-lg font-semibold mb-4">Rango de Fechas</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Fecha de Inicio
             </label>
-
-            <label className="relative">
-              <input
-                type="radio"
-                name="format"
-                value="csv"
-                checked={selectedFormat === 'csv'}
-                onChange={(e) => setSelectedFormat(e.target.value as 'csv')}
-                className="sr-only"
-              />
-              <div className={`p-4 border-2 rounded-lg cursor-pointer transition-colors ${
-                selectedFormat === 'csv' 
-                  ? 'border-primary-500 bg-primary-50' 
-                  : 'border-gray-200 hover:border-gray-300'
-              }`}>
-                <FileText className="w-8 h-8 text-green-600 mx-auto mb-2" />
-                <div className="text-center">
-                  <div className="font-medium text-gray-900">CSV</div>
-                  <div className="text-sm text-gray-600">Hoja de cálculo</div>
-                </div>
-              </div>
+            <input
+              type="date"
+              value={dateRange.start}
+              onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Fecha de Fin
             </label>
-
-            <label className="relative">
-              <input
-                type="radio"
-                name="format"
-                value="google"
-                checked={selectedFormat === 'google'}
-                onChange={(e) => setSelectedFormat(e.target.value as 'google')}
-                className="sr-only"
-              />
-              <div className={`p-4 border-2 rounded-lg cursor-pointer transition-colors ${
-                selectedFormat === 'google' 
-                  ? 'border-primary-500 bg-primary-50' 
-                  : 'border-gray-200 hover:border-gray-300'
-              }`}>
-                <ExternalLink className="w-8 h-8 text-blue-600 mx-auto mb-2" />
-                <div className="text-center">
-                  <div className="font-medium text-gray-900">Google Calendar</div>
-                  <div className="text-sm text-gray-600">Sincronización directa</div>
-                </div>
-              </div>
-            </label>
+            <input
+              type="date"
+              value={dateRange.end}
+              onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
           </div>
-        </div>
-
-        {/* Date Range */}
-        <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-3">
-            Rango de Fechas
-          </label>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs text-gray-600 mb-1">Desde</label>
-              <input
-                type="date"
-                value={dateRange.start}
-                onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
-                className="input-field"
-              />
-            </div>
-            <div>
-              <label className="block text-xs text-gray-600 mb-1">Hasta</label>
-              <input
-                type="date"
-                value={dateRange.end}
-                onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
-                className="input-field"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Export Button */}
-        <div className="flex justify-between items-center">
-          <div className="text-sm text-gray-600">
-            {publishedShifts.length} turnos publicados disponibles para exportar
-          </div>
-          <button
-            onClick={handleExport}
-            disabled={publishedShifts.length === 0}
-            className="btn-primary flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <Download className="w-5 h-5 mr-2" />
-            Exportar
-          </button>
         </div>
       </div>
 
-      {/* Export History */}
-      <div className="card">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Historial de Exportaciones</h3>
-        <div className="text-center py-8">
-          <Download className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-600">No hay exportaciones recientes</p>
-          <p className="text-sm text-gray-500 mt-2">
-            Las exportaciones realizadas aparecerán aquí
-          </p>
+      {/* Format Selection */}
+      <div className="bg-white p-6 rounded-lg shadow">
+        <h3 className="text-lg font-semibold mb-4">Formato de Exportación</h3>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <label className="flex items-center space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
+            <input
+              type="radio"
+              name="format"
+              value="excel"
+              checked={selectedFormat === 'excel'}
+              onChange={(e) => setSelectedFormat(e.target.value as any)}
+              className="w-4 h-4 text-blue-600"
+            />
+            <Table className="w-6 h-6 text-green-600" />
+            <span className="font-medium">Excel</span>
+          </label>
+          <label className="flex items-center space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
+            <input
+              type="radio"
+              name="format"
+              value="csv"
+              checked={selectedFormat === 'csv'}
+              onChange={(e) => setSelectedFormat(e.target.value as any)}
+              className="w-4 h-4 text-blue-600"
+            />
+            <FileText className="w-6 h-6 text-blue-600" />
+            <span className="font-medium">CSV</span>
+          </label>
+          <label className="flex items-center space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
+            <input
+              type="radio"
+              name="format"
+              value="ical"
+              checked={selectedFormat === 'ical'}
+              onChange={(e) => setSelectedFormat(e.target.value as any)}
+              className="w-4 h-4 text-blue-600"
+            />
+            <Calendar className="w-6 h-6 text-purple-600" />
+            <span className="font-medium">iCal</span>
+          </label>
+          <label className="flex items-center space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
+            <input
+              type="radio"
+              name="format"
+              value="google"
+              checked={selectedFormat === 'google'}
+              onChange={(e) => setSelectedFormat(e.target.value as any)}
+              className="w-4 h-4 text-blue-600"
+            />
+            <ExternalLink className="w-6 h-6 text-red-600" />
+            <span className="font-medium">Google</span>
+          </label>
         </div>
+      </div>
+
+      {/* Export Button */}
+      <div className="bg-white p-6 rounded-lg shadow">
+        <button
+          onClick={handleExport}
+          disabled={publishedShifts.length === 0}
+          className="w-full flex items-center justify-center space-x-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+        >
+          <Download className="w-5 h-5" />
+          <span>Exportar Horarios</span>
+        </button>
+        {publishedShifts.length === 0 && (
+          <p className="text-sm text-gray-500 mt-2 text-center">
+            No hay horarios publicados para exportar
+          </p>
+        )}
       </div>
     </div>
   );
 }
-
-
