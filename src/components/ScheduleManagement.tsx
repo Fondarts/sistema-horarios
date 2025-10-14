@@ -843,18 +843,20 @@ export default function ScheduleManagement() {
                         style={{ height: '120px' }}
                         title={isHolidayDay ? `Feriado: ${holiday?.name}` : ''}
                       >
-                        {/* Hour line */}
-                        <div className="absolute w-full border-t border-gray-100 dark:border-gray-600" style={{ top: '0' }}>
-                          <div className={`text-xs px-1 ${
-                            isHolidayDay 
-                              ? 'text-orange-600 dark:text-orange-300 font-medium' 
-                              : isStoreHour 
-                                ? 'text-blue-600 dark:text-blue-300' 
-                                : 'text-gray-400 dark:text-gray-500'
-                          }`}>
-                            {hour}:00
+                        {/* Hour line - solo mostrar en desktop */}
+                        {!isMobile && (
+                          <div className="absolute w-full border-t border-gray-100 dark:border-gray-600" style={{ top: '0' }}>
+                            <div className={`text-xs px-1 ${
+                              isHolidayDay 
+                                ? 'text-orange-600 dark:text-orange-300 font-medium' 
+                                : isStoreHour 
+                                  ? 'text-blue-600 dark:text-blue-300' 
+                                  : 'text-gray-400 dark:text-gray-500'
+                            }`}>
+                              {hour}:00
+                            </div>
                           </div>
-                        </div>
+                        )}
                         
                       </div>
                     );
