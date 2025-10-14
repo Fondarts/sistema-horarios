@@ -24,7 +24,7 @@ type TabType = 'schedule' | 'employees' | 'settings' | 'statistics' | 'export' |
 export function ManagerDashboard() {
   const { currentEmployee, logout, isDistrictManager } = useAuth();
   const { employees } = useEmployees();
-  const { currentStore } = useStore();
+  const { currentStore, setCurrentStore } = useStore();
   const { isCompactMode, toggleCompactMode, isMobile } = useCompactMode();
   const [activeTab, setActiveTab] = useState<TabType>('schedule');
   const [showBirthdayNotification, setShowBirthdayNotification] = useState(true);
@@ -42,6 +42,10 @@ export function ManagerDashboard() {
 
   // Función para volver al selector de tiendas (solo para encargados de distrito)
   const handleBackToStoreSelector = () => {
+    // Limpiar la tienda seleccionada para volver al selector
+    localStorage.removeItem('horarios_current_store_id');
+    // Limpiar el estado de la tienda actual
+    setCurrentStore('');
     // Recargar la página para volver al selector de tiendas
     window.location.reload();
   };
