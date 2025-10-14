@@ -1,6 +1,18 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Store } from '../types';
 import { v4 as uuidv4 } from 'uuid';
+import { db } from '../firebase';
+import { 
+  collection, 
+  doc, 
+  addDoc, 
+  updateDoc, 
+  deleteDoc, 
+  getDocs, 
+  onSnapshot,
+  query,
+  orderBy
+} from 'firebase/firestore';
 
 interface StoreContextType {
   stores: Store[];
@@ -20,89 +32,72 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const loadStores = () => {
+    const loadStores = async () => {
       setIsLoading(true);
-      const savedStores = localStorage.getItem('horarios_stores');
-      if (savedStores) {
-        try {
-          const parsedStores = JSON.parse(savedStores);
-          // Validar que parsedStores es un array
-          if (Array.isArray(parsedStores)) {
-            setStores(parsedStores);
-            const savedCurrentStoreId = localStorage.getItem('horarios_current_store_id');
-            if (savedCurrentStoreId) {
-              const foundStore = parsedStores.find((s: Store) => s.id === savedCurrentStoreId);
-              setCurrentStoreState(foundStore || null);
-            } else if (parsedStores.length > 0) {
-              setCurrentStoreState(parsedStores[0]);
-              localStorage.setItem('horarios_current_store_id', parsedStores[0].id);
-            }
-          } else {
-            // Si no es un array, crear uno nuevo
-            console.warn('Stores data is not an array, creating default store');
-            const defaultStore: Store = {
-              id: uuidv4(),
+      
+      try {
+        // Cargar tiendas desde Firebase
+        const storesRef = collection(db, 'stores');
+        const q = query(storesRef, orderBy('name'));
+        
+        const unsubscribe = onSnapshot(q, async (snapshot) => {
+          const storesData: Store[] = [];
+          snapshot.forEach((doc) => {
+            storesData.push({ id: doc.id, ...doc.data() } as Store);
+          });
+          
+          setStores(storesData);
+          
+          // Si no hay tiendas, crear una por defecto
+          if (storesData.length === 0) {
+            const defaultStore: Omit<Store, 'id'> = {
               name: 'Mi Tienda Principal',
               address: 'Calle Falsa 123',
               phone: '123-456-7890',
               email: 'contacto@mitienda.com',
+              isActive: true,
               employees: [],
               shifts: [],
               storeSchedule: [],
               settings: {}
             };
-            setStores([defaultStore]);
-            setCurrentStoreState(defaultStore);
-            localStorage.setItem('horarios_stores', JSON.stringify([defaultStore]));
-            localStorage.setItem('horarios_current_store_id', defaultStore.id);
+            
+            try {
+              const docRef = await addDoc(storesRef, defaultStore);
+              setCurrentStoreState({ id: docRef.id, ...defaultStore });
+              localStorage.setItem('horarios_current_store_id', docRef.id);
+            } catch (error) {
+              console.error('Error creating default store:', error);
+            }
+          } else {
+            // Si hay tiendas, usar la guardada o la primera
+            const savedCurrentStoreId = localStorage.getItem('horarios_current_store_id');
+            if (savedCurrentStoreId) {
+              const foundStore = storesData.find((s: Store) => s.id === savedCurrentStoreId);
+              setCurrentStoreState(foundStore || storesData[0]);
+            } else {
+              setCurrentStoreState(storesData[0]);
+              localStorage.setItem('horarios_current_store_id', storesData[0].id);
+            }
           }
-        } catch (error) {
-          console.error('Error parsing stores data:', error);
-          // Crear tienda por defecto en caso de error
-          const defaultStore: Store = {
-            id: uuidv4(),
-            name: 'Mi Tienda Principal',
-            address: 'Calle Falsa 123',
-            phone: '123-456-7890',
-            email: 'contacto@mitienda.com',
-            employees: [],
-            shifts: [],
-            storeSchedule: [],
-            settings: {}
-          };
-          setStores([defaultStore]);
-          setCurrentStoreState(defaultStore);
-          localStorage.setItem('horarios_stores', JSON.stringify([defaultStore]));
-          localStorage.setItem('horarios_current_store_id', defaultStore.id);
-        }
-      } else {
-        // Crear una tienda por defecto si no hay ninguna
-        const defaultStore: Store = {
-          id: uuidv4(),
-          name: 'Mi Tienda Principal',
-          address: 'Calle Falsa 123',
-          phone: '123-456-7890',
-          email: 'contacto@mitienda.com',
-          employees: [],
-          shifts: [],
-          storeSchedule: [],
-          settings: {}
-        };
-        setStores([defaultStore]);
-        setCurrentStoreState(defaultStore);
-        localStorage.setItem('horarios_stores', JSON.stringify([defaultStore]));
-        localStorage.setItem('horarios_current_store_id', defaultStore.id);
+          
+          setIsLoading(false);
+        }, (error) => {
+          console.error('Error loading stores:', error);
+          setIsLoading(false);
+        });
+
+        return () => unsubscribe();
+      } catch (error) {
+        console.error('Error setting up stores listener:', error);
+        setIsLoading(false);
       }
-      setIsLoading(false);
     };
+    
     loadStores();
   }, []);
 
-  useEffect(() => {
-    if (stores.length > 0) {
-      localStorage.setItem('horarios_stores', JSON.stringify(stores));
-    }
-  }, [stores]);
+  // Ya no necesitamos sincronizar con localStorage, Firebase maneja todo
 
   const setCurrentStore = (storeId: string) => {
     const store = stores.find(s => s.id === storeId);
@@ -113,35 +108,53 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   };
 
   const createStore = async (newStoreData: Omit<Store, 'id' | 'employees' | 'shifts' | 'storeSchedule' | 'settings'>) => {
-    const newStore: Store = {
-      id: uuidv4(),
-      employees: [],
-      shifts: [],
-      storeSchedule: [],
-      settings: {},
-      ...newStoreData
-    };
-    setStores(prev => [...prev, newStore]);
-    setCurrentStore(newStore.id); // Establecer la nueva tienda como actual
+    try {
+      const storesRef = collection(db, 'stores');
+      const storeToCreate = {
+        ...newStoreData,
+        isActive: true,
+        employees: [],
+        shifts: [],
+        storeSchedule: [],
+        settings: {}
+      };
+      
+      const docRef = await addDoc(storesRef, storeToCreate);
+      setCurrentStore(docRef.id); // Establecer la nueva tienda como actual
+    } catch (error) {
+      console.error('Error creating store:', error);
+      throw error;
+    }
   };
 
   const updateStore = async (storeId: string, updates: Partial<Store>) => {
-    setStores(prev => prev.map(store =>
-      store.id === storeId ? { ...store, ...updates } : store
-    ));
+    try {
+      const storeRef = doc(db, 'stores', storeId);
+      await updateDoc(storeRef, updates);
+    } catch (error) {
+      console.error('Error updating store:', error);
+      throw error;
+    }
   };
 
   const deleteStore = async (storeId: string) => {
-    setStores(prev => prev.filter(store => store.id !== storeId));
-    if (currentStore?.id === storeId) {
-      // Si la tienda actual es eliminada, seleccionar la primera disponible o null
-      const remainingStores = stores.filter(store => store.id !== storeId);
-      if (remainingStores.length > 0) {
-        setCurrentStore(remainingStores[0].id);
-      } else {
-        setCurrentStoreState(null);
-        localStorage.removeItem('horarios_current_store_id');
+    try {
+      const storeRef = doc(db, 'stores', storeId);
+      await deleteDoc(storeRef);
+      
+      // Si la tienda actual es eliminada, seleccionar la primera disponible
+      if (currentStore?.id === storeId) {
+        const remainingStores = stores.filter(store => store.id !== storeId);
+        if (remainingStores.length > 0) {
+          setCurrentStore(remainingStores[0].id);
+        } else {
+          setCurrentStoreState(null);
+          localStorage.removeItem('horarios_current_store_id');
+        }
       }
+    } catch (error) {
+      console.error('Error deleting store:', error);
+      throw error;
     }
   };
 
