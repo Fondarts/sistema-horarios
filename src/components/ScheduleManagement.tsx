@@ -549,7 +549,7 @@ export default function ScheduleManagement() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Gestión de Horarios - Planifica los turnos de tus empleados</h2>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Gestión de Horarios</h2>
         </div>
         <div className="flex items-center space-x-4">
           
