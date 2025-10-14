@@ -199,6 +199,8 @@ export default function ScheduleManagement() {
     const startTime = `${hour.toString().padStart(2, '0')}:00`;
     const endTime = `${(hour + 8).toString().padStart(2, '0')}:00`;
     
+    console.log('ScheduleManagement: createShift called with:', { employeeId, date, hour, startTime, endTime });
+    
     const errors = await addShift({
       employeeId,
       date,
@@ -207,6 +209,8 @@ export default function ScheduleManagement() {
       hours: 8,
       isPublished: false
     });
+
+    console.log('ScheduleManagement: createShift errors:', errors);
 
     if (errors.length > 0) {
       alert(errors.map(e => e.message).join('\n'));
@@ -267,6 +271,8 @@ export default function ScheduleManagement() {
       });
     } else {
       // Crear nuevo turno
+      console.log('ScheduleManagement: Creating new shift from form:', shiftForm);
+      
       const errors = await addShift({
         employeeId: shiftForm.employeeId,
         date: shiftForm.date,
@@ -275,6 +281,8 @@ export default function ScheduleManagement() {
         hours: hours,
         isPublished: false
       });
+
+      console.log('ScheduleManagement: Form shift creation errors:', errors);
 
       if (errors.length > 0) {
         alert(errors.map(e => e.message).join('\n'));

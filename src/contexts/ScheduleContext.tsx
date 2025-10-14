@@ -256,8 +256,12 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
   const addShift = async (shiftData: Omit<Shift, 'id' | 'createdAt' | 'updatedAt'>): Promise<ValidationError[]> => {
     const errors: ValidationError[] = [];
     
+    console.log('ScheduleContext: addShift called with data:', shiftData);
+    console.log('ScheduleContext: currentStore:', currentStore);
+    
     // Validar que hay una tienda seleccionada
     if (!currentStore) {
+      console.log('ScheduleContext: No currentStore, returning error');
       errors.push({ type: 'schedule', message: 'No hay tienda seleccionada' });
       return errors;
     }
@@ -301,12 +305,15 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
         updatedAt: new Date()
       };
 
-      await addDoc(collection(db, 'shifts'), newShift);
+      console.log('ScheduleContext: Adding shift to Firebase:', newShift);
+      const docRef = await addDoc(collection(db, 'shifts'), newShift);
+      console.log('ScheduleContext: Shift added with ID:', docRef.id);
     } catch (error) {
       console.error('Error adding shift:', error);
       errors.push({ type: 'schedule', message: 'Error al crear el turno' });
     }
     
+    console.log('ScheduleContext: addShift returning errors:', errors);
     return errors;
   };
 
