@@ -305,22 +305,22 @@ export function Statistics() {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50 dark:bg-gray-700">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                   Empleado
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                   Horas Asignadas
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                   Tope Semanal
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                   % Utilización
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                   Día Más Ocupado
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                   Días Sin Fin de Semana
                 </th>
               </tr>
@@ -334,17 +334,17 @@ export function Statistics() {
                 return (
                   <tr key={stat.employeeId}>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="font-medium text-gray-900">{stat.employeeName}</div>
+                      <div className="font-medium text-gray-900 dark:text-gray-100">{stat.employeeName}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <span className="text-sm text-gray-900">{formatHours(stat.weeklyAssignedHours)}</span>
+                        <span className="text-sm text-gray-900 dark:text-gray-100">{formatHours(stat.weeklyAssignedHours)}</span>
                         {isOverLimit && (
                           <AlertTriangle className="w-4 h-4 text-red-500 ml-2" />
                         )}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                       {stat.weeklyLimit}h
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -360,16 +360,16 @@ export function Statistics() {
                         </div>
                         <span className={`text-sm ${
                           isOverLimit ? 'text-red-600' : 
-                          isNearLimit ? 'text-yellow-600' : 'text-gray-900'
+                          isNearLimit ? 'text-yellow-600' : 'text-gray-900 dark:text-gray-100'
                         }`}>
                           {utilization.toFixed(1)}%
                         </span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                       {daysOfWeek[stat.busiestDayOfWeek]}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                       {stat.daysSinceLastWeekendOff} días
                     </td>
                   </tr>
@@ -382,7 +382,7 @@ export function Statistics() {
 
       {/* Coverage Issues */}
       <div className="card">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Problemas de Cobertura</h3>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Problemas de Cobertura</h3>
         
         {coverageProblems.length === 0 ? (
           <div className="text-center py-8">

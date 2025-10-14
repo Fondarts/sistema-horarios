@@ -185,8 +185,8 @@ export function EmployeeManagement() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Gestión de Empleados</h2>
-          <p className="text-gray-600">Administra la información de tus empleados</p>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Gestión de Empleados</h2>
+          <p className="text-gray-600 dark:text-gray-400">Administra la información de tus empleados</p>
         </div>
         <div className="flex gap-3">
           <button
@@ -209,14 +209,14 @@ export function EmployeeManagement() {
       {/* Add/Edit Form */}
       {showAddForm && (
         <div className="card">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
             {editingEmployee ? 'Editar Empleado' : 'Nuevo Empleado'}
           </h3>
           
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Nombre Completo
                 </label>
                 <input
@@ -229,7 +229,7 @@ export function EmployeeManagement() {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   PIN de Acceso (5 dígitos)
                 </label>
                 <input
@@ -251,7 +251,7 @@ export function EmployeeManagement() {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Rol del Empleado
                 </label>
                 <select
@@ -272,7 +272,7 @@ export function EmployeeManagement() {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Tope Semanal (horas)
                 </label>
                 <input
@@ -287,7 +287,7 @@ export function EmployeeManagement() {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Fecha de Nacimiento
                 </label>
                 <input
@@ -305,7 +305,7 @@ export function EmployeeManagement() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Color del Empleado
                 </label>
                 <div className="flex items-center gap-3">
@@ -332,7 +332,7 @@ export function EmployeeManagement() {
             {/* No Disponibilidad */}
             <div>
               <div className="flex justify-between items-center mb-4">
-                <label className="block text-sm font-medium text-gray-700">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Horarios No Disponibles
                 </label>
                 <button
@@ -429,7 +429,7 @@ export function EmployeeManagement() {
 
       {/* Employees List */}
       <div className="card">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Lista de Empleados</h3>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Lista de Empleados</h3>
         
         {employees.length === 0 ? (
           <div className="text-center py-12">
@@ -447,8 +447,8 @@ export function EmployeeManagement() {
                       style={{ backgroundColor: employee.color }}
                     ></div>
                     <div>
-                      <h4 className="font-medium text-gray-900">{employee.name}</h4>
-                      <p className="text-sm text-gray-600">
+                      <h4 className="font-medium text-gray-900 dark:text-gray-100">{employee.name}</h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
                         {employee.isActive ? 'Activo' : 'Inactivo'}
                       </p>
                     </div>
