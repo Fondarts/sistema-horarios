@@ -712,6 +712,10 @@ export default function ScheduleManagement() {
               );
               const employeesOnDay = Array.from(new Set(dayShifts.map(shift => shift.employeeId)));
               
+              const dayString = format(day, 'yyyy-MM-dd');
+              const isHolidayDay = isHoliday(dayString);
+              const holiday = getHolidayForDate(dayString);
+
               return (
                 <div key={day.toISOString()} className="grid border-b border-gray-300 dark:border-gray-600 relative" style={{ 
                   gridTemplateColumns: `200px repeat(${hours.length}, ${getColumnWidth()}px)`, 
@@ -719,17 +723,17 @@ export default function ScheduleManagement() {
                 }}>
                   {/* Day and employees */}
                   <div className={`p-3 border-r border-gray-200 dark:border-gray-600 ${
-                    isHoliday(format(day, 'yyyy-MM-dd')) 
+                    isHolidayDay 
                       ? 'bg-orange-50 dark:bg-orange-900/20' 
                       : 'bg-gray-50 dark:bg-gray-700'
                   }`}>
                     <div className={`font-medium mb-2 ${
-                      isHoliday(format(day, 'yyyy-MM-dd'))
+                      isHolidayDay
                         ? 'text-orange-700 dark:text-orange-300'
                         : 'text-gray-900 dark:text-gray-100'
                     }`}>
                       {format(day, 'EEE d', { locale: es })}
-                      {isHoliday(format(day, 'yyyy-MM-dd')) && (
+                      {isHolidayDay && (
                         <span className="ml-2 text-xs">🎉</span>
                       )}
                     </div>
@@ -754,9 +758,6 @@ export default function ScheduleManagement() {
                   {/* Hours for this day */}
                   {hours.map((hour) => {
                     const isStoreHour = hour >= storeStartHour && hour <= storeEndHour;
-                    const dayString = format(day, 'yyyy-MM-dd');
-                    const isHolidayDay = isHoliday(dayString);
-                    const holiday = getHolidayForDate(dayString);
                     
                     // Determinar el color de fondo
                     let backgroundColor = '';
