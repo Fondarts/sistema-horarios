@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useEmployees } from '../contexts/EmployeeContext';
-import { LogOut, Calendar, Users, Home, BarChart3, FileText, Plane, CalendarDays, Maximize2, Minimize2 } from 'lucide-react';
+import { useStore } from '../contexts/StoreContext';
+import { LogOut, Calendar, Users, Home, BarChart3, FileText, Plane, CalendarDays, Maximize2, Minimize2, Building2 } from 'lucide-react';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { useCompactMode } from '../contexts/CompactModeContext';
 import { EmployeeManagement } from './EmployeeManagement';
@@ -21,8 +22,9 @@ import { HamburgerMenu } from './HamburgerMenu';
 type TabType = 'schedule' | 'employees' | 'settings' | 'statistics' | 'export' | 'vacations' | 'holidays';
 
 export function ManagerDashboard() {
-  const { currentEmployee, logout } = useAuth();
+  const { currentEmployee, logout, isDistrictManager } = useAuth();
   const { employees } = useEmployees();
+  const { currentStore, getCurrentStoreData } = useStore();
   const { isCompactMode, toggleCompactMode, isMobile } = useCompactMode();
   const [activeTab, setActiveTab] = useState<TabType>('schedule');
   const [showBirthdayNotification, setShowBirthdayNotification] = useState(true);
@@ -37,6 +39,12 @@ export function ManagerDashboard() {
     { id: 'statistics' as TabType, label: 'Estadísticas', icon: BarChart3 },
     { id: 'export' as TabType, label: 'Exportar', icon: FileText },
   ];
+
+  // Función para volver al selector de tiendas (solo para encargados de distrito)
+  const handleBackToStoreSelector = () => {
+    // Recargar la página para volver al selector de tiendas
+    window.location.reload();
+  };
 
   // Atajos de teclado
   useKeyboardShortcuts([
@@ -128,6 +136,11 @@ export function ManagerDashboard() {
                     </h1>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
                       Bienvenido, {currentEmployee?.name}
+                      {isDistrictManager && getCurrentStoreData() && (
+                        <span className="ml-2 text-blue-600 dark:text-blue-400">
+                          • {getCurrentStoreData()?.name}
+                        </span>
+                      )}
                     </p>
                   </div>
                 </>
@@ -137,6 +150,11 @@ export function ManagerDashboard() {
                   <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                     Bienvenido, {currentEmployee?.name}
                   </h1>
+                  {isDistrictManager && getCurrentStoreData() && (
+                    <p className="text-sm text-blue-600 dark:text-blue-400">
+                      {getCurrentStoreData()?.name}
+                    </p>
+                  )}
                 </div>
               )}
             </div>
@@ -165,6 +183,18 @@ export function ManagerDashboard() {
                 </>
               )}
               
+              {/* Botón de volver al selector de tiendas - solo para encargados de distrito */}
+              {isDistrictManager && !isMobile && (
+                <button
+                  onClick={handleBackToStoreSelector}
+                  className="flex items-center px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-md transition-colors dark:text-blue-400 dark:hover:text-blue-300 dark:hover:bg-blue-900/20"
+                  title="Volver al selector de tiendas"
+                >
+                  <Building2 className="w-4 h-4 mr-2" />
+                  Tiendas
+                </button>
+              )}
+              
               {/* Botón de cerrar sesión - solo visible en desktop */}
               {!isMobile && (
                 <button
@@ -185,6 +215,7 @@ export function ManagerDashboard() {
               isManager={true}
               onShowKeyboardHelp={() => setShowKeyboardHelp(true)}
               onLogout={logout}
+              onBackToStoreSelector={isDistrictManager ? handleBackToStoreSelector : undefined}
             />
           </div>
         </div>

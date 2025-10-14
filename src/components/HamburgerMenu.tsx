@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Menu, X, Calendar, Users, Plane, CalendarDays, Home, BarChart3, FileText, Sun, Moon, HelpCircle, LogOut } from 'lucide-react';
+import { Menu, X, Calendar, Users, Plane, CalendarDays, Home, BarChart3, FileText, Sun, Moon, HelpCircle, LogOut, Building2 } from 'lucide-react';
 import { useCompactMode } from '../contexts/CompactModeContext';
 import { useTheme } from '../contexts/ThemeContext';
+import { useAuth } from '../contexts/AuthContext';
 import { Logo } from './Logo';
 
 interface HamburgerMenuProps {
@@ -10,12 +11,14 @@ interface HamburgerMenuProps {
   isManager?: boolean;
   onShowKeyboardHelp?: () => void;
   onLogout?: () => void;
+  onBackToStoreSelector?: () => void;
 }
 
-export function HamburgerMenu({ activeTab, onTabChange, isManager = false, onShowKeyboardHelp, onLogout }: HamburgerMenuProps) {
+export function HamburgerMenu({ activeTab, onTabChange, isManager = false, onShowKeyboardHelp, onLogout, onBackToStoreSelector }: HamburgerMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const { isMobile } = useCompactMode();
   const { theme, toggleTheme } = useTheme();
+  const { isDistrictManager } = useAuth();
 
   const managerTabs = [
     { id: 'schedule', label: 'Horarios', icon: Calendar },
@@ -54,6 +57,13 @@ export function HamburgerMenu({ activeTab, onTabChange, isManager = false, onSho
   const handleLogout = () => {
     if (onLogout) {
       onLogout();
+    }
+    setIsOpen(false);
+  };
+
+  const handleBackToStoreSelector = () => {
+    if (onBackToStoreSelector) {
+      onBackToStoreSelector();
     }
     setIsOpen(false);
   };
@@ -162,6 +172,17 @@ export function HamburgerMenu({ activeTab, onTabChange, isManager = false, onSho
                 >
                   <HelpCircle className="w-5 h-5" style={{ marginRight: '12px' }} />
                   Atajos de Teclado
+                </button>
+              </li>
+            )}
+            {isDistrictManager && onBackToStoreSelector && (
+              <li>
+                <button
+                  onClick={handleBackToStoreSelector}
+                  className="w-full flex items-center px-4 py-3 rounded-lg text-left transition-colors text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20"
+                >
+                  <Building2 className="w-5 h-5" style={{ marginRight: '12px' }} />
+                  Volver a Tiendas
                 </button>
               </li>
             )}
