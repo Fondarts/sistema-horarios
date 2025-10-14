@@ -347,7 +347,7 @@ export default function ScheduleManagement() {
   // Calculate column width based on zoom level
   const getColumnWidth = () => {
     // En modo compacto, columnas más estrechas
-    const baseWidth = isCompactMode ? 40 : 60;
+    const baseWidth = isCompactMode ? 50 : 70;
     return Math.round(baseWidth * zoomLevel);
   };
 
@@ -664,7 +664,7 @@ export default function ScheduleManagement() {
           <div 
             className="grid border-b border-gray-200 dark:border-gray-600" 
             style={{ 
-              gridTemplateColumns: `${isMobile ? '80px' : (isCompactMode ? '150px' : '200px')} repeat(${hours.length}, ${getColumnWidth()}px)`,
+              gridTemplateColumns: `${isMobile ? '60px' : (isCompactMode ? '100px' : '120px')} repeat(${hours.length}, ${getColumnWidth()}px)`,
               minWidth: 'max-content'
             }}
           >
@@ -675,11 +675,11 @@ export default function ScheduleManagement() {
               return (
                 <div 
                   key={hour} 
-                  className={`px-2 border-l border-gray-200 dark:border-gray-600 flex items-start justify-center ${isStoreHour ? 'bg-blue-50 dark:bg-blue-900/20' : 'bg-gray-50 dark:bg-gray-700'}`} 
-                  style={{ width: `${getColumnWidth()}px`, paddingTop: '4px', paddingBottom: '8px' }}
+                  className={`px-1 border-l border-gray-200 dark:border-gray-600 flex items-center justify-center ${isStoreHour ? 'bg-blue-50 dark:bg-blue-900/20' : 'bg-gray-50 dark:bg-gray-700'}`} 
+                  style={{ width: `${getColumnWidth()}px`, minWidth: `${getColumnWidth()}px` }}
                 >
-                  <div className={`text-xs ${isStoreHour ? 'text-blue-700 dark:text-blue-300 font-medium' : 'text-gray-600 dark:text-gray-300'}`}>
-                    {hour}:00
+                  <div className={`text-xs font-medium ${isStoreHour ? 'text-blue-700 dark:text-blue-300' : 'text-gray-600 dark:text-gray-300'}`}>
+                    {hour}
                   </div>
                 </div>
               );
@@ -707,7 +707,7 @@ export default function ScheduleManagement() {
                   key={day.toISOString()} 
                   className="grid border-b border-gray-300 dark:border-gray-600 relative" 
                   style={{ 
-                    gridTemplateColumns: `${isMobile ? '80px' : (isCompactMode ? '150px' : '200px')} repeat(${hours.length}, ${getColumnWidth()}px)`, 
+                    gridTemplateColumns: `${isMobile ? '60px' : (isCompactMode ? '100px' : '120px')} repeat(${hours.length}, ${getColumnWidth()}px)`, 
                     minHeight: '120px',
                     minWidth: 'max-content'
                   }}
@@ -839,7 +839,7 @@ export default function ScheduleManagement() {
                           zIndex: 10,
                           backgroundColor: employee?.color || '#3B82F6',
                           color: getTextColorForBackground(employee?.color || '#3B82F6'),
-                          padding: '4px 8px 8px 8px' // top right bottom left
+                          padding: '6px 8px 6px 8px' // top right bottom left
                         }}
                       >
                         {/* Resize handle - Start (left) */}
@@ -872,16 +872,16 @@ export default function ScheduleManagement() {
                             openEditShiftModal(shift);
                           }}
                         >
-                          <div className="font-medium text-xs truncate">
+                          <div className="font-medium text-xs leading-tight">
                             {employee?.name}
                           </div>
-                          <div className="text-xs opacity-90 flex justify-between items-center">
-                            <span className="truncate">
+                          <div className="text-xs opacity-90 leading-tight">
+                            <div className="truncate">
                               {shift.startTime}-{shift.endTime}
-                            </span>
-                            <span className="ml-2 flex-shrink-0">
+                            </div>
+                            <div className="text-xs opacity-75">
                               {formatHours(shift.hours)}
-                            </span>
+                            </div>
                           </div>
                         </div>
                         
