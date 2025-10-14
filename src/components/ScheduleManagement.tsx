@@ -18,6 +18,9 @@ export default function ScheduleManagement() {
   const { isHoliday, getHolidayForDate } = useHolidays();
   const { isCompactMode, isMobile } = useCompactMode();
   
+  // Definir ancho fijo para columnas de horas en móvil
+  const mobileHourColumnWidth = 57;
+  
   
   // Función para verificar si un empleado está de vacaciones en una fecha específica
   const isEmployeeOnVacation = (employeeId: string, date: string): boolean => {
@@ -917,8 +920,7 @@ export default function ScheduleManagement() {
                         width = (durationPosition * availableWidth) - 4;
                       } else {
                         // En móvil: usar columnas fijas como antes, pero con ancho correcto
-                        const mobileHourColumnWidth = 57; // Ancho deseado por el usuario
-const columnWidth = mobileHourColumnWidth; // Usar el ancho fijo definido en móvil
+                        const columnWidth = mobileHourColumnWidth; // Usar el ancho fijo definido en móvil
                         
                         // Encontrar índice de columna de inicio
                         const startColumnIndex = hours.findIndex(hour => 
