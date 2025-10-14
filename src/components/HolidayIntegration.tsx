@@ -29,7 +29,6 @@ export function HolidayIntegration() {
         description: 'Día de Año Nuevo',
         isRecurring: true,
         addedToCalendar: false,
-        year: year,
         year: year
       },
       {
