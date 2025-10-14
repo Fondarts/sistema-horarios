@@ -343,7 +343,7 @@ export default function ScheduleManagement() {
         );
         
         if (dayIndex !== -1) {
-          const newDate = weekDays[dayIndex];
+          const newDate = days[dayIndex];
           
           // Crear nuevo turno sin el ID
           const { id, ...shiftWithoutId } = prevShift;
@@ -752,7 +752,7 @@ export default function ScheduleManagement() {
             ref={ganttRef}
             className="relative"
           >
-            {weekDays.map((day) => {
+            {days.map((day) => {
               // Get employees working on this day
               const dayShifts = weekShifts.filter(shift => 
                 shift.date === format(day, 'yyyy-MM-dd')
