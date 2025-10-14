@@ -13,6 +13,7 @@ import { NotificationCenter } from './NotificationCenter';
 import { KeyboardShortcuts } from './KeyboardShortcuts';
 import { Logo } from './Logo';
 import { EmployeeVacationRequests } from './EmployeeVacationRequests';
+import { HamburgerMenu } from './HamburgerMenu';
 
 export default function EmployeeDashboard() {
   const { currentEmployee, logout } = useAuth();
@@ -110,6 +111,13 @@ export default function EmployeeDashboard() {
               </div>
             </div>
             <div className="flex items-center space-x-4">
+              {/* Menú hamburguesa - solo visible en móvil */}
+              <HamburgerMenu 
+                activeTab={activeTab}
+                onTabChange={setActiveTab}
+                isManager={false}
+              />
+              
               <NotificationCenter 
                 employees={employees}
                 currentEmployee={currentEmployee}
@@ -131,10 +139,11 @@ export default function EmployeeDashboard() {
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="bg-white border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <nav className="flex space-x-8">
+      {/* Tabs - solo visible en desktop */}
+      {!isMobile && (
+        <div className="bg-white border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <nav className="flex space-x-8">
             <button
               onClick={() => setActiveTab('schedule')}
               className={`py-4 px-1 border-b-2 font-medium text-sm ${
@@ -164,6 +173,7 @@ export default function EmployeeDashboard() {
           </nav>
         </div>
       </div>
+      )}
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {activeTab === 'schedule' ? (

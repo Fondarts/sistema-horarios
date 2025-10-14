@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Cake, X, Calendar } from 'lucide-react';
 import { Employee } from '../types';
 import { format } from 'date-fns';
@@ -11,6 +11,8 @@ interface BirthdayNotificationProps {
 }
 
 export function BirthdayNotification({ employees, onClose, currentDate }: BirthdayNotificationProps) {
+  const [showNotification, setShowNotification] = useState(false);
+  const [autoHideTimer, setAutoHideTimer] = useState<NodeJS.Timeout | null>(null);
   // Función para verificar si una fecha específica es cumpleaños
   const isBirthdayOnDate = (birthday: string, targetDate: Date): boolean => {
     if (!birthday) return false;
@@ -41,8 +43,37 @@ export function BirthdayNotification({ employees, onClose, currentDate }: Birthd
     employee.isActive && isBirthdayOnDate(employee.birthday, checkDate)
   );
 
-  // Si no hay cumpleaños, no mostrar nada
-  if (birthdayEmployees.length === 0) {
+  // Verificar si ya se mostró la notificación hoy
+  const today = format(checkDate, 'yyyy-MM-dd');
+  const notificationKey = `birthday_notification_${today}`;
+  const hasShownToday = localStorage.getItem(notificationKey) === 'true';
+
+  // Mostrar notificación solo si hay cumpleaños y no se ha mostrado hoy
+  useEffect(() => {
+    if (birthdayEmployees.length > 0 && !hasShownToday) {
+      setShowNotification(true);
+      
+      // Marcar como mostrada
+      localStorage.setItem(notificationKey, 'true');
+      
+      // Auto-ocultar después de 10 segundos
+      const timer = setTimeout(() => {
+        setShowNotification(false);
+        onClose();
+      }, 10000);
+      
+      setAutoHideTimer(timer);
+    }
+    
+    return () => {
+      if (autoHideTimer) {
+        clearTimeout(autoHideTimer);
+      }
+    };
+  }, [birthdayEmployees.length, hasShownToday, notificationKey, onClose, autoHideTimer]);
+
+  // Si no hay cumpleaños o ya se mostró hoy, no mostrar nada
+  if (birthdayEmployees.length === 0 || !showNotification) {
     return null;
   }
 
@@ -57,7 +88,13 @@ export function BirthdayNotification({ employees, onClose, currentDate }: Birthd
             </h3>
           </div>
           <button
-            onClick={onClose}
+            onClick={() => {
+              if (autoHideTimer) {
+                clearTimeout(autoHideTimer);
+              }
+              setShowNotification(false);
+              onClose();
+            }}
             className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
           >
             <X className="w-4 h-4" />
