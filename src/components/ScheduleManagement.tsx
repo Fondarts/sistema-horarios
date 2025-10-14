@@ -916,9 +916,24 @@ export default function ScheduleManagement() {
                         left = dayColumnWidth + (startPosition * availableWidth) + 2;
                         width = (durationPosition * availableWidth) - 4;
                       } else {
-                        // En móvil mantener cálculo con columnas fijas
-                        left = dayColumnWidth + (((shiftStartTimeInHours - startHour) / hourDivisor) * 80) + 2;
-                        width = ((durationInHours / hourDivisor) * 80) - 4;
+                        // En móvil: limitar barras al rango de horas visible
+                        const visibleStartHour = startHour;
+                        const visibleEndHour = startHour + (hours.length * hourDivisor) - 1;
+                        
+                        // Limitar el turno al rango visible
+                        const clampedStartTime = Math.max(shiftStartTimeInHours, visibleStartHour);
+                        const clampedEndTime = Math.min(shiftEndTimeInHours, visibleEndHour);
+                        const clampedDuration = Math.max(0, clampedEndTime - clampedStartTime);
+                        
+                        // Calcular posición basada en horas visibles
+                        const totalVisibleHours = visibleEndHour - visibleStartHour + 1;
+                        const startPosition = (clampedStartTime - visibleStartHour) / totalVisibleHours;
+                        const durationPosition = clampedDuration / totalVisibleHours;
+                        
+                        // Usar ancho fijo de 80px por columna de 2 horas
+                        const totalWidth = hours.length * 80;
+                        left = dayColumnWidth + (startPosition * totalWidth) + 2;
+                        width = (durationPosition * totalWidth) - 4;
                       }
                       
                       const top = (isHolidayDay ? 55 : 15) + (currentIndex * 35);
