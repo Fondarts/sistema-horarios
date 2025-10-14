@@ -1,15 +1,18 @@
 import React from 'react';
-import { Cake, X } from 'lucide-react';
+import { Cake, X, Calendar } from 'lucide-react';
 import { Employee } from '../types';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
 
 interface BirthdayNotificationProps {
   employees: Employee[];
   onClose: () => void;
+  currentDate?: Date; // Fecha para la cual se están generando horarios
 }
 
-export function BirthdayNotification({ employees, onClose }: BirthdayNotificationProps) {
-  // Función para verificar si hoy es cumpleaños
-  const isBirthdayToday = (birthday: string): boolean => {
+export function BirthdayNotification({ employees, onClose, currentDate }: BirthdayNotificationProps) {
+  // Función para verificar si una fecha específica es cumpleaños
+  const isBirthdayOnDate = (birthday: string, targetDate: Date): boolean => {
     if (!birthday) return false;
     
     try {
@@ -23,17 +26,19 @@ export function BirthdayNotification({ employees, onClose }: BirthdayNotificatio
         date = new Date(birthday);
       }
       
-      const today = new Date();
-      return date.getMonth() === today.getMonth() && date.getDate() === today.getDate();
+      return date.getMonth() === targetDate.getMonth() && date.getDate() === targetDate.getDate();
     } catch (error) {
       console.error('Error parsing birthday:', error);
       return false;
     }
   };
 
-  // Filtrar empleados que cumplen años hoy
+  // Usar la fecha actual si no se proporciona una fecha específica
+  const checkDate = currentDate || new Date();
+  
+  // Filtrar empleados que cumplen años en la fecha especificada
   const birthdayEmployees = employees.filter(employee => 
-    employee.isActive && isBirthdayToday(employee.birthday)
+    employee.isActive && isBirthdayOnDate(employee.birthday, checkDate)
   );
 
   // Si no hay cumpleaños, no mostrar nada
@@ -48,7 +53,7 @@ export function BirthdayNotification({ employees, onClose }: BirthdayNotificatio
           <div className="flex items-center">
             <Cake className="w-5 h-5 text-pink-500 mr-2" />
             <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-              ¡Cumpleaños de hoy!
+              {currentDate ? 'Cumpleaños en esta fecha' : '¡Cumpleaños de hoy!'}
             </h3>
           </div>
           <button
@@ -67,16 +72,17 @@ export function BirthdayNotification({ employees, onClose }: BirthdayNotificatio
                 style={{ backgroundColor: employee.color }}
               ></div>
               <span className="text-sm text-gray-700 dark:text-gray-300">
-                <strong>{employee.name}</strong> cumple años hoy 🎉
+                <strong>{employee.name}</strong> cumple años {currentDate ? `el ${format(checkDate, 'dd/MM', { locale: es })}` : 'hoy'} 🎉
               </span>
             </div>
           ))}
         </div>
         
         <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-600">
-          <p className="text-xs text-gray-500 dark:text-gray-400">
-            ¡No olvides felicitarlos!
-          </p>
+          <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
+            <Calendar className="w-3 h-3 mr-1" />
+            <span>Considera no asignar turnos para que puedan celebrar</span>
+          </div>
         </div>
       </div>
     </div>

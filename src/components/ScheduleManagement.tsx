@@ -6,6 +6,7 @@ import { useSchedule } from '../contexts/ScheduleContext';
 import { useEmployees } from '../contexts/EmployeeContext';
 import { Shift } from '../types';
 import TimeInput from './TimeInput';
+import { BirthdayNotification } from './BirthdayNotification';
 
 export default function ScheduleManagement() {
   const { shifts, addShift, updateShift, deleteShift, publishShifts, storeSchedule } = useSchedule();
@@ -16,6 +17,7 @@ export default function ScheduleManagement() {
   const [showShiftModal, setShowShiftModal] = useState(false);
   const [modalEmployee, setModalEmployee] = useState<{id: string, name: string} | null>(null);
   const [editingShift, setEditingShift] = useState<Shift | null>(null);
+  const [showBirthdayNotification, setShowBirthdayNotification] = useState(true);
   const [shiftForm, setShiftForm] = useState({
     date: '',
     startTime: '09:00',
@@ -949,6 +951,15 @@ export default function ScheduleManagement() {
             </form>
           </div>
         </div>
+      )}
+
+      {/* Birthday Notification */}
+      {showBirthdayNotification && (
+        <BirthdayNotification 
+          employees={employees}
+          currentDate={currentWeek}
+          onClose={() => setShowBirthdayNotification(false)}
+        />
       )}
 
     </div>
