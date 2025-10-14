@@ -88,7 +88,8 @@ export function HamburgerMenu({ activeTab, onTabChange, isManager = false, onSho
       }`}>
         {/* Header del menú */}
         <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-end mb-4">
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex-1"></div>
             <button
               onClick={() => setIsOpen(false)}
               className="p-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
@@ -99,12 +100,12 @@ export function HamburgerMenu({ activeTab, onTabChange, isManager = false, onSho
           </div>
           
           {/* Logo */}
-          <div className="flex justify-center mb-3">
+          <div className="flex justify-start mb-3">
             <Logo size="small" />
           </div>
           
           {/* Título */}
-          <div className="text-center">
+          <div className="text-left">
             <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">
               Panel de Administración de Horarios
             </h3>
