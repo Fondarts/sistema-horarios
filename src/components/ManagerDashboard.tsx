@@ -1,20 +1,22 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useEmployees } from '../contexts/EmployeeContext';
-import { LogOut, Calendar, Users, Settings, BarChart3, FileText } from 'lucide-react';
+import { LogOut, Calendar, Users, Settings, BarChart3, FileText, Plane, CalendarDays } from 'lucide-react';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { EmployeeManagement } from './EmployeeManagement';
 import ScheduleManagement from './ScheduleManagement';
 import { StoreSettings } from './StoreSettings';
 import { Statistics } from './Statistics';
 import { ExportTools } from './ExportTools';
+import { VacationManagement } from './VacationManagement';
+import { HolidayIntegration } from './HolidayIntegration';
 import { ThemeToggle } from './ThemeToggle';
 import { BirthdayNotification } from './BirthdayNotification';
 import { NotificationCenter } from './NotificationCenter';
 import { KeyboardShortcuts } from './KeyboardShortcuts';
 import { Logo } from './Logo';
 
-type TabType = 'schedule' | 'employees' | 'settings' | 'statistics' | 'export';
+type TabType = 'schedule' | 'employees' | 'settings' | 'statistics' | 'export' | 'vacations' | 'holidays';
 
 export function ManagerDashboard() {
   const { currentEmployee, logout } = useAuth();
@@ -26,7 +28,9 @@ export function ManagerDashboard() {
   const tabs = [
     { id: 'schedule' as TabType, label: 'Horarios', icon: Calendar },
     { id: 'employees' as TabType, label: 'Empleados', icon: Users },
-    { id: 'settings' as TabType, label: 'Configuración', icon: Settings },
+    { id: 'vacations' as TabType, label: 'Vacaciones', icon: Plane },
+    { id: 'holidays' as TabType, label: 'Feriados', icon: CalendarDays },
+    { id: 'settings' as TabType, label: 'Tienda', icon: Settings },
     { id: 'statistics' as TabType, label: 'Estadísticas', icon: BarChart3 },
     { id: 'export' as TabType, label: 'Exportar', icon: FileText },
   ];
@@ -54,17 +58,29 @@ export function ManagerDashboard() {
     {
       key: '3',
       ctrlKey: true,
-      action: () => setActiveTab('settings'),
-      description: 'Ir a pestaña Configuración'
+      action: () => setActiveTab('vacations'),
+      description: 'Ir a pestaña Vacaciones'
     },
     {
       key: '4',
+      ctrlKey: true,
+      action: () => setActiveTab('holidays'),
+      description: 'Ir a pestaña Feriados'
+    },
+    {
+      key: '5',
+      ctrlKey: true,
+      action: () => setActiveTab('settings'),
+      description: 'Ir a pestaña Tienda'
+    },
+    {
+      key: '6',
       ctrlKey: true,
       action: () => setActiveTab('statistics'),
       description: 'Ir a pestaña Estadísticas'
     },
     {
-      key: '5',
+      key: '7',
       ctrlKey: true,
       action: () => setActiveTab('export'),
       description: 'Ir a pestaña Exportar'
@@ -77,6 +93,10 @@ export function ManagerDashboard() {
         return <ScheduleManagement />;
       case 'employees':
         return <EmployeeManagement />;
+      case 'vacations':
+        return <VacationManagement />;
+      case 'holidays':
+        return <HolidayIntegration />;
       case 'settings':
         return <StoreSettings />;
       case 'statistics':
