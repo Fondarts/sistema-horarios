@@ -982,20 +982,20 @@ export default function ScheduleManagement() {
                             title="Arrastra para cambiar hora de inicio"
                           />
                           
-                          {/* Main shift content */}
-                          <div className="w-full h-full cursor-move">
-                            <div className="font-medium text-xs leading-tight">
-                              {employee?.name}
-                            </div>
-                            <div className="text-xs opacity-90 leading-tight">
-                              <div className="truncate">
-                                {shift.startTime}-{shift.endTime}
-                              </div>
-                              <div className="text-xs opacity-75">
-                                {formatHours(shift.hours)}
-                              </div>
-                            </div>
-                          </div>
+                                {/* Main shift content */}
+                                <div className="w-full h-full cursor-move flex justify-between items-center">
+                                  <div className="flex flex-col">
+                                    <div className="font-medium text-xs leading-tight">
+                                      {employee?.name}
+                                    </div>
+                                    <div className="text-xs opacity-90 leading-tight">
+                                      {shift.startTime}-{shift.endTime}
+                                    </div>
+                                  </div>
+                                  <div className="text-xs opacity-75 font-medium">
+                                    {formatHours(shift.hours)}
+                                  </div>
+                                </div>
                           
                           {/* Resize handle - End (right) */}
                           <div
