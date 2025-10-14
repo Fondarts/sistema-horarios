@@ -214,11 +214,16 @@ export function EmployeeProvider({ children }: { children: ReactNode }) {
 
   // Cargar empleados desde Firebase filtrados por tienda
   useEffect(() => {
+    console.log('EmployeeContext: currentStore changed:', currentStore);
+    
     if (!currentStore) {
+      console.log('EmployeeContext: No currentStore, clearing employees');
       setEmployees([]);
       setIsLoading(false);
       return;
     }
+
+    console.log('EmployeeContext: Loading employees for store:', currentStore.id, currentStore.name);
 
     const employeesRef = collection(db, 'employees');
     const q = query(
@@ -229,9 +234,15 @@ export function EmployeeProvider({ children }: { children: ReactNode }) {
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const employeesData: Employee[] = [];
+      console.log('EmployeeContext: Received snapshot with', snapshot.size, 'employees');
+      
       snapshot.forEach((doc) => {
-        employeesData.push({ id: doc.id, ...doc.data() } as Employee);
+        const employeeData = { id: doc.id, ...doc.data() } as Employee;
+        console.log('EmployeeContext: Employee data:', employeeData);
+        employeesData.push(employeeData);
       });
+      
+      console.log('EmployeeContext: Setting employees:', employeesData);
       setEmployees(employeesData);
       setIsLoading(false);
     }, (error) => {
@@ -256,7 +267,11 @@ export function EmployeeProvider({ children }: { children: ReactNode }) {
         role: employeeData.role || 'empleado'
       };
 
-      await addDoc(collection(db, 'employees'), newEmployee);
+      console.log('EmployeeContext: Adding employee with data:', newEmployee);
+      console.log('EmployeeContext: Current store ID:', currentStore.id);
+      
+      const docRef = await addDoc(collection(db, 'employees'), newEmployee);
+      console.log('EmployeeContext: Employee added with ID:', docRef.id);
     } catch (error) {
       console.error('Error adding employee:', error);
       throw error;
