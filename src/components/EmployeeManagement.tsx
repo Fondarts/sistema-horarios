@@ -190,13 +190,6 @@ export function EmployeeManagement() {
         </div>
         <div className="flex gap-3">
           <button
-            onClick={resetToMockEmployees}
-            className="btn-secondary flex items-center"
-          >
-            <User className="w-5 h-5 mr-2" />
-            Cargar Empleados de Prueba
-          </button>
-          <button
             onClick={() => setShowAddForm(true)}
             className="btn-primary flex items-center"
           >

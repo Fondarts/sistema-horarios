@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useEmployees } from '../contexts/EmployeeContext';
-import { User, Lock, AlertCircle, RefreshCw } from 'lucide-react';
+import { User, Lock, AlertCircle } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 
 export default function LoginScreen() {
   const { login } = useAuth();
-  const { resetToMockEmployees } = useEmployees();
   const [formData, setFormData] = useState({
     name: '',
     pin: ''
@@ -129,18 +128,6 @@ export default function LoginScreen() {
                 {isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
               </button>
               
-              <button
-                type="button"
-                onClick={() => {
-                  resetToMockEmployees();
-                  setError('');
-                  alert('Empleados de prueba cargados. Intenta con: Ana Perez - 12345');
-                }}
-                className="w-full flex justify-center items-center space-x-2 py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-600"
-              >
-                <RefreshCw className="w-4 h-4" />
-                <span>Resetear Empleados de Prueba</span>
-              </button>
             </div>
           </form>
 

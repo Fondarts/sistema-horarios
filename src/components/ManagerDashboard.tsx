@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { useEmployees } from '../contexts/EmployeeContext';
 import { LogOut, Calendar, Users, Settings, BarChart3, FileText } from 'lucide-react';
 import { EmployeeManagement } from './EmployeeManagement';
 import ScheduleManagement from './ScheduleManagement';
@@ -7,12 +8,15 @@ import { StoreSettings } from './StoreSettings';
 import { Statistics } from './Statistics';
 import { ExportTools } from './ExportTools';
 import { ThemeToggle } from './ThemeToggle';
+import { BirthdayNotification } from './BirthdayNotification';
 
 type TabType = 'schedule' | 'employees' | 'settings' | 'statistics' | 'export';
 
 export function ManagerDashboard() {
   const { currentEmployee, logout } = useAuth();
+  const { employees } = useEmployees();
   const [activeTab, setActiveTab] = useState<TabType>('schedule');
+  const [showBirthdayNotification, setShowBirthdayNotification] = useState(true);
 
   const tabs = [
     { id: 'schedule' as TabType, label: 'Horarios', icon: Calendar },
@@ -99,6 +103,14 @@ export function ManagerDashboard() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {renderContent()}
       </main>
+
+      {/* Birthday Notification */}
+      {showBirthdayNotification && (
+        <BirthdayNotification 
+          employees={employees}
+          onClose={() => setShowBirthdayNotification(false)}
+        />
+      )}
     </div>
   );
 }

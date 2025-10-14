@@ -1,15 +1,19 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useSchedule } from '../contexts/ScheduleContext';
+import { useEmployees } from '../contexts/EmployeeContext';
 import { format, startOfWeek, endOfWeek, eachDayOfInterval } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { ChevronLeft, ChevronRight, LogOut, Calendar, Clock } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
+import { BirthdayNotification } from './BirthdayNotification';
 
 export default function EmployeeDashboard() {
   const { currentEmployee, logout } = useAuth();
   const { shifts } = useSchedule();
+  const { employees } = useEmployees();
   const [currentWeek, setCurrentWeek] = useState(new Date());
+  const [showBirthdayNotification, setShowBirthdayNotification] = useState(true);
 
   if (!currentEmployee) {
     return null;
@@ -190,6 +194,14 @@ export default function EmployeeDashboard() {
           )}
         </div>
       </div>
+
+      {/* Birthday Notification */}
+      {showBirthdayNotification && (
+        <BirthdayNotification 
+          employees={employees}
+          onClose={() => setShowBirthdayNotification(false)}
+        />
+      )}
     </div>
   );
 }
