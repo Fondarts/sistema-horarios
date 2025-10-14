@@ -11,6 +11,7 @@ import {
   orderBy,
   where
 } from 'firebase/firestore';
+import { useNotifications } from './NotificationContext';
 
 export interface VacationRequest {
   id: string;
@@ -40,6 +41,7 @@ const VacationContext = createContext<VacationContextType | undefined>(undefined
 export function VacationProvider({ children }: { children: ReactNode }) {
   const [vacationRequests, setVacationRequests] = useState<VacationRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { addNotification } = useNotifications();
 
   // Cargar solicitudes de vacaciones desde Firebase
   useEffect(() => {
@@ -103,11 +105,29 @@ export function VacationProvider({ children }: { children: ReactNode }) {
   const approveVacationRequest = async (id: string, approvedBy: string) => {
     try {
       const requestRef = doc(db, 'vacationRequests', id);
+      const request = vacationRequests.find(r => r.id === id);
+      
       await updateDoc(requestRef, {
         status: 'approved',
         approvedBy,
         approvedAt: new Date()
       });
+
+      // Enviar notificación al empleado
+      if (request) {
+        await addNotification({
+          userId: request.employeeId,
+          type: 'vacation_approved',
+          title: 'Vacaciones Aprobadas',
+          message: `Tu solicitud de vacaciones del ${new Date(request.startDate).toLocaleDateString('es-ES')} al ${new Date(request.endDate).toLocaleDateString('es-ES')} ha sido aprobada por ${approvedBy}.`,
+          data: {
+            vacationRequestId: id,
+            startDate: request.startDate,
+            endDate: request.endDate,
+            approvedBy
+          }
+        });
+      }
     } catch (error) {
       console.error('Error approving vacation request:', error);
       throw error;
@@ -117,11 +137,29 @@ export function VacationProvider({ children }: { children: ReactNode }) {
   const rejectVacationRequest = async (id: string, approvedBy: string) => {
     try {
       const requestRef = doc(db, 'vacationRequests', id);
+      const request = vacationRequests.find(r => r.id === id);
+      
       await updateDoc(requestRef, {
         status: 'rejected',
         approvedBy,
         approvedAt: new Date()
       });
+
+      // Enviar notificación al empleado
+      if (request) {
+        await addNotification({
+          userId: request.employeeId,
+          type: 'vacation_rejected',
+          title: 'Vacaciones Rechazadas',
+          message: `Tu solicitud de vacaciones del ${new Date(request.startDate).toLocaleDateString('es-ES')} al ${new Date(request.endDate).toLocaleDateString('es-ES')} ha sido rechazada por ${approvedBy}.`,
+          data: {
+            vacationRequestId: id,
+            startDate: request.startDate,
+            endDate: request.endDate,
+            approvedBy
+          }
+        });
+      }
     } catch (error) {
       console.error('Error rejecting vacation request:', error);
       throw error;

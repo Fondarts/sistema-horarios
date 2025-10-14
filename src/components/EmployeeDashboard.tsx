@@ -4,13 +4,14 @@ import { useSchedule } from '../contexts/ScheduleContext';
 import { useEmployees } from '../contexts/EmployeeContext';
 import { format, startOfWeek, endOfWeek, eachDayOfInterval, addWeeks, subWeeks } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { ChevronLeft, ChevronRight, LogOut, Calendar, Clock } from 'lucide-react';
+import { ChevronLeft, ChevronRight, LogOut, Calendar, Clock, Plane } from 'lucide-react';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { ThemeToggle } from './ThemeToggle';
 import { BirthdayNotification } from './BirthdayNotification';
 import { NotificationCenter } from './NotificationCenter';
 import { KeyboardShortcuts } from './KeyboardShortcuts';
 import { Logo } from './Logo';
+import { EmployeeVacationRequests } from './EmployeeVacationRequests';
 
 export default function EmployeeDashboard() {
   const { currentEmployee, logout } = useAuth();
@@ -19,6 +20,7 @@ export default function EmployeeDashboard() {
   const [currentWeek, setCurrentWeek] = useState(new Date());
   const [showBirthdayNotification, setShowBirthdayNotification] = useState(true);
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
+  const [activeTab, setActiveTab] = useState<'schedule' | 'vacations'>('schedule');
 
   // Atajos de teclado para empleados
   useKeyboardShortcuts([
@@ -27,6 +29,18 @@ export default function EmployeeDashboard() {
       ctrlKey: true,
       action: () => setShowKeyboardHelp(!showKeyboardHelp),
       description: 'Mostrar/ocultar ayuda de atajos'
+    },
+    {
+      key: '1',
+      ctrlKey: true,
+      action: () => setActiveTab('schedule'),
+      description: 'Ir a pestaña Horarios'
+    },
+    {
+      key: '2',
+      ctrlKey: true,
+      action: () => setActiveTab('vacations'),
+      description: 'Ir a pestaña Vacaciones'
     },
     {
       key: 'ArrowLeft',
@@ -115,9 +129,45 @@ export default function EmployeeDashboard() {
         </div>
       </div>
 
+      {/* Tabs */}
+      <div className="bg-white border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <nav className="flex space-x-8">
+            <button
+              onClick={() => setActiveTab('schedule')}
+              className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'schedule'
+                  ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
+              }`}
+            >
+              <div className="flex items-center">
+                <Calendar className="w-4 h-4 mr-2" />
+                Mis Horarios
+              </div>
+            </button>
+            <button
+              onClick={() => setActiveTab('vacations')}
+              className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'vacations'
+                  ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
+              }`}
+            >
+              <div className="flex items-center">
+                <Plane className="w-4 h-4 mr-2" />
+                Mis Vacaciones
+              </div>
+            </button>
+          </nav>
+        </div>
+      </div>
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Week Navigation */}
-        <div className="bg-white rounded-lg shadow p-6 mb-6 dark:bg-gray-800 dark:border dark:border-gray-700">
+        {activeTab === 'schedule' ? (
+          <>
+            {/* Week Navigation */}
+            <div className="bg-white rounded-lg shadow p-6 mb-6 dark:bg-gray-800 dark:border dark:border-gray-700">
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-4">
               <button
@@ -228,7 +278,11 @@ export default function EmployeeDashboard() {
               })}
             </div>
           )}
-        </div>
+            </div>
+          </>
+        ) : (
+          <EmployeeVacationRequests />
+        )}
       </div>
 
       {/* Birthday Notification */}
