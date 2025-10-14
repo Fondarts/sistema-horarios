@@ -6,6 +6,7 @@ import { useSchedule } from '../contexts/ScheduleContext';
 import { useEmployees } from '../contexts/EmployeeContext';
 import { useVacation } from '../contexts/VacationContext';
 import { useHolidays } from '../contexts/HolidayContext';
+import { useCompactMode } from '../contexts/CompactModeContext';
 import { Shift } from '../types';
 import TimeInput from './TimeInput';
 import { BirthdayNotification } from './BirthdayNotification';
@@ -15,6 +16,7 @@ export default function ScheduleManagement() {
   const { employees } = useEmployees();
   const { vacationRequests } = useVacation();
   const { isHoliday, getHolidayForDate } = useHolidays();
+  const { isCompactMode, isMobile } = useCompactMode();
   
   // Función para verificar si un empleado está de vacaciones en una fecha específica
   const isEmployeeOnVacation = (employeeId: string, date: string): boolean => {
@@ -343,7 +345,9 @@ export default function ScheduleManagement() {
 
   // Calculate column width based on zoom level
   const getColumnWidth = () => {
-    return Math.round(60 * zoomLevel); // Base width 60px * zoom level
+    // En modo compacto, columnas más estrechas
+    const baseWidth = isCompactMode ? 40 : 60;
+    return Math.round(baseWidth * zoomLevel);
   };
 
   // Calculate minimum zoom level to fit visible hours in available width
@@ -681,8 +685,8 @@ export default function ScheduleManagement() {
       <div ref={scrollContainerRef} className="overflow-x-auto">
         <div className="min-w-full">
           {/* Header with hours */}
-          <div className="grid border-b border-gray-200 dark:border-gray-600" style={{ gridTemplateColumns: `200px repeat(${hours.length}, ${getColumnWidth()}px)` }}>
-            <div className="p-3 font-medium text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700">Día / Empleado</div>
+          <div className="grid border-b border-gray-200 dark:border-gray-600" style={{ gridTemplateColumns: `${isCompactMode ? '150px' : '200px'} repeat(${hours.length}, ${getColumnWidth()}px)` }}>
+            <div className={`${isCompactMode ? 'p-2' : 'p-3'} font-medium text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700 ${isCompactMode ? 'text-sm' : ''}`}>Día / Empleado</div>
             {hours.map((hour) => {
               // Check if this hour is within store hours
               const isStoreHour = hour >= storeStartHour && hour <= storeEndHour;
@@ -718,11 +722,11 @@ export default function ScheduleManagement() {
 
               return (
                 <div key={day.toISOString()} className="grid border-b border-gray-300 dark:border-gray-600 relative" style={{ 
-                  gridTemplateColumns: `200px repeat(${hours.length}, ${getColumnWidth()}px)`, 
+                  gridTemplateColumns: `${isCompactMode ? '150px' : '200px'} repeat(${hours.length}, ${getColumnWidth()}px)`, 
                   minHeight: '120px'
                 }}>
                   {/* Day and employees */}
-                  <div className={`p-3 border-r border-gray-200 dark:border-gray-600 ${
+                  <div className={`${isCompactMode ? 'p-2' : 'p-3'} border-r border-gray-200 dark:border-gray-600 ${
                     isHolidayDay 
                       ? 'bg-orange-50 dark:bg-orange-900/20' 
                       : 'bg-gray-50 dark:bg-gray-700'

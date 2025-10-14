@@ -6,6 +6,7 @@ import { format, startOfWeek, endOfWeek, eachDayOfInterval, addWeeks, subWeeks }
 import { es } from 'date-fns/locale';
 import { ChevronLeft, ChevronRight, LogOut, Calendar, Clock, Plane } from 'lucide-react';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
+import { useCompactMode } from '../contexts/CompactModeContext';
 import { ThemeToggle } from './ThemeToggle';
 import { BirthdayNotification } from './BirthdayNotification';
 import { NotificationCenter } from './NotificationCenter';
@@ -17,6 +18,7 @@ export default function EmployeeDashboard() {
   const { currentEmployee, logout } = useAuth();
   const { shifts } = useSchedule();
   const { employees } = useEmployees();
+  const { isCompactMode, isMobile } = useCompactMode();
   const [currentWeek, setCurrentWeek] = useState(new Date());
   const [showBirthdayNotification, setShowBirthdayNotification] = useState(true);
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);

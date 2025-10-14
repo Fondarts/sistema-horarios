@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useSchedule } from '../contexts/ScheduleContext';
+import { useCompactMode } from '../contexts/CompactModeContext';
 import { Settings, Clock, Calendar, Plus, Trash2, Edit, X } from 'lucide-react';
 import { StoreSchedule, StoreException } from '../types';
 import TimeInput from './TimeInput';
@@ -16,6 +17,7 @@ export function StoreSettings() {
     updateStoreException,
     deleteStoreException
   } = useSchedule();
+  const { isCompactMode, isMobile } = useCompactMode();
 
   const [showExceptionForm, setShowExceptionForm] = useState(false);
   const [editingException, setEditingException] = useState<StoreException | null>(null);

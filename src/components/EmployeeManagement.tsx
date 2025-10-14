@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useEmployees } from '../contexts/EmployeeContext';
+import { useCompactMode } from '../contexts/CompactModeContext';
 import { Plus, Edit, Trash2, User, Clock, Calendar } from 'lucide-react';
 import { Employee, UnavailableTime } from '../types';
 import TimeInput from './TimeInput';
@@ -31,6 +32,7 @@ const formatBirthday = (birthday: string): string => {
 
 export function EmployeeManagement() {
   const { employees, addEmployee, updateEmployee, deleteEmployee, resetToMockEmployees } = useEmployees();
+  const { isCompactMode, isMobile } = useCompactMode();
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
   const [formData, setFormData] = useState({
@@ -430,9 +432,9 @@ export function EmployeeManagement() {
             <p className="text-gray-600">No hay empleados registrados</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className={`grid gap-4 ${isCompactMode ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'}`}>
             {employees.map((employee) => (
-              <div key={employee.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-shadow">
+              <div key={employee.id} className={`border border-gray-200 rounded-lg hover:shadow-sm transition-shadow ${isCompactMode ? 'p-3' : 'p-4'}`}>
                 <div className="flex justify-between items-start mb-3">
                   <div className="flex items-center gap-3">
                     <div 
