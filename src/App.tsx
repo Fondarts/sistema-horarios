@@ -12,13 +12,13 @@ function App() {
     <ThemeProvider>
       <EmployeeProvider>
         <AuthProvider>
-          <ScheduleProvider>
-            <VacationProvider>
-              <NotificationProvider>
+          <NotificationProvider>
+            <ScheduleProvider>
+              <VacationProvider>
                 <AppRouter />
-              </NotificationProvider>
-            </VacationProvider>
-          </ScheduleProvider>
+              </VacationProvider>
+            </ScheduleProvider>
+          </NotificationProvider>
         </AuthProvider>
       </EmployeeProvider>
     </ThemeProvider>
