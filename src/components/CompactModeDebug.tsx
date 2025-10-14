@@ -1,0 +1,25 @@
+import React from 'react';
+import { useCompactMode } from '../contexts/CompactModeContext';
+
+export function CompactModeDebug() {
+  const { isCompactMode, isMobile, isTablet, isDesktop, toggleCompactMode } = useCompactMode();
+
+  return (
+    <div className="fixed top-4 right-4 bg-yellow-100 dark:bg-yellow-900 p-4 rounded-lg shadow-lg z-50 border-2 border-yellow-500">
+      <h3 className="font-bold text-yellow-800 dark:text-yellow-200 mb-2">Debug Modo Compacto</h3>
+      <div className="text-sm text-yellow-700 dark:text-yellow-300 space-y-1">
+        <div>isCompactMode: <span className="font-mono">{isCompactMode ? 'true' : 'false'}</span></div>
+        <div>isMobile: <span className="font-mono">{isMobile ? 'true' : 'false'}</span></div>
+        <div>isTablet: <span className="font-mono">{isTablet ? 'true' : 'false'}</span></div>
+        <div>isDesktop: <span className="font-mono">{isDesktop ? 'true' : 'false'}</span></div>
+        <div>Screen: <span className="font-mono">{typeof window !== 'undefined' ? `${window.innerWidth}x${window.innerHeight}` : 'N/A'}</span></div>
+      </div>
+      <button
+        onClick={toggleCompactMode}
+        className="mt-2 px-3 py-1 bg-yellow-500 text-white rounded text-sm hover:bg-yellow-600"
+      >
+        Toggle Compacto
+      </button>
+    </div>
+  );
+}
