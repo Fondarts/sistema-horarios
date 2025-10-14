@@ -24,7 +24,7 @@ type TabType = 'schedule' | 'employees' | 'settings' | 'statistics' | 'export' |
 export function ManagerDashboard() {
   const { currentEmployee, logout, isDistrictManager } = useAuth();
   const { employees } = useEmployees();
-  const { currentStore, getCurrentStoreData } = useStore();
+  const { currentStore } = useStore();
   const { isCompactMode, toggleCompactMode, isMobile } = useCompactMode();
   const [activeTab, setActiveTab] = useState<TabType>('schedule');
   const [showBirthdayNotification, setShowBirthdayNotification] = useState(true);
@@ -136,9 +136,9 @@ export function ManagerDashboard() {
                     </h1>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
                       Bienvenido, {currentEmployee?.name}
-                      {isDistrictManager && getCurrentStoreData() && (
+                      {isDistrictManager && currentStore && (
                         <span className="ml-2 text-blue-600 dark:text-blue-400">
-                          • {getCurrentStoreData()?.name}
+                          • {currentStore.name}
                         </span>
                       )}
                     </p>
@@ -150,9 +150,9 @@ export function ManagerDashboard() {
                   <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                     Bienvenido, {currentEmployee?.name}
                   </h1>
-                  {isDistrictManager && getCurrentStoreData() && (
+                  {isDistrictManager && currentStore && (
                     <p className="text-sm text-blue-600 dark:text-blue-400">
-                      {getCurrentStoreData()?.name}
+                      {currentStore.name}
                     </p>
                   )}
                 </div>
