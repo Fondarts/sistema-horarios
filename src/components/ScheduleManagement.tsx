@@ -95,6 +95,21 @@ export default function ScheduleManagement() {
     return Math.round(minutes / increment) * increment;
   };
 
+  // Función para calcular el contraste y determinar el color del texto
+  const getTextColorForBackground = (backgroundColor: string): string => {
+    // Convertir color hex a RGB
+    const hex = backgroundColor.replace('#', '');
+    const r = parseInt(hex.substr(0, 2), 16);
+    const g = parseInt(hex.substr(2, 2), 16);
+    const b = parseInt(hex.substr(4, 2), 16);
+    
+    // Calcular luminancia relativa usando la fórmula WCAG
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    
+    // Si la luminancia es mayor a 0.5, usar texto negro, sino blanco
+    return luminance > 0.5 ? '#000000' : '#ffffff';
+  };
+
   const handleMouseDown = (e: React.MouseEvent, shift: Shift) => {
     setDraggedShift(shift);
     setDragStart({ x: e.clientX, y: e.clientY });
@@ -740,7 +755,7 @@ export default function ScheduleManagement() {
                     return (
                       <div
                         key={shift.id}
-                        className="absolute rounded text-white text-xs shift-bar"
+                        className="absolute rounded text-xs shift-bar"
                         style={{
                           left: `${left}px`,
                           width: `${width}px`,
@@ -748,15 +763,26 @@ export default function ScheduleManagement() {
                           height: '32px',
                           zIndex: 10,
                           backgroundColor: employee?.color || '#3B82F6',
+                          color: getTextColorForBackground(employee?.color || '#3B82F6'),
                           padding: '4px 8px 8px 8px' // top right bottom left
                         }}
                       >
                         {/* Resize handle - Start (left) */}
                         <div
-                          className="absolute left-0 top-0 w-2 h-full cursor-ew-resize bg-white bg-opacity-30 hover:bg-opacity-50 rounded-l"
+                          className="absolute left-0 top-0 w-2 h-full cursor-ew-resize rounded-l"
+                          style={{
+                            backgroundColor: getTextColorForBackground(employee?.color || '#3B82F6'),
+                            opacity: 0.3
+                          }}
                           onMouseDown={(e) => {
                             e.stopPropagation();
                             handleResizeStart(e, shift, 'start');
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.opacity = '0.5';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.opacity = '0.3';
                           }}
                           title="Arrastra para cambiar hora de inicio"
                         />
@@ -786,10 +812,20 @@ export default function ScheduleManagement() {
                         
                         {/* Resize handle - End (right) */}
                         <div
-                          className="absolute right-0 top-0 w-2 h-full cursor-ew-resize bg-white bg-opacity-30 hover:bg-opacity-50 rounded-r"
+                          className="absolute right-0 top-0 w-2 h-full cursor-ew-resize rounded-r"
+                          style={{
+                            backgroundColor: getTextColorForBackground(employee?.color || '#3B82F6'),
+                            opacity: 0.3
+                          }}
                           onMouseDown={(e) => {
                             e.stopPropagation();
                             handleResizeStart(e, shift, 'end');
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.opacity = '0.5';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.opacity = '0.3';
                           }}
                           title="Arrastra para cambiar hora de fin"
                         />
