@@ -8,7 +8,7 @@ interface LogoProps {
 export function Logo({ size = 'small' }: LogoProps) {
   const { theme } = useTheme();
   
-  const sizeClass = size === 'large' ? 'h-16' : 'h-8';
+  const sizeClass = size === 'large' ? 'h-16' : 'h-10';
   
   return (
     <div className="flex items-center">
