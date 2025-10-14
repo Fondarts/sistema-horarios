@@ -24,15 +24,56 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setIsLoading(true);
       const savedStores = localStorage.getItem('horarios_stores');
       if (savedStores) {
-        const parsedStores = JSON.parse(savedStores);
-        setStores(parsedStores);
-        const savedCurrentStoreId = localStorage.getItem('horarios_current_store_id');
-        if (savedCurrentStoreId) {
-          const foundStore = parsedStores.find((s: Store) => s.id === savedCurrentStoreId);
-          setCurrentStoreState(foundStore || null);
-        } else if (parsedStores.length > 0) {
-          setCurrentStoreState(parsedStores[0]);
-          localStorage.setItem('horarios_current_store_id', parsedStores[0].id);
+        try {
+          const parsedStores = JSON.parse(savedStores);
+          // Validar que parsedStores es un array
+          if (Array.isArray(parsedStores)) {
+            setStores(parsedStores);
+            const savedCurrentStoreId = localStorage.getItem('horarios_current_store_id');
+            if (savedCurrentStoreId) {
+              const foundStore = parsedStores.find((s: Store) => s.id === savedCurrentStoreId);
+              setCurrentStoreState(foundStore || null);
+            } else if (parsedStores.length > 0) {
+              setCurrentStoreState(parsedStores[0]);
+              localStorage.setItem('horarios_current_store_id', parsedStores[0].id);
+            }
+          } else {
+            // Si no es un array, crear uno nuevo
+            console.warn('Stores data is not an array, creating default store');
+            const defaultStore: Store = {
+              id: uuidv4(),
+              name: 'Mi Tienda Principal',
+              address: 'Calle Falsa 123',
+              phone: '123-456-7890',
+              email: 'contacto@mitienda.com',
+              employees: [],
+              shifts: [],
+              storeSchedule: [],
+              settings: {}
+            };
+            setStores([defaultStore]);
+            setCurrentStoreState(defaultStore);
+            localStorage.setItem('horarios_stores', JSON.stringify([defaultStore]));
+            localStorage.setItem('horarios_current_store_id', defaultStore.id);
+          }
+        } catch (error) {
+          console.error('Error parsing stores data:', error);
+          // Crear tienda por defecto en caso de error
+          const defaultStore: Store = {
+            id: uuidv4(),
+            name: 'Mi Tienda Principal',
+            address: 'Calle Falsa 123',
+            phone: '123-456-7890',
+            email: 'contacto@mitienda.com',
+            employees: [],
+            shifts: [],
+            storeSchedule: [],
+            settings: {}
+          };
+          setStores([defaultStore]);
+          setCurrentStoreState(defaultStore);
+          localStorage.setItem('horarios_stores', JSON.stringify([defaultStore]));
+          localStorage.setItem('horarios_current_store_id', defaultStore.id);
         }
       } else {
         // Crear una tienda por defecto si no hay ninguna
