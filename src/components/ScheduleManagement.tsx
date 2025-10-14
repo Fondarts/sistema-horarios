@@ -916,30 +916,28 @@ export default function ScheduleManagement() {
                         left = dayColumnWidth + (startPosition * availableWidth) + 2;
                         width = (durationPosition * availableWidth) - 4;
                       } else {
-                        // En móvil: calcular posición basada en horas exactas
+                        // En móvil: alineación directa con columnas de 2 horas
                         const columnWidth = 80; // Ancho fijo por columna en móvil
                         
-                        // Encontrar la columna de inicio más cercana
-                        let startColumnIndex = 0;
-                        for (let i = 0; i < hours.length; i++) {
-                          if (shiftStartTimeInHours >= hours[i] && shiftStartTimeInHours < hours[i] + 2) {
-                            startColumnIndex = i;
-                            break;
-                          }
-                        }
+                        // Encontrar índice de columna de inicio
+                        const startColumnIndex = hours.findIndex(hour => 
+                          shiftStartTimeInHours >= hour && shiftStartTimeInHours < hour + 2
+                        );
                         
-                        // Encontrar la columna de fin más cercana
-                        let endColumnIndex = hours.length;
-                        for (let i = 0; i < hours.length; i++) {
-                          if (shiftEndTimeInHours <= hours[i] + 2) {
-                            endColumnIndex = i + 1;
-                            break;
-                          }
-                        }
+                        // Encontrar índice de columna de fin
+                        const endColumnIndex = hours.findIndex(hour => 
+                          shiftEndTimeInHours <= hour + 2
+                        );
+                        
+                        // Si no encuentra columna de inicio, usar la primera
+                        const actualStartIndex = startColumnIndex !== -1 ? startColumnIndex : 0;
+                        
+                        // Si no encuentra columna de fin, usar la última
+                        const actualEndIndex = endColumnIndex !== -1 ? endColumnIndex + 1 : hours.length;
                         
                         // Calcular posición y ancho
-                        left = dayColumnWidth + (startColumnIndex * columnWidth) + 2;
-                        width = ((endColumnIndex - startColumnIndex) * columnWidth) - 4;
+                        left = dayColumnWidth + (actualStartIndex * columnWidth) + 2;
+                        width = ((actualEndIndex - actualStartIndex) * columnWidth) - 4;
                       }
                       
                       const top = (isHolidayDay ? 55 : 15) + (currentIndex * 35);
