@@ -748,13 +748,13 @@ export default function ScheduleManagement() {
         <div className="flex justify-center items-center space-x-2">
           <button
             onClick={() => navigateWeek('prev')}
-            className="px-3 py-1 bg-gray-200 hover:bg-gray-300 text-gray-800 text-sm rounded transition-colors dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200"
+            className="px-3 py-1 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 text-sm rounded transition-colors"
           >
             ← Anterior
           </button>
           <button
             onClick={() => navigateWeek('next')}
-            className="px-3 py-1 bg-gray-200 hover:bg-gray-300 text-gray-800 text-sm rounded transition-colors dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200"
+            className="px-3 py-1 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 text-sm rounded transition-colors"
           >
             Siguiente →
           </button>
@@ -763,7 +763,7 @@ export default function ScheduleManagement() {
             disabled={isCopyingShifts}
             className={`flex items-center px-3 py-1 text-sm rounded transition-colors ${
               isCopyingShifts 
-                ? 'bg-gray-200 opacity-50 cursor-not-allowed text-gray-500 dark:bg-gray-700 dark:text-gray-400' 
+                ? 'bg-white dark:bg-gray-700 opacity-50 cursor-not-allowed text-gray-500 dark:text-gray-400' 
                 : 'bg-primary-600 hover:bg-primary-700 text-white'
             }`}
             title={isCopyingShifts ? "Copiando turnos..." : "Copiar todos los turnos de la semana anterior"}
@@ -773,7 +773,7 @@ export default function ScheduleManagement() {
           </button>
           <button
             onClick={() => setCurrentWeek(new Date())}
-            className="px-3 py-1 bg-gray-200 hover:bg-gray-300 text-gray-800 text-sm rounded transition-colors dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200"
+            className="px-3 py-1 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 text-sm rounded transition-colors"
           >
             Esta Semana
           </button>
@@ -1098,7 +1098,7 @@ export default function ScheduleManagement() {
       {/* Shift Creation Modal */}
       {showShiftModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4">
+          <div className="bg-gray-200 dark:bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
                 {editingShift ? 'Editar Turno' : 'Crear Turno'}
@@ -1123,7 +1123,7 @@ export default function ScheduleManagement() {
                     type="date"
                     value={shiftForm.date}
                     onChange={(e) => setShiftForm(prev => ({ ...prev, date: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                     required
                   />
                 </div>
@@ -1134,7 +1134,7 @@ export default function ScheduleManagement() {
                   <select
                     value={shiftForm.employeeId}
                     onChange={(e) => setShiftForm(prev => ({ ...prev, employeeId: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                     required
                   >
                     <option value="">Seleccionar empleado</option>
@@ -1152,7 +1152,7 @@ export default function ScheduleManagement() {
                   <TimeInput
                     value={shiftForm.startTime}
                     onChange={(value) => setShiftForm(prev => ({ ...prev, startTime: value }))}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                     placeholder="HH:MM"
                     required
                   />
@@ -1164,7 +1164,7 @@ export default function ScheduleManagement() {
                   <TimeInput
                     value={shiftForm.endTime}
                     onChange={(value) => setShiftForm(prev => ({ ...prev, endTime: value }))}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                     placeholder="HH:MM"
                     required
                   />

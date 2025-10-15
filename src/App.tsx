@@ -3,6 +3,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import { EmployeeProvider } from './contexts/EmployeeContext';
 import { ScheduleProvider } from './contexts/ScheduleContext';
 import { VacationProvider } from './contexts/VacationContext';
+import { AbsenceProvider } from './contexts/AbsenceContext';
 import { NotificationProvider } from './contexts/NotificationContext';
 import { NotificationStackProvider } from './contexts/NotificationStackContext';
 import { HolidayProvider } from './contexts/HolidayContext';
@@ -24,8 +25,10 @@ function App() {
                   <NotificationStackProvider>
                     <ScheduleProvider>
                       <VacationProvider>
-                        <AppRouter />
-                        <NotificationStack />
+                        <AbsenceProvider>
+                          <AppRouter />
+                          <NotificationStack />
+                        </AbsenceProvider>
                       </VacationProvider>
                     </ScheduleProvider>
                   </NotificationStackProvider>

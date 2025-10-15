@@ -59,7 +59,7 @@ export default function LoginScreen() {
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white dark:bg-gray-800 py-8 px-4 shadow sm:rounded-lg sm:px-10 dark:border dark:border-gray-700">
+        <div className="bg-gray-200 dark:bg-gray-800 py-8 px-4 shadow sm:rounded-lg sm:px-10 dark:border dark:border-gray-700">
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
               <label htmlFor="username" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -134,7 +134,7 @@ export default function LoginScreen() {
                 <div className="w-full border-t border-gray-300" />
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">Información de prueba</span>
+                <span className="px-2 bg-gray-200 text-gray-500">Información de prueba</span>
               </div>
             </div>
 

@@ -16,7 +16,7 @@ import {
 export interface Notification {
   id: string;
   userId: string;
-  type: 'vacation_approved' | 'vacation_rejected' | 'vacation_modified' | 'schedule_change' | 'birthday';
+  type: 'vacation_approved' | 'vacation_rejected' | 'vacation_modified' | 'schedule_change' | 'birthday' | 'absence_request' | 'absence_approved' | 'absence_rejected';
   title: string;
   message: string;
   data?: any; // Datos adicionales específicos del tipo de notificación

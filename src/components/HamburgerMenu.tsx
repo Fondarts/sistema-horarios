@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Menu, X, Calendar, Users, Plane, CalendarDays, Home, BarChart3, FileText, Sun, Moon, HelpCircle, LogOut, Building2 } from 'lucide-react';
+import { Menu, X, Calendar, Users, UserX, CalendarDays, Home, BarChart3, FileText, Sun, Moon, HelpCircle, LogOut, Building2, FolderOpen } from 'lucide-react';
 import { useCompactMode } from '../contexts/CompactModeContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -23,16 +23,17 @@ export function HamburgerMenu({ activeTab, onTabChange, isManager = false, onSho
   const managerTabs = [
     { id: 'schedule', label: 'Horarios', icon: Calendar },
     { id: 'employees', label: 'Empleados', icon: Users },
-    { id: 'vacations', label: 'Vacaciones', icon: Plane },
+    { id: 'absences', label: 'Vacaciones y Ausencias', icon: UserX },
     { id: 'holidays', label: 'Feriados', icon: CalendarDays },
     { id: 'settings', label: 'Tienda', icon: Home },
     { id: 'statistics', label: 'Estadísticas', icon: BarChart3 },
     { id: 'export', label: 'Exportar', icon: FileText },
+    { id: 'files', label: 'Archivos', icon: FolderOpen },
   ];
 
   const employeeTabs = [
     { id: 'schedule', label: 'Mis Horarios', icon: Calendar },
-    { id: 'vacations', label: 'Mis Vacaciones', icon: Plane },
+    { id: 'vacations', label: 'Mis Vacaciones', icon: UserX },
   ];
 
   const tabs = isManager ? managerTabs : employeeTabs;
@@ -94,7 +95,7 @@ export function HamburgerMenu({ activeTab, onTabChange, isManager = false, onSho
 
       {/* Menú lateral */}
       <div 
-        className={`fixed top-0 left-0 h-full w-72 bg-white dark:bg-gray-800 shadow-xl transform transition-transform duration-300 ease-in-out z-50 ${
+        className={`fixed top-0 left-0 h-full w-72 bg-gray-200 dark:bg-gray-800 shadow-xl transform transition-transform duration-300 ease-in-out z-50 ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
         style={{ marginLeft: '0 !important' }}
@@ -191,7 +192,7 @@ export function HamburgerMenu({ activeTab, onTabChange, isManager = false, onSho
         
         {/* Footer con cerrar sesión */}
         {onLogout && (
-          <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+          <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-200 dark:bg-gray-800">
             <button
               onClick={handleLogout}
               className="w-full flex items-center justify-center px-4 py-3 rounded-lg text-left transition-colors text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"

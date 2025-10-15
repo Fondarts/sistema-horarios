@@ -1,9 +1,14 @@
 import React, { useState } from 'react';
-import { Building2, Plus, Edit, Trash2, BarChart3, Users, Calendar } from 'lucide-react';
+import { Building2, Plus, Edit, Trash2, BarChart3, Users, Calendar, LogOut } from 'lucide-react';
 import { useStore } from '../contexts/StoreContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useEmployees } from '../contexts/EmployeeContext';
 import { useSchedule } from '../contexts/ScheduleContext';
+import { useCompactMode } from '../contexts/CompactModeContext';
+import { ThemeToggle } from './ThemeToggle';
+import { KeyboardShortcuts } from './KeyboardShortcuts';
+import { NotificationCenter } from './NotificationCenter';
+import { Logo } from './Logo';
 
 interface StoreSelectorProps {
   onStoreSelect: (storeId: string) => void;
@@ -11,9 +16,10 @@ interface StoreSelectorProps {
 
 export function StoreSelector({ onStoreSelect }: StoreSelectorProps) {
   const { stores, createStore, updateStore, deleteStore } = useStore();
-  const { currentEmployee } = useAuth();
+  const { currentEmployee, logout } = useAuth();
   const { getAllEmployees, getEmployeesByStore } = useEmployees();
   const { getAllShifts, getShiftsByStore } = useSchedule();
+  const { isMobile } = useCompactMode();
   
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingStore, setEditingStore] = useState<string | null>(null);
@@ -124,21 +130,74 @@ export function StoreSelector({ onStoreSelect }: StoreSelectorProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-            🏪 Gestión de Tiendas
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Bienvenido/a, {currentEmployee?.name}. Selecciona una tienda para gestionar o crea una nueva.
-          </p>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      {/* Header */}
+      <header className="bg-white shadow-sm border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center">
+              {/* Solo mostrar logo y título en desktop */}
+              {!isMobile ? (
+                <>
+                  <Logo />
+                  <div className="ml-4">
+                    <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                      🏪 Gestión de Tiendas
+                    </h1>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      Bienvenido/a, {currentEmployee?.name}. Selecciona una tienda para gestionar o crea una nueva.
+                    </p>
+                  </div>
+                </>
+              ) : (
+                /* En móvil solo mostrar saludo */
+                <div>
+                  <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                    🏪 Gestión de Tiendas
+                  </h1>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Bienvenido/a, {currentEmployee?.name}
+                  </p>
+                </div>
+              )}
+            </div>
+            <div className="flex items-center space-x-4">
+              <NotificationCenter 
+                employees={getAllEmployees()}
+                currentEmployee={currentEmployee}
+                isManager={true}
+              />
+              
+              {/* Solo mostrar en desktop */}
+              {!isMobile && (
+                <>
+                  <KeyboardShortcuts 
+                    isManager={true}
+                  />
+                  <ThemeToggle />
+                </>
+              )}
+              
+              {/* Botón de cerrar sesión - solo visible en desktop */}
+              {!isMobile && (
+                <button
+                  onClick={logout}
+                  className="flex items-center text-gray-600 hover:text-gray-900 transition-colors dark:text-gray-400 dark:hover:text-gray-100"
+                >
+                  <LogOut className="w-5 h-5 mr-2" />
+                  Cerrar Sesión
+                </button>
+              )}
+            </div>
+          </div>
         </div>
+      </header>
+
+      <div className="max-w-6xl mx-auto p-6">
 
         {/* Dashboard Global */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
+          <div className="bg-gray-200 dark:bg-gray-800 rounded-lg p-6 shadow-sm">
             <div className="flex items-center">
               <Building2 className="w-8 h-8 text-blue-600 dark:text-blue-400" />
               <div className="ml-4">
@@ -148,7 +207,7 @@ export function StoreSelector({ onStoreSelect }: StoreSelectorProps) {
             </div>
           </div>
           
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
+          <div className="bg-gray-200 dark:bg-gray-800 rounded-lg p-6 shadow-sm">
             <div className="flex items-center">
               <Users className="w-8 h-8 text-green-600 dark:text-green-400" />
               <div className="ml-4">
@@ -158,7 +217,7 @@ export function StoreSelector({ onStoreSelect }: StoreSelectorProps) {
             </div>
           </div>
           
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
+          <div className="bg-gray-200 dark:bg-gray-800 rounded-lg p-6 shadow-sm">
             <div className="flex items-center">
               <Calendar className="w-8 h-8 text-purple-600 dark:text-purple-400" />
               <div className="ml-4">
@@ -170,7 +229,7 @@ export function StoreSelector({ onStoreSelect }: StoreSelectorProps) {
         </div>
 
         {/* Lista de Tiendas */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+        <div className="bg-gray-200 dark:bg-gray-800 rounded-lg shadow-sm">
           <div className="p-6 border-b border-gray-200 dark:border-gray-700">
             <div className="flex justify-between items-center">
               <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
@@ -211,7 +270,7 @@ export function StoreSelector({ onStoreSelect }: StoreSelectorProps) {
                   return (
                     <div
                       key={store.id}
-                      className="border border-gray-200 dark:border-gray-700 rounded-lg p-6 hover:shadow-md transition-shadow"
+                      className="bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-6 hover:shadow-md transition-shadow"
                     >
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex items-center">
@@ -277,7 +336,7 @@ export function StoreSelector({ onStoreSelect }: StoreSelectorProps) {
         {/* Modal Crear/Editar Tienda */}
         {(showCreateForm || editingStore) && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl w-full max-w-md">
+            <div className="bg-gray-200 dark:bg-gray-800 p-6 rounded-lg shadow-xl w-full max-w-md">
               <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
                 {editingStore ? 'Editar Tienda' : 'Nueva Tienda'}
               </h3>

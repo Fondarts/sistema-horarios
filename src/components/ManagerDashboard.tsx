@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useEmployees } from '../contexts/EmployeeContext';
 import { useStore } from '../contexts/StoreContext';
-import { LogOut, Calendar, Users, Home, BarChart3, FileText, Plane, CalendarDays, Maximize2, Minimize2, Building2 } from 'lucide-react';
+import { LogOut, Calendar, Users, Home, BarChart3, FileText, CalendarDays, Maximize2, Minimize2, Building2, UserX, FolderOpen } from 'lucide-react';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { useCompactMode } from '../contexts/CompactModeContext';
 import { EmployeeManagement } from './EmployeeManagement';
@@ -10,8 +10,10 @@ import ScheduleManagement from './ScheduleManagement';
 import { StoreSettings } from './StoreSettings';
 import { Statistics } from './Statistics';
 import { ExportTools } from './ExportTools';
-import { VacationManagement } from './VacationManagement';
+import { AbsenceManagement } from './AbsenceManagement';
+import { FileManager } from './FileManager';
 import { HolidayIntegration } from './HolidayIntegration';
+import { TestDataGenerator } from './TestDataGenerator';
 import { ThemeToggle } from './ThemeToggle';
 import { BirthdayNotification } from './BirthdayNotification';
 import { NotificationCenter } from './NotificationCenter';
@@ -19,7 +21,7 @@ import { KeyboardShortcuts } from './KeyboardShortcuts';
 import { Logo } from './Logo';
 import { HamburgerMenu } from './HamburgerMenu';
 
-type TabType = 'schedule' | 'employees' | 'settings' | 'statistics' | 'export' | 'vacations' | 'holidays';
+type TabType = 'schedule' | 'employees' | 'settings' | 'statistics' | 'export' | 'absences' | 'holidays' | 'testdata' | 'files';
 
 export function ManagerDashboard() {
   const { currentEmployee, logout, isDistrictManager } = useAuth();
@@ -33,11 +35,13 @@ export function ManagerDashboard() {
   const tabs = [
     { id: 'schedule' as TabType, label: 'Horarios', icon: Calendar },
     { id: 'employees' as TabType, label: 'Empleados', icon: Users },
-    { id: 'vacations' as TabType, label: 'Vacaciones', icon: Plane },
+    { id: 'absences' as TabType, label: 'Vacaciones y Ausencias', icon: UserX },
     { id: 'holidays' as TabType, label: 'Feriados', icon: CalendarDays },
     { id: 'settings' as TabType, label: 'Tienda', icon: Home },
     { id: 'statistics' as TabType, label: 'Estadísticas', icon: BarChart3 },
     { id: 'export' as TabType, label: 'Exportar', icon: FileText },
+    { id: 'files' as TabType, label: 'Archivos', icon: FolderOpen },
+    { id: 'testdata' as TabType, label: 'Datos Prueba', icon: Building2 },
   ];
 
   // Función para volver al selector de tiendas (solo para encargados de distrito)
@@ -71,8 +75,8 @@ export function ManagerDashboard() {
     {
       key: '3',
       ctrlKey: true,
-      action: () => setActiveTab('vacations'),
-      description: 'Ir a pestaña Vacaciones'
+      action: () => setActiveTab('absences'),
+      description: 'Ir a pestaña Vacaciones y Ausencias'
     },
     {
       key: '4',
@@ -106,8 +110,8 @@ export function ManagerDashboard() {
         return <ScheduleManagement />;
       case 'employees':
         return <EmployeeManagement />;
-      case 'vacations':
-        return <VacationManagement />;
+      case 'absences':
+        return <AbsenceManagement />;
       case 'holidays':
         return <HolidayIntegration />;
       case 'settings':
@@ -116,6 +120,10 @@ export function ManagerDashboard() {
         return <Statistics />;
       case 'export':
         return <ExportTools />;
+      case 'testdata':
+        return <TestDataGenerator />;
+      case 'files':
+        return <FileManager />;
       default:
         return <ScheduleManagement />;
     }

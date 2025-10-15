@@ -21,6 +21,7 @@ interface StoreContextType {
   createStore: (store: Omit<Store, 'id' | 'employees' | 'shifts' | 'storeSchedule' | 'settings'>) => Promise<void>;
   updateStore: (storeId: string, updates: Partial<Store>) => Promise<void>;
   deleteStore: (storeId: string) => Promise<void>;
+  getAllStores: () => Promise<Store[]>;
   isLoading: boolean;
 }
 
@@ -64,21 +65,22 @@ export function StoreProvider({ children }: { children: ReactNode }) {
             
             try {
               const docRef = await addDoc(storesRef, defaultStore);
-              setCurrentStoreState({ id: docRef.id, ...defaultStore });
-              localStorage.setItem('horarios_current_store_id', docRef.id);
+              // No seleccionar automáticamente la tienda por defecto
+              // Permitir que los encargados de distrito vean el selector
             } catch (error) {
               console.error('Error creating default store:', error);
             }
           } else {
-            // Si hay tiendas, usar la guardada o la primera
+            // Si hay tiendas, solo usar la guardada si existe
+            // No seleccionar automáticamente para permitir que los encargados de distrito vean el selector
             const savedCurrentStoreId = localStorage.getItem('horarios_current_store_id');
             if (savedCurrentStoreId) {
               const foundStore = storesData.find((s: Store) => s.id === savedCurrentStoreId);
-              setCurrentStoreState(foundStore || storesData[0]);
-            } else {
-              setCurrentStoreState(storesData[0]);
-              localStorage.setItem('horarios_current_store_id', storesData[0].id);
+              if (foundStore) {
+                setCurrentStoreState(foundStore);
+              }
             }
+            // No establecer currentStore automáticamente si no hay una guardada
           }
           
           setIsLoading(false);
@@ -165,6 +167,24 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const getAllStores = async (): Promise<Store[]> => {
+    try {
+      const storesRef = collection(db, 'stores');
+      const q = query(storesRef, orderBy('name'));
+      const snapshot = await getDocs(q);
+      
+      const storesData: Store[] = [];
+      snapshot.forEach((doc) => {
+        storesData.push({ id: doc.id, ...doc.data() } as Store);
+      });
+      
+      return storesData;
+    } catch (error) {
+      console.error('Error getting all stores:', error);
+      throw error;
+    }
+  };
+
   return (
     <StoreContext.Provider value={{
       stores,
@@ -173,6 +193,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       createStore,
       updateStore,
       deleteStore,
+      getAllStores,
       isLoading
     }}>
       {children}

@@ -4,7 +4,7 @@ import { useEmployees } from '../contexts/EmployeeContext';
 import { useCompactMode } from '../contexts/CompactModeContext';
 import { BarChart3, TrendingUp, AlertTriangle, Users, Clock, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Statistics as StatisticsType, Shift, Employee } from '../types';
-import { format, startOfWeek, endOfWeek, addWeeks, subWeeks } from 'date-fns';
+import { format, startOfWeek, endOfWeek, addWeeks, subWeeks, subDays } from 'date-fns';
 import { es } from 'date-fns/locale';
 
 // Función para formatear horas decimales a formato "Xh Ym"
@@ -198,10 +198,101 @@ export function Statistics() {
     const employeeShifts = weeklyShifts.filter(s => s.employeeId === employee.id);
     const assignedHours = employeeShifts.reduce((total, shift) => total + shift.hours, 0);
     
-    // Calcular días desde último fin de semana libre (simplificado)
-    const lastWeekendOff = 7; // Placeholder
+    // Calcular días desde último fin de semana completamente libre (sábado Y domingo sin turnos)
+    const calculateDaysSinceLastWeekendOff = () => {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0); // Normalizar a medianoche
+      
+      // Obtener todos los turnos del empleado (no solo de esta semana)
+      const allEmployeeShifts = shifts.filter(s => s.employeeId === employee.id && s.isPublished);
+      
+      console.log(`=== Calculando para ${employee.name} ===`);
+      console.log(`Hoy: ${today.toISOString().split('T')[0]}`);
+      console.log(`Total turnos: ${allEmployeeShifts.length}`);
+      console.log(`Fechas de turnos:`, Array.from(allEmployeeShifts.map(shift => shift.date)));
+      console.log(`Turnos recientes (últimos 10):`, allEmployeeShifts.slice(0, 10).map(shift => `${shift.date} (${new Date(shift.date).toLocaleDateString('es-ES', { weekday: 'long' })})`));
+      
+      if (allEmployeeShifts.length === 0) {
+        console.log(`Sin turnos, retornando 0`);
+        return 0; // Si no tiene turnos, no hay días desde último fin de semana
+      }
+      
+      // Crear un Set de fechas con turnos para búsqueda rápida
+      const shiftDates = new Set(allEmployeeShifts.map(shift => shift.date));
+      
+      // Verificar fines de semana recientes específicamente usando date-fns
+      console.log(`Verificando fines de semana recientes:`);
+      for (let i = 0; i < 4; i++) {
+        // Calcular el domingo de la semana i hacia atrás usando date-fns
+        const sunday = endOfWeek(subWeeks(today, i), { weekStartsOn: 1 }); // Lunes = 1, Domingo = 0
+        const saturday = subDays(sunday, 1);
+        
+        const saturdayStr = format(saturday, 'yyyy-MM-dd');
+        const sundayStr = format(sunday, 'yyyy-MM-dd');
+        
+        const hasShiftOnSaturday = shiftDates.has(saturdayStr);
+        const hasShiftOnSunday = shiftDates.has(sundayStr);
+        
+        console.log(`  Semana ${i + 1}: ${saturdayStr} (Sáb) - ${sundayStr} (Dom): Sábado=${hasShiftOnSaturday ? 'SÍ' : 'NO'}, Domingo=${hasShiftOnSunday ? 'SÍ' : 'NO'}`);
+      }
+      
+      // Buscar hacia atrás día por día hasta encontrar un fin de semana completamente libre
+      for (let daysBack = 0; daysBack < 90; daysBack++) {
+        const checkDate = subDays(today, daysBack);
+        
+        // Si llegamos a un domingo, verificar el fin de semana completo
+        if (checkDate.getDay() === 0) { // Domingo
+          const sunday = checkDate;
+          const saturday = subDays(sunday, 1);
+          
+          const saturdayStr = format(saturday, 'yyyy-MM-dd');
+          const sundayStr = format(sunday, 'yyyy-MM-dd');
+          
+          // Verificar si tiene turnos en sábado o domingo
+          const hasShiftOnSaturday = shiftDates.has(saturdayStr);
+          const hasShiftOnSunday = shiftDates.has(sundayStr);
+          
+          console.log(`Revisando fin de semana ${saturdayStr} - ${sundayStr}: Sábado=${hasShiftOnSaturday ? 'SÍ' : 'NO'}, Domingo=${hasShiftOnSunday ? 'SÍ' : 'NO'}`);
+          
+          // Si NO tiene turnos ni el sábado ni el domingo, es un fin de semana completamente libre
+          if (!hasShiftOnSaturday && !hasShiftOnSunday) {
+            console.log(`¡Fin de semana libre encontrado! ${saturdayStr} - ${sundayStr}, días desde entonces: ${daysBack}`);
+            return daysBack; // Retornar los días desde ese domingo
+          }
+        }
+      }
+      
+      // Si no encontramos ningún fin de semana completamente libre en 3 meses,
+      // buscar el último fin de semana que trabajó
+      for (let daysBack = 0; daysBack < 90; daysBack++) {
+        const checkDate = subDays(today, daysBack);
+        
+        // Si llegamos a un domingo, verificar si trabajó ese fin de semana
+        if (checkDate.getDay() === 0) { // Domingo
+          const sunday = checkDate;
+          const saturday = subDays(sunday, 1);
+          
+          const saturdayStr = format(saturday, 'yyyy-MM-dd');
+          const sundayStr = format(sunday, 'yyyy-MM-dd');
+          
+          // Verificar si tiene turnos en sábado o domingo
+          const hasShiftOnSaturday = shiftDates.has(saturdayStr);
+          const hasShiftOnSunday = shiftDates.has(sundayStr);
+          
+          // Si trabajó al menos uno de los dos días, retornar los días desde ese domingo
+          if (hasShiftOnSaturday || hasShiftOnSunday) {
+            console.log(`Último fin de semana trabajado: ${saturdayStr} - ${sundayStr}, días desde entonces: ${daysBack}`);
+            return daysBack;
+          }
+        }
+      }
+      
+      return 0; // Si no encuentra nada en 3 meses
+    };
     
-    // Calcular día más ocupado (simplificado)
+    const daysSinceLastWeekendOff = calculateDaysSinceLastWeekendOff();
+    
+    // Calcular día más ocupado
     const dayCounts = [0, 0, 0, 0, 0, 0, 0]; // Domingo a Sábado
     employeeShifts.forEach(shift => {
       const dayOfWeek = new Date(shift.date).getDay();
@@ -214,7 +305,7 @@ export function Statistics() {
       employeeName: employee.name,
       weeklyAssignedHours: assignedHours,
       weeklyLimit: employee.weeklyLimit,
-      daysSinceLastWeekendOff: lastWeekendOff,
+      daysSinceLastWeekendOff: daysSinceLastWeekendOff,
       busiestDayOfWeek: busiestDay,
       coverageIssues: [] // Placeholder
     };
@@ -328,7 +419,7 @@ export function Statistics() {
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+            <tbody className="bg-gray-200 dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {employeeStats.map((stat) => {
                 const utilization = (stat.weeklyAssignedHours / stat.weeklyLimit) * 100;
                 const isNearLimit = utilization > 90;

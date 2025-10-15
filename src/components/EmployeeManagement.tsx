@@ -449,7 +449,7 @@ export function EmployeeManagement() {
         ) : (
           <div className={`grid gap-4 ${isCompactMode ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'}`}>
             {employees.map((employee) => (
-              <div key={employee.id} className={`border border-gray-200 rounded-lg hover:shadow-sm transition-shadow ${isCompactMode ? 'p-3' : 'p-4'}`}>
+              <div key={employee.id} className={`bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg hover:shadow-sm transition-shadow ${isCompactMode ? 'p-3' : 'p-4'}`}>
                 <div className="flex justify-between items-start mb-3">
                   <div className="flex items-center gap-3">
                     <div 

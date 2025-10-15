@@ -14,7 +14,7 @@ export function NotificationStack() {
       {notifications.map((notification, index) => (
         <div
           key={notification.id}
-          className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-4 transform transition-all duration-300 ease-in-out"
+          className="bg-gray-200 dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-4 transform transition-all duration-300 ease-in-out"
           style={{
             transform: `translateY(${index * 8}px)`,
             zIndex: 50 - index,

@@ -4,7 +4,7 @@ import { useSchedule } from '../contexts/ScheduleContext';
 import { useEmployees } from '../contexts/EmployeeContext';
 import { format, startOfWeek, endOfWeek, eachDayOfInterval, addWeeks, subWeeks } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { ChevronLeft, ChevronRight, LogOut, Calendar, Clock, Plane } from 'lucide-react';
+import { ChevronLeft, ChevronRight, LogOut, Calendar, Clock, UserX } from 'lucide-react';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { useCompactMode } from '../contexts/CompactModeContext';
 import { ThemeToggle } from './ThemeToggle';
@@ -12,7 +12,7 @@ import { BirthdayNotification } from './BirthdayNotification';
 import { NotificationCenter } from './NotificationCenter';
 import { KeyboardShortcuts } from './KeyboardShortcuts';
 import { Logo } from './Logo';
-import { EmployeeVacationRequests } from './EmployeeVacationRequests';
+import { AbsenceManagement } from './AbsenceManagement';
 import { HamburgerMenu } from './HamburgerMenu';
 
 export default function EmployeeDashboard() {
@@ -191,7 +191,7 @@ export default function EmployeeDashboard() {
               }`}
             >
               <div className="flex items-center">
-                <Plane className="w-4 h-4 mr-2" />
+                <UserX className="w-4 h-4 mr-2" />
                 Mis Vacaciones
               </div>
             </button>
@@ -204,7 +204,7 @@ export default function EmployeeDashboard() {
         {activeTab === 'schedule' ? (
           <>
             {/* Week Navigation */}
-            <div className="bg-white rounded-lg shadow p-6 mb-6 dark:bg-gray-800 dark:border dark:border-gray-700">
+            <div className="bg-gray-200 rounded-lg shadow p-6 mb-6 dark:bg-gray-800 dark:border dark:border-gray-700">
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-4">
               <button
@@ -236,7 +236,7 @@ export default function EmployeeDashboard() {
 
         {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-gray-200 rounded-lg shadow p-6">
             <div className="flex items-center">
               <Calendar className="w-8 h-8 text-primary-600 mr-3" />
               <div>
@@ -246,7 +246,7 @@ export default function EmployeeDashboard() {
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-gray-200 rounded-lg shadow p-6">
             <div className="flex items-center">
               <Clock className="w-8 h-8 text-green-600 mr-3" />
               <div>
@@ -256,7 +256,7 @@ export default function EmployeeDashboard() {
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-gray-200 rounded-lg shadow p-6">
             <div className="flex items-center">
               <div className="w-8 h-8 rounded-full mr-3" style={{ backgroundColor: currentEmployee.color }}></div>
               <div>
@@ -268,7 +268,7 @@ export default function EmployeeDashboard() {
         </div>
 
         {/* Shifts List */}
-        <div className="bg-white rounded-lg shadow">
+        <div className="bg-gray-200 rounded-lg shadow">
           <div className="px-6 py-4 border-b border-gray-200">
             <h3 className="text-lg font-medium text-gray-900">Mis Turnos</h3>
           </div>
@@ -318,7 +318,7 @@ export default function EmployeeDashboard() {
             </div>
           </>
         ) : (
-          <EmployeeVacationRequests />
+          <AbsenceManagement />
         )}
       </div>
 
