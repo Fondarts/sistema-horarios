@@ -209,7 +209,7 @@ export default function EmployeeDashboard() {
             <div className="flex items-center space-x-4">
               <button
                 onClick={() => navigateWeek('prev')}
-                className="flex items-center space-x-2 text-gray-600 hover:text-gray-900"
+                className="flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
               >
                 <ChevronLeft className="w-4 h-4" />
                 <span>Semana Anterior</span>
@@ -219,7 +219,7 @@ export default function EmployeeDashboard() {
               </h2>
               <button
                 onClick={() => navigateWeek('next')}
-                className="flex items-center space-x-2 text-gray-600 hover:text-gray-900"
+                className="flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
               >
                 <span>Semana Siguiente</span>
                 <ChevronRight className="w-4 h-4" />
