@@ -1240,7 +1240,7 @@ export default function ScheduleManagement() {
                           }}
                         >
                           {/* Contenido de texto de la barra */}
-                          <div className="flex items-center justify-center h-full px-2 text-white font-medium text-xs overflow-hidden">
+                            <div className="flex items-center justify-between h-full text-white font-medium text-xs overflow-hidden px-1">
                                   {(() => {
                               // Usar valores temporales si estamos en drag/resize, sino usar valores originales
                               const currentStartTime = (draggedElement?.dataset.shiftId === shift.id || resizingElement?.dataset.shiftId === shift.id) 
@@ -1262,12 +1262,17 @@ export default function ScheduleManagement() {
                               } else if (currentWidth < 100) {
                                 return <span>{employee?.name.split(' ').map(n => n[0]).join('')}</span>;
                               } else {
-                                      return (
-                                  <div className="text-center">
-                                    <div>{currentStartTime} - {currentEndTime}</div>
-                                    <div className="text-xs opacity-90">{formatHours(currentHours)}</div>
-                                        </div>
-                                      );
+                                    return (
+                                      <>
+                                    <div className="text-left">
+                                      <div className="font-semibold text-xs">{employee?.name}</div>
+                                      <div className="text-xs opacity-90">{currentStartTime} - {currentEndTime}</div>
+                                          </div>
+                                    <div className="text-right text-xs opacity-75">
+                                      {formatHours(currentHours)}
+                                          </div>
+                                      </>
+                                    );
                               }
                                   })()}
                                 </div>
