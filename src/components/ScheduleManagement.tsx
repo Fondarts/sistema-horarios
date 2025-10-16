@@ -929,7 +929,8 @@ export default function ScheduleManagement() {
                     style={{ 
                       gridTemplateColumns: `${isMobile ? '60px' : (isCompactMode ? '100px' : '120px')} ${isMobile ? `repeat(${hours.length}, ${mobileHourColumnWidth}px)` : `repeat(${hours.length}, 1fr)`}`, 
                       minHeight: '120px',
-                      minWidth: 'max-content'
+                      minWidth: 'max-content',
+                      height: 'auto'
                     }}
                   >
                   {/* Day and employees */}
@@ -999,7 +1000,7 @@ export default function ScheduleManagement() {
                       <div 
                         key={`${day.toISOString()}-${hour}`} 
                         className={`relative border-r border-gray-200 dark:border-gray-600 ${backgroundColor}`} 
-                        style={{ height: '120px' }}
+                        style={{ minHeight: '120px', height: '100%' }}
                         title={isHolidayDay ? `Feriado: ${holiday?.name}` : ''}
                       >
                         {/* Hour line */}
