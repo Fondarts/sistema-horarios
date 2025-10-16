@@ -361,28 +361,33 @@ export const AbsenceManagement: React.FC = () => {
                               >
                                 <Eye className="w-4 h-4" />
                               </button>
-                              {request.status === 'pending' && (
+                              {/* Solo encargados y encargados de distrito pueden aprobar/rechazar/eliminar */}
+                              {(currentEmployee?.role === 'encargado' || currentEmployee?.role === 'distrito') && (
                                 <>
+                                  {request.status === 'pending' && (
+                                    <>
+                                      <button
+                                        onClick={() => handleApprove(request.id)}
+                                        className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300"
+                                      >
+                                        <CheckCircle className="w-4 h-4" />
+                                      </button>
+                                      <button
+                                        onClick={() => handleReject(request.id)}
+                                        className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                                      >
+                                        <XCircle className="w-4 h-4" />
+                                      </button>
+                                    </>
+                                  )}
                                   <button
-                                    onClick={() => handleApprove(request.id)}
-                                    className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300"
-                                  >
-                                    <CheckCircle className="w-4 h-4" />
-                                  </button>
-                                  <button
-                                    onClick={() => handleReject(request.id)}
+                                    onClick={() => handleDelete(request.id)}
                                     className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
                                   >
-                                    <XCircle className="w-4 h-4" />
+                                    <Trash2 className="w-4 h-4" />
                                   </button>
                                 </>
                               )}
-                              <button
-                                onClick={() => handleDelete(request.id)}
-                                className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </button>
                             </div>
                           </td>
                         </tr>
