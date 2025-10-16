@@ -1100,18 +1100,18 @@ export default function ScheduleManagement() {
                     className="grid border-b border-gray-300 dark:border-gray-600 relative" 
                     style={{ 
                       gridTemplateColumns: `${isMobile ? '60px' : (isCompactMode ? '100px' : '120px')} ${isMobile ? `repeat(${hours.length}, ${mobileHourColumnWidth}px)` : `repeat(${hours.length}, 1fr)`}`, 
-                      minHeight: '120px',
+                      minHeight: collapsedDays.has(dayString) ? '40px' : '120px',
                       minWidth: 'max-content',
                       height: 'auto'
                     }}
                   >
                   {/* Day and employees */}
-                        <div className={`${isMobile ? 'p-1' : (isCompactMode ? 'p-2' : 'p-3')} border-r border-gray-200 dark:border-gray-600 ${
+                        <div className={`${collapsedDays.has(dayString) ? 'p-1' : (isMobile ? 'p-1' : (isCompactMode ? 'p-2' : 'p-3'))} border-r border-gray-200 dark:border-gray-600 ${
                           isHolidayDay 
                             ? 'bg-orange-50 dark:bg-orange-900/20' 
                             : 'bg-gray-50 dark:bg-gray-700'
                         } ${isMobile ? 'sticky left-0 z-20' : ''}`}>
-                    <div className={`font-medium ${isMobile ? 'mb-0' : 'mb-2'} ${
+                    <div className={`font-medium ${collapsedDays.has(dayString) ? 'mb-0' : (isMobile ? 'mb-0' : 'mb-2')} ${
                       isHolidayDay
                         ? 'text-orange-700 dark:text-orange-300'
                         : 'text-gray-900 dark:text-gray-100'
@@ -1119,8 +1119,8 @@ export default function ScheduleManagement() {
                       {isMobile ? (
                         <div className="text-center">
                           <div className="flex items-center justify-center gap-1">
-                            <div className="text-xs font-semibold">
-                              {format(day, 'EEE', { locale: es })}
+                          <div className="text-xs font-semibold">
+                            {format(day, 'EEE', { locale: es })}
                             </div>
                             <button
                               onClick={() => toggleDayCollapse(dayString)}
@@ -1140,10 +1140,10 @@ export default function ScheduleManagement() {
                       ) : (
                         <div className="flex items-center gap-2">
                           <span>
-                            {format(day, 'EEE d', { locale: es })}
-                            {isHolidayDay && (
-                              <span className="ml-2 text-xs">🎉</span>
-                            )}
+                          {format(day, 'EEE d', { locale: es })}
+                          {isHolidayDay && (
+                            <span className="ml-2 text-xs">🎉</span>
+                          )}
                           </span>
                           <button
                             onClick={() => toggleDayCollapse(dayString)}
@@ -1155,8 +1155,8 @@ export default function ScheduleManagement() {
                         </div>
                       )}
                     </div>
-                    {/* Solo mostrar nombres de empleados en desktop */}
-                    {!isMobile && employeesOnDay.map(employeeId => {
+                    {/* Solo mostrar nombres de empleados en desktop y si no está colapsado */}
+                    {!isMobile && !collapsedDays.has(dayString) && employeesOnDay.map(employeeId => {
                       const employee = employees.find(emp => emp.id === employeeId);
                       const isOnVacation = employee ? isEmployeeOnVacation(employee.id, format(day, 'yyyy-MM-dd')) : false;
                       return employee ? (
