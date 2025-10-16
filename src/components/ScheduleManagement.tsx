@@ -586,7 +586,7 @@ export default function ScheduleManagement() {
   }, [zoomLevel, show24Hours, hours.length]);
 
   // Event listeners globales - implementación exacta como el ejemplo HTML
-  useEffect(() => {
+      useEffect(() => {
     const drag = (e: MouseEvent) => {
       if (!draggedElement || !containerRect) return;
       
@@ -715,7 +715,7 @@ export default function ScheduleManagement() {
       
       bar.addEventListener('mousedown', handleMouseDown);
     });
-    
+
     return () => {
       ganttBars.forEach(bar => {
         bar.removeEventListener('mousedown', () => {});
@@ -735,28 +735,6 @@ export default function ScheduleManagement() {
           <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Gestión de Horarios</h2>
         </div>
         <div className="flex items-center space-x-3">
-          {/* Contador de turnos sin publicar */}
-          {(() => {
-            const unpublishedCount = weekShifts.filter(s => !s.isPublished).length;
-            return unpublishedCount > 0 ? (
-              <div className="flex items-center px-3 py-2 bg-orange-100 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300 rounded-lg text-sm font-medium">
-                <div className="w-2 h-2 bg-orange-500 rounded-full mr-2 animate-pulse"></div>
-                {unpublishedCount} sin publicar
-              </div>
-            ) : null;
-          })()}
-          
-          <button
-            onClick={() => setShowUnpublished(!showUnpublished)}
-            className={`flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              showUnpublished 
-                ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/20 dark:text-primary-300' 
-                : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
-            }`}
-          >
-            {showUnpublished ? <Eye className="w-4 h-4 mr-2" /> : <EyeOff className="w-4 h-4 mr-2" />}
-            {showUnpublished ? 'Ocultar' : 'Mostrar'}
-          </button>
           <button
             onClick={publishWeekShifts}
             className={`flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
@@ -797,8 +775,8 @@ export default function ScheduleManagement() {
 
       {/* Week Navigation */}
       <div className="card">
-        {/* Fecha centrada */}
-        <div className="text-center mb-4">
+        {/* Fechas de la semana y alerta de turnos pendientes */}
+        <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 whitespace-nowrap">
             {format(weekStart, 'd MMM', { locale: es })} - {format(weekEnd, 'd MMM yyyy', { locale: es })}
           </h3>
@@ -806,7 +784,7 @@ export default function ScheduleManagement() {
           {(() => {
             const unpublishedCount = weekShifts.filter(s => !s.isPublished).length;
             return unpublishedCount > 0 ? (
-              <div className="mt-2 flex items-center justify-center space-x-2 text-orange-600 dark:text-orange-400">
+              <div className="flex items-center space-x-2 text-orange-600 dark:text-orange-400">
                 <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
                 <span className="text-sm font-medium">
                   {unpublishedCount} turno{unpublishedCount !== 1 ? 's' : ''} pendiente{unpublishedCount !== 1 ? 's' : ''} de publicación
@@ -816,22 +794,50 @@ export default function ScheduleManagement() {
           })()}
         </div>
 
-        {/* Botones de navegación */}
-        <div className="flex justify-center items-center space-x-3">
+        {/* Todos los botones distribuidos */}
+        <div className="flex items-center justify-between mb-4">
+          {/* Lado izquierdo: Navegación de semanas */}
+          <div className="flex items-center space-x-3">
           <button
             onClick={() => navigateWeek('prev')}
             className="px-4 py-2 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 text-sm font-medium rounded-lg transition-colors"
           >
             ← Anterior
           </button>
+            <button
+              onClick={() => setCurrentWeek(new Date())}
+              className="px-4 py-2 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 text-sm font-medium rounded-lg transition-colors"
+            >
+              Esta Semana
+            </button>
           <button
             onClick={() => navigateWeek('next')}
             className="px-4 py-2 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 text-sm font-medium rounded-lg transition-colors"
           >
             Siguiente →
           </button>
-          
-          {/* 24h Toggle - Movido aquí junto con la navegación */}
+          </div>
+
+          {/* Centro: Botón Repetir */}
+          <div className="flex items-center">
+            <button
+              onClick={repeatPreviousWeek}
+              disabled={isCopyingShifts}
+              className={`flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                isCopyingShifts 
+                  ? 'bg-white dark:bg-gray-700 opacity-50 cursor-not-allowed text-gray-500 dark:text-gray-400' 
+                  : 'bg-primary-600 hover:bg-primary-700 text-white'
+              }`}
+              title={isCopyingShifts ? "Copiando turnos..." : "Copiar todos los turnos de la semana anterior"}
+            >
+              <Copy className={`w-4 h-4 mr-2 ${isCopyingShifts ? 'animate-spin' : ''}`} />
+              <span>{isCopyingShifts ? 'Copiando...' : 'Repetir'}</span>
+            </button>
+          </div>
+
+          {/* Lado derecho: Ver 24h y Borrador */}
+          <div className="flex items-center space-x-3">
+            {/* 24h Toggle */}
           <div className="flex items-center space-x-2 bg-gray-100 dark:bg-gray-700 rounded-lg px-3 py-2">
             <label className="flex items-center space-x-2 cursor-pointer">
               <input
@@ -846,25 +852,19 @@ export default function ScheduleManagement() {
             </label>
           </div>
           
+            {/* Botón de borrador */}
           <button
-            onClick={repeatPreviousWeek}
-            disabled={isCopyingShifts}
-            className={`flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-              isCopyingShifts 
-                ? 'bg-white dark:bg-gray-700 opacity-50 cursor-not-allowed text-gray-500 dark:text-gray-400' 
-                : 'bg-primary-600 hover:bg-primary-700 text-white'
-            }`}
-            title={isCopyingShifts ? "Copiando turnos..." : "Copiar todos los turnos de la semana anterior"}
-          >
-            <Copy className={`w-4 h-4 mr-2 ${isCopyingShifts ? 'animate-spin' : ''}`} />
-            <span>{isCopyingShifts ? 'Copiando...' : 'Repetir'}</span>
+              onClick={() => setShowUnpublished(!showUnpublished)}
+              className={`flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                showUnpublished 
+                  ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/20 dark:text-primary-300' 
+                  : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
+              }`}
+            >
+              {showUnpublished ? <Eye className="w-4 h-4 mr-2" /> : <EyeOff className="w-4 h-4 mr-2" />}
+              Borrador
           </button>
-          <button
-            onClick={() => setCurrentWeek(new Date())}
-            className="px-4 py-2 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 text-sm font-medium rounded-lg transition-colors"
-          >
-            Esta Semana
-          </button>
+          </div>
         </div>
       </div>
 
