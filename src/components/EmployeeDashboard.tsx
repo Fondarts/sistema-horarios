@@ -481,8 +481,8 @@ export default function EmployeeDashboard() {
                             className="text-xs p-1 rounded text-white"
                             style={{ backgroundColor: currentEmployee.color }}
                           >
-                            <div className="font-medium">{shift.startTime}</div>
-                            <div className="opacity-90">{shift.endTime}</div>
+                            <div className="font-medium">{shift.startTime} - {shift.endTime}</div>
+                            <div className="opacity-90">{formatHours(shift.hours)}</div>
                           </div>
                         ))}
                       </div>
