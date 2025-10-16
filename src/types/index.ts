@@ -25,6 +25,8 @@ export interface Employee {
   storeId?: string; // ID de la tienda a la que pertenece el empleado
   monthlyHoursLimit?: number; // límite mensual de horas
   unavailableHours?: UnavailableTime[]; // horas no disponibles (alias para compatibilidad)
+  vacationDaysPerYear?: number; // días de vacaciones por año
+  startDate?: string; // fecha de inicio en la empresa (formato YYYY-MM-DD)
   // Campos legacy para compatibilidad (se pueden remover después)
   pin?: string; // DEPRECATED: usar username/password
 }

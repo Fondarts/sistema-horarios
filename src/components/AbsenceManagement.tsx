@@ -235,19 +235,24 @@ export const AbsenceManagement: React.FC = () => {
                 </div>
                 <div className="bg-gray-200 dark:bg-gray-800 p-4 rounded-lg shadow border border-gray-200 dark:border-gray-700">
                   <div className="flex items-center">
-                    <CheckCircle className="w-8 h-8 text-green-500" />
+                    <XCircle className="w-8 h-8 text-red-500" />
                     <div className="ml-3">
-                      <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Aprobadas</p>
-                      <p className="text-2xl font-bold text-gray-900 dark:text-gray-50">{stats.absencesByStatus.approved}</p>
+                      <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Ausencias No Justificadas</p>
+                      <p className="text-2xl font-bold text-gray-900 dark:text-gray-50">{stats.absencesByType.unjustified}</p>
                     </div>
                   </div>
                 </div>
                 <div className="bg-gray-200 dark:bg-gray-800 p-4 rounded-lg shadow border border-gray-200 dark:border-gray-700">
                   <div className="flex items-center">
-                    <User className="w-8 h-8 text-purple-500" />
+                    <CheckCircle className="w-8 h-8 text-green-500" />
                     <div className="ml-3">
-                      <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Promedio por Empleado</p>
-                      <p className="text-2xl font-bold text-gray-900 dark:text-gray-50">{stats.averageAbsencesPerEmployee.toFixed(1)}</p>
+                      <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Días de Vacaciones Restantes</p>
+                      <p className="text-2xl font-bold text-gray-900 dark:text-gray-50">
+                        {currentEmployee?.vacationDaysPerYear ? 
+                          Math.max(0, currentEmployee.vacationDaysPerYear - stats.absencesByType.vacation) : 
+                          'N/A'
+                        }
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -282,19 +287,22 @@ export const AbsenceManagement: React.FC = () => {
                       ))}
                     </select>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Empleado</label>
-                    <select
-                      value={selectedEmployee}
-                      onChange={(e) => setSelectedEmployee(e.target.value)}
-                      className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-50"
-                    >
-                      <option value="">Todos los empleados</option>
-                      {employees.map(employee => (
-                        <option key={employee.id} value={employee.id}>{employee.name}</option>
-                      ))}
-                    </select>
-                  </div>
+                  {/* Solo encargados y encargados de distrito pueden filtrar por empleado */}
+                  {(currentEmployee?.role === 'encargado' || currentEmployee?.role === 'distrito') && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Empleado</label>
+                      <select
+                        value={selectedEmployee}
+                        onChange={(e) => setSelectedEmployee(e.target.value)}
+                        className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-50"
+                      >
+                        <option value="">Todos los empleados</option>
+                        {employees.map(employee => (
+                          <option key={employee.id} value={employee.id}>{employee.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
                 </div>
               </div>
 

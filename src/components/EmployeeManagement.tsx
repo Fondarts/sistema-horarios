@@ -44,7 +44,9 @@ export function EmployeeManagement() {
     color: '#3B82F6',
     isActive: true,
     role: 'empleado' as 'encargado' | 'empleado' | 'distrito',
-    unavailableTimes: [] as UnavailableTime[]
+    unavailableTimes: [] as UnavailableTime[],
+    vacationDaysPerYear: 20,
+    startDate: ''
   });
 
   const daysOfWeek = [
@@ -152,7 +154,9 @@ export function EmployeeManagement() {
       color: employee.color,
       isActive: employee.isActive,
       role: employee.role,
-      unavailableTimes: employee.unavailableTimes
+      unavailableTimes: employee.unavailableTimes,
+      vacationDaysPerYear: employee.vacationDaysPerYear || 20,
+      startDate: employee.startDate || ''
     });
     setShowAddForm(true);
   };
@@ -179,7 +183,9 @@ export function EmployeeManagement() {
       color: '#3B82F6',
       isActive: true,
       role: 'empleado',
-      unavailableTimes: []
+      unavailableTimes: [],
+      vacationDaysPerYear: 20,
+      startDate: ''
     });
     setEditingEmployee(null);
     setShowAddForm(false);
@@ -311,6 +317,39 @@ export function EmployeeManagement() {
                 />
                 <p className="text-xs text-gray-500 mt-1">
                   Formato: día/mes/año (ejemplo: 22/07/1992) - Opcional
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Fecha de Inicio
+                </label>
+                <input
+                  type="date"
+                  value={formData.startDate}
+                  onChange={(e) => setFormData(prev => ({ ...prev, startDate: e.target.value }))}
+                  className="input-field"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Fecha de inicio en la empresa - Opcional
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Días de Vacaciones por Año
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  max="365"
+                  value={formData.vacationDaysPerYear}
+                  onChange={(e) => setFormData(prev => ({ ...prev, vacationDaysPerYear: parseInt(e.target.value) || 0 }))}
+                  className="input-field"
+                  placeholder="20"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Número de días de vacaciones por año - Opcional
                 </p>
               </div>
 
