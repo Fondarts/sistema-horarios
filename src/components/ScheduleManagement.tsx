@@ -954,7 +954,7 @@ export default function ScheduleManagement() {
               className="px-4 py-2 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 text-sm font-medium rounded-lg transition-colors"
             >
               Esta Semana
-            </button>
+          </button>
           <button
             onClick={() => navigateWeek('next')}
             className="px-4 py-2 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 text-sm font-medium rounded-lg transition-colors"
@@ -1064,7 +1064,8 @@ export default function ScheduleManagement() {
                     style={{ 
                       gridTemplateColumns: `${isMobile ? '60px' : (isCompactMode ? '100px' : '120px')} ${isMobile ? `repeat(${hours.length}, ${mobileHourColumnWidth}px)` : `repeat(${hours.length}, 1fr)`}`, 
                       minHeight: '120px',
-                      minWidth: 'max-content'
+                      minWidth: 'max-content',
+                      height: 'auto'
                     }}
                   >
                   {/* Day and employees */}
@@ -1131,12 +1132,12 @@ export default function ScheduleManagement() {
                     }
                     
                     return (
-                      <div 
-                        key={`${day.toISOString()}-${hour}`} 
-                        className={`relative border-r border-gray-200 dark:border-gray-600 ${backgroundColor}`} 
-                        style={{ height: '120px' }}
-                        title={isHolidayDay ? `Feriado: ${holiday?.name}` : ''}
-                      >
+                                <div 
+                                  key={`${day.toISOString()}-${hour}`} 
+                                  className={`relative border-r border-gray-200 dark:border-gray-600 ${backgroundColor}`} 
+                                  style={{ minHeight: '120px', height: '100%' }}
+                                  title={isHolidayDay ? `Feriado: ${holiday?.name}` : ''}
+                                >
                         {/* Hour line */}
                         <div className="absolute w-full border-t border-gray-100 dark:border-gray-600" style={{ top: '0' }}>
                           <div className={`text-xs px-1 ${
@@ -1392,6 +1393,7 @@ export default function ScheduleManagement() {
               );
             })}
           </div>
+          
         </div>
       </div>
 
