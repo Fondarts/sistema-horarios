@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useEmployees } from '../contexts/EmployeeContext';
 import { useStore } from '../contexts/StoreContext';
-import { LogOut, Calendar, Users, Home, BarChart3, FileText, CalendarDays, Maximize2, Minimize2, Building2, UserX, FolderOpen } from 'lucide-react';
+import { LogOut, Calendar, Users, Home, BarChart3, FileText, CalendarDays, Settings, Building2, UserX, FolderOpen } from 'lucide-react';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { useCompactMode } from '../contexts/CompactModeContext';
 import { EmployeeManagement } from './EmployeeManagement';
@@ -13,6 +13,7 @@ import { ExportTools } from './ExportTools';
 import { AbsenceManagement } from './AbsenceManagement';
 import { FileManager } from './FileManager';
 import { HolidayIntegration } from './HolidayIntegration';
+import { Configuration } from './Configuration';
 import { TestDataGenerator } from './TestDataGenerator';
 import { ThemeToggle } from './ThemeToggle';
 import { BirthdayNotification } from './BirthdayNotification';
@@ -31,6 +32,7 @@ export function ManagerDashboard() {
   const [activeTab, setActiveTab] = useState<TabType>('schedule');
   const [showBirthdayNotification, setShowBirthdayNotification] = useState(true);
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
+  const [showConfig, setShowConfig] = useState(false);
 
   const tabs = [
     { id: 'schedule' as TabType, label: 'Horarios', icon: Calendar },
@@ -183,11 +185,11 @@ export function ManagerDashboard() {
                     isManager={true}
                   />
                   <button
-                    onClick={toggleCompactMode}
+                    onClick={() => setShowConfig(true)}
                     className="flex items-center text-gray-600 hover:text-gray-900 transition-colors dark:text-gray-400 dark:hover:text-gray-100"
-                    title={isCompactMode ? 'Modo normal' : 'Modo compacto'}
+                    title="Configuración"
                   >
-                    {isCompactMode ? <Maximize2 className="w-5 h-5" /> : <Minimize2 className="w-5 h-5" />}
+                    <Settings className="w-5 h-5" />
                   </button>
                   <ThemeToggle />
                 </>
@@ -268,6 +270,12 @@ export function ManagerDashboard() {
         <BirthdayNotification 
           employees={employees}
           onClose={() => setShowBirthdayNotification(false)}
+        />
+      )}
+
+      {showConfig && (
+        <Configuration 
+          onClose={() => setShowConfig(false)}
         />
       )}
     </div>

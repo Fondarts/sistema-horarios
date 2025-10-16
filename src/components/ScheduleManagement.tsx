@@ -238,8 +238,8 @@ export default function ScheduleManagement() {
     // Calcular la posición relativa (0-1)
     const relativePosition = Math.max(0, Math.min(1, (position - dayColumnWidth) / availableWidth));
     
-    // Convertir a horas
-    const totalHours = endHour - startHour;
+    // Convertir a horas - usar la misma fórmula que en el cálculo inicial
+    const totalHours = endHour - startHour + 1;
     const timeInHours = startHour + (relativePosition * totalHours);
     
     // Redondear a incrementos de 5 minutos
@@ -257,7 +257,8 @@ export default function ScheduleManagement() {
     const containerWidth = scrollContainerRef.current?.offsetWidth || 800;
     const availableWidth = containerWidth - dayColumnWidth;
     
-    const totalHours = endHour - startHour;
+    // Usar la misma fórmula que en el cálculo inicial
+    const totalHours = endHour - startHour + 1;
     const relativePosition = (timeInHours - startHour) / totalHours;
     
     return dayColumnWidth + (relativePosition * availableWidth);
@@ -646,9 +647,12 @@ export default function ScheduleManagement() {
       const deltaX = e.clientX - startX;
       let newLeft = startLeft + deltaX;
       
-      // Limitar dentro del contenedor
-      const maxLeft = containerRect.width - draggedElement.offsetWidth;
-      newLeft = Math.max(0, Math.min(newLeft, maxLeft));
+      // Limitar dentro del contenedor y respetar las horas visibles
+      const dayColumnWidth = isMobile ? 60 : (isCompactMode ? 100 : 120); // Usar el mismo valor que en las funciones de conversión
+      const availableWidth = containerRect.width - dayColumnWidth;
+      const minLeft = dayColumnWidth; // No puede ir más a la izquierda que la columna del día
+      const maxLeft = dayColumnWidth + availableWidth - draggedElement.offsetWidth; // No puede salirse del área de horas
+      newLeft = Math.max(minLeft, Math.min(newLeft, maxLeft));
       
       draggedElement.style.left = newLeft + 'px';
       
@@ -705,8 +709,12 @@ export default function ScheduleManagement() {
         let newLeft = startLeft + deltaX;
         let newWidth = startWidth - deltaX;
         
-        // Límites
-        if (newWidth >= 20 && newLeft >= 0) {
+        // Límites - respetar las horas visibles
+        const dayColumnWidth = isMobile ? 60 : (isCompactMode ? 100 : 120); // Usar el mismo valor que en las funciones de conversión
+        const minLeft = dayColumnWidth; // No puede ir más a la izquierda que la columna del día
+        const minWidth = 20; // Ancho mínimo
+        
+        if (newWidth >= minWidth && newLeft >= minLeft) {
           resizingElement.style.left = newLeft + 'px';
           resizingElement.style.width = newWidth + 'px';
           
@@ -724,9 +732,12 @@ export default function ScheduleManagement() {
         // Redimensionar desde la derecha
         let newWidth = startWidth + deltaX;
         
-        // Límites
-        const maxWidth = containerRect.width - resizingElement.offsetLeft;
-        newWidth = Math.max(20, Math.min(newWidth, maxWidth));
+        // Límites - respetar las horas visibles
+        const dayColumnWidth = isMobile ? 60 : (isCompactMode ? 100 : 120); // Usar el mismo valor que en las funciones de conversión
+        const availableWidth = containerRect.width - dayColumnWidth;
+        const maxWidth = dayColumnWidth + availableWidth - resizingElement.offsetLeft; // No puede salirse del área de horas
+        const minWidth = 20; // Ancho mínimo
+        newWidth = Math.max(minWidth, Math.min(newWidth, maxWidth));
         
         resizingElement.style.width = newWidth + 'px';
         
@@ -932,24 +943,24 @@ export default function ScheduleManagement() {
         <div className="flex items-center justify-between mb-4">
           {/* Lado izquierdo: Navegación de semanas */}
           <div className="flex items-center space-x-3">
-            <button
-              onClick={() => navigateWeek('prev')}
-              className="px-4 py-2 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 text-sm font-medium rounded-lg transition-colors"
-            >
-              ← Anterior
-            </button>
+          <button
+            onClick={() => navigateWeek('prev')}
+            className="px-4 py-2 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 text-sm font-medium rounded-lg transition-colors"
+          >
+            ← Anterior
+          </button>
             <button
               onClick={() => setCurrentWeek(new Date())}
               className="px-4 py-2 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 text-sm font-medium rounded-lg transition-colors"
             >
               Esta Semana
             </button>
-            <button
-              onClick={() => navigateWeek('next')}
-              className="px-4 py-2 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 text-sm font-medium rounded-lg transition-colors"
-            >
-              Siguiente →
-            </button>
+          <button
+            onClick={() => navigateWeek('next')}
+            className="px-4 py-2 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 text-sm font-medium rounded-lg transition-colors"
+          >
+            Siguiente →
+          </button>
           </div>
 
           {/* Centro: Botón Repetir */}
@@ -972,22 +983,22 @@ export default function ScheduleManagement() {
           {/* Lado derecho: Ver 24h y Borrador */}
           <div className="flex items-center space-x-3">
             {/* 24h Toggle */}
-            <div className="flex items-center space-x-2 bg-gray-100 dark:bg-gray-700 rounded-lg px-3 py-2">
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={show24Hours}
-                  onChange={(e) => setShow24Hours(e.target.checked)}
-                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-                />
-                <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">
-                  Ver 24h
-                </span>
-              </label>
-            </div>
-            
+          <div className="flex items-center space-x-2 bg-gray-100 dark:bg-gray-700 rounded-lg px-3 py-2">
+            <label className="flex items-center space-x-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={show24Hours}
+                onChange={(e) => setShow24Hours(e.target.checked)}
+                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+              />
+              <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">
+                Ver 24h
+              </span>
+            </label>
+          </div>
+          
             {/* Botón de borrador */}
-            <button
+          <button
               onClick={() => setShowUnpublished(!showUnpublished)}
               className={`flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 showUnpublished 
@@ -997,7 +1008,7 @@ export default function ScheduleManagement() {
             >
               {showUnpublished ? <Eye className="w-4 h-4 mr-2" /> : <EyeOff className="w-4 h-4 mr-2" />}
               Borrador
-            </button>
+          </button>
           </div>
         </div>
       </div>
