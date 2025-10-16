@@ -96,7 +96,7 @@ export default function EmployeeDashboard() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <div className="bg-white shadow dark:bg-gray-800">
+      <div className="bg-gray-200 shadow dark:bg-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center">
@@ -166,7 +166,7 @@ export default function EmployeeDashboard() {
 
       {/* Tabs - solo visible en desktop */}
       {!isMobile && (
-        <div className="bg-white border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+        <div className="bg-gray-200 border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <nav className="flex space-x-8">
             <button
@@ -236,50 +236,50 @@ export default function EmployeeDashboard() {
 
         {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-          <div className="bg-gray-200 rounded-lg shadow p-6">
+          <div className="bg-gray-200 rounded-lg shadow p-6 dark:bg-gray-800">
             <div className="flex items-center">
               <Calendar className="w-8 h-8 text-primary-600 mr-3" />
               <div>
-                <p className="text-sm text-gray-600">Turnos Esta Semana</p>
-                <p className="text-2xl font-bold text-gray-900">{employeeShifts.length}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Turnos Esta Semana</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{employeeShifts.length}</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-gray-200 rounded-lg shadow p-6">
+          <div className="bg-gray-200 rounded-lg shadow p-6 dark:bg-gray-800">
             <div className="flex items-center">
               <Clock className="w-8 h-8 text-green-600 mr-3" />
               <div>
-                <p className="text-sm text-gray-600">Horas Totales</p>
-                <p className="text-2xl font-bold text-gray-900">{formatHours(totalHours)}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Horas Totales</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{formatHours(totalHours)}</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-gray-200 rounded-lg shadow p-6">
+          <div className="bg-gray-200 rounded-lg shadow p-6 dark:bg-gray-800">
             <div className="flex items-center">
               <div className="w-8 h-8 rounded-full mr-3" style={{ backgroundColor: currentEmployee.color }}></div>
               <div>
-                <p className="text-sm text-gray-600">Tope Semanal</p>
-                <p className="text-2xl font-bold text-gray-900">{currentEmployee.weeklyLimit}h</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Tope Semanal</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{currentEmployee.weeklyLimit}h</p>
               </div>
             </div>
           </div>
         </div>
 
         {/* Shifts List */}
-        <div className="bg-gray-200 rounded-lg shadow">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-medium text-gray-900">Mis Turnos</h3>
+        <div className="bg-gray-200 rounded-lg shadow dark:bg-gray-800">
+          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Mis Turnos</h3>
           </div>
           
           {employeeShifts.length === 0 ? (
             <div className="text-center py-12">
               <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600">No tienes turnos asignados esta semana</p>
+              <p className="text-gray-600 dark:text-gray-400">No tienes turnos asignados esta semana</p>
             </div>
           ) : (
-            <div className="divide-y divide-gray-200">
+            <div className="divide-y divide-gray-200 dark:divide-gray-700">
               {employeeShifts.map((shift) => {
                 const shiftDate = new Date(shift.date);
                 const dayName = format(shiftDate, 'EEEE', { locale: es });
@@ -296,19 +296,19 @@ export default function EmployeeDashboard() {
                         </div>
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-gray-900 capitalize">
+                        <p className="text-sm font-medium text-gray-900 dark:text-gray-100 capitalize">
                           {dayName}, {dayNumber} de {month}
                         </p>
-                        <p className="text-sm text-gray-600">
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
                           {shift.startTime} - {shift.endTime}
                         </p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm font-medium text-gray-900">
+                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
                         {formatHours(shift.hours)}
                       </p>
-                      <p className="text-xs text-gray-500">duración</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">duración</p>
                     </div>
                   </div>
                 );
