@@ -129,12 +129,14 @@ export default function ScheduleManagement() {
     }
     return 0.3; // Fallback
   });
-  const [draggedShift, setDraggedShift] = useState<Shift | null>(null);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-  const [dragOffset, setDragOffset] = useState(0);
-  const [resizingShift, setResizingShift] = useState<Shift | null>(null);
-  const [resizeHandle, setResizeHandle] = useState<'start' | 'end' | null>(null);
-  const [isDraggingOrResizing, setIsDraggingOrResizing] = useState(false);
+  // Estados para drag and drop - implementación simple como el ejemplo
+  const [draggedElement, setDraggedElement] = useState<HTMLDivElement | null>(null);
+  const [resizingElement, setResizingElement] = useState<HTMLDivElement | null>(null);
+  const [startX, setStartX] = useState(0);
+  const [startLeft, setStartLeft] = useState(0);
+  const [startWidth, setStartWidth] = useState(0);
+  const [containerRect, setContainerRect] = useState<DOMRect | null>(null);
+  const [isResizingLeft, setIsResizingLeft] = useState(false);
   const [isCopyingShifts, setIsCopyingShifts] = useState(false);
   const [show24Hours, setShow24Hours] = useState(false); // Toggle for 24h vs focused view
   const ganttRef = useRef<HTMLDivElement>(null);
@@ -220,7 +222,7 @@ export default function ScheduleManagement() {
     return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
   };
 
-  const roundToIncrement = (minutes: number, increment: number = 10): number => {
+  const roundToIncrement = (minutes: number, increment: number = 5): number => {
     return Math.round(minutes / increment) * increment;
   };
 
@@ -239,46 +241,35 @@ export default function ScheduleManagement() {
     return luminance > 0.5 ? '#000000' : '#ffffff';
   };
 
-      const handleDragStart = (e: React.MouseEvent | React.TouchEvent, shift: Shift) => {
-        e.preventDefault(); // Prevenir scroll del chart
-        setDraggedShift(shift);
+  // Función de inicio de arrastre - implementación simple como el ejemplo
+  const startDrag = (e: React.MouseEvent, shift: Shift) => {
+    // No iniciar arrastre si estamos redimensionando
+    if ((e.target as HTMLElement).classList.contains('resize-handle')) return;
+    
         const target = e.currentTarget as HTMLDivElement;
-        const ganttRect = ganttRef.current?.getBoundingClientRect();
-        if (!ganttRect) return;
-        
-        const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
-        const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
-        setDragStart({ x: clientX, y: clientY });
-        
-        // Calcular offset relativo al contenedor del gantt (no a la barra individual)
-        const ganttX = clientX - ganttRect.left;
-        const barRect = target.getBoundingClientRect();
-        const barGanttX = barRect.left - ganttRect.left;
-        setDragOffset(ganttX - barGanttX); // Offset del click dentro de la barra, relativo al gantt
-        setIsDraggingOrResizing(true);
-      };
+    setDraggedElement(target);
+    setContainerRect(target.parentElement?.getBoundingClientRect() || null);
+    setStartX(e.clientX);
+    setStartLeft(target.offsetLeft);
+    
+    target.style.opacity = '0.7';
+    target.style.zIndex = '1000';
+    
+    e.preventDefault();
+  };
 
-  const handleResizeStart = (e: React.MouseEvent | React.TouchEvent, shift: Shift, handle: 'start' | 'end') => {
-    e.stopPropagation(); // Prevent triggering drag
-    e.preventDefault(); // Prevenir scroll del chart
-    setResizingShift(shift);
-    setResizeHandle(handle);
+  // Función de inicio de redimensionado - implementación simple como el ejemplo
+  const startResize = (e: React.MouseEvent, shift: Shift, isLeft: boolean) => {
+    e.stopPropagation();
     const target = e.currentTarget as HTMLDivElement;
-    const ganttRect = ganttRef.current?.getBoundingClientRect();
-    if (!ganttRect) return;
+    setResizingElement(target);
+    setContainerRect(target.parentElement?.getBoundingClientRect() || null);
+    setStartX(e.clientX);
+    setStartLeft(target.offsetLeft);
+    setStartWidth(target.offsetWidth);
+    setIsResizingLeft(isLeft);
     
-    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
-    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
-    setDragStart({ x: clientX, y: clientY });
-    
-    // Calcular offset relativo al contenedor del gantt (no al handle individual)
-    const ganttX = clientX - ganttRect.left;
-    const handleRect = target.getBoundingClientRect();
-    const handleGanttX = handleRect.left - ganttRect.left;
-    
-    // Para handles de resize, NO aplicar offset - el handle debe seguir exactamente al cursor
-    setDragOffset(0); // Sin offset para que el handle siga al cursor
-    setIsDraggingOrResizing(true);
+    e.preventDefault();
   };
 
   const createShift = async (employeeId: string, date: string, hour: number) => {
@@ -594,177 +585,147 @@ export default function ScheduleManagement() {
     return () => window.removeEventListener('resize', handleResize);
   }, [zoomLevel, show24Hours, hours.length]);
 
-      // Global event listeners for drag and resize functionality
-      useEffect(() => {
-        const handleGlobalMouseMove = async (e: MouseEvent | TouchEvent) => {
-          // Prevenir scroll del chart cuando se está arrastrando o redimensionando
-          if (draggedShift || resizingShift) {
-            e.preventDefault();
-          }
-      if (!ganttRef.current) return;
-
-      const rect = ganttRef.current.getBoundingClientRect();
-      const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
-      const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
-      const x = clientX - rect.left;
-      const y = clientY - rect.top;
-
-      // Calculate which day column we're in (200px for day column + hour columns)
-      const dayColumnWidth = 200;
-      const hourColumnWidth = getColumnWidth();
+  // Event listeners globales - implementación exacta como el ejemplo HTML
+  useEffect(() => {
+    const drag = (e: MouseEvent) => {
+      if (!draggedElement || !containerRect) return;
       
-      if (x < dayColumnWidth) return; // Don't drag if in day column
+      const deltaX = e.clientX - startX;
+      let newLeft = startLeft + deltaX;
       
-      // Calculate which hour we're in
-      const hourX = x - dayColumnWidth;
-      const hourIndex = Math.floor(hourX / hourColumnWidth);
+      // Limitar dentro del contenedor
+      const maxLeft = containerRect.width - draggedElement.offsetWidth;
+      newLeft = Math.max(0, Math.min(newLeft, maxLeft));
       
-      if (hourIndex < 0 || hourIndex >= hours.length) return;
-      
-      // Calculate which 10-minute increment within the hour
-      const hourStartX = hourIndex * hourColumnWidth;
-      const positionInHour = hourX - hourStartX;
-      const minuteIncrement = Math.floor((positionInHour / hourColumnWidth) * 6); // 6 increments of 10min per hour
-      const minutes = Math.max(0, Math.min(50, minuteIncrement * 10)); // 0-50 minutes in 10min increments
-      
-      // Calculate new time based on target hour and minutes
-      const targetHour = hours[hourIndex];
-      const newTimeMinutes = targetHour * 60 + minutes;
-      const newTime = minutesToTime(roundToIncrement(newTimeMinutes, 10));
+      draggedElement.style.left = newLeft + 'px';
+    };
 
-      // Handle dragging
-      if (draggedShift) {
-        // Adjust for the initial click offset within the bar
-        const adjustedX = x - dragOffset;
-        const adjustedHourX = adjustedX - dayColumnWidth;
-        const adjustedHourIndex = Math.floor(adjustedHourX / hourColumnWidth);
-        
-        if (adjustedHourIndex < 0 || adjustedHourIndex >= hours.length) return;
-        
-        // Calculate which 10-minute increment within the hour
-        const adjustedHourStartX = adjustedHourIndex * hourColumnWidth;
-        const adjustedPositionInHour = adjustedHourX - adjustedHourStartX;
-        const adjustedMinuteIncrement = Math.floor((adjustedPositionInHour / hourColumnWidth) * 6); // 6 increments of 10min per hour
-        const adjustedMinutes = Math.max(0, Math.min(50, adjustedMinuteIncrement * 10)); // 0-50 minutes in 10min increments
-        
-        // Calculate new time based on target hour and minutes
-        const adjustedTargetHour = hours[adjustedHourIndex];
-        const adjustedNewTimeMinutes = adjustedTargetHour * 60 + adjustedMinutes;
-        const adjustedNewTime = minutesToTime(roundToIncrement(adjustedNewTimeMinutes, 10));
-        
-        // Calculate new start time
-        const newStartTime = adjustedNewTime;
-        
-        // Calculate new end time maintaining the same duration
-        const originalDuration = timeToMinutes(draggedShift.endTime) - timeToMinutes(draggedShift.startTime);
-        const newEndMinutes = adjustedNewTimeMinutes + originalDuration;
-        const newEndTime = minutesToTime(roundToIncrement(newEndMinutes, 10));
-
-        // Validate that times are within visible range
-        const newStartHour = parseInt(newStartTime.split(':')[0]);
-        const newEndHour = parseInt(newEndTime.split(':')[0]);
-        
-        // Use visible hours range when toggle is off, or full 24h when toggle is on
-        const minHour = show24Hours ? 0 : startHour;
-        const maxHour = show24Hours ? 23 : endHour;
-        
-        if (newStartHour >= minHour && newStartHour <= maxHour && newEndHour >= minHour && newEndHour <= maxHour) {
-          // Update shift in real time
-          await updateShift(draggedShift.id, {
-            date: draggedShift.date,
-            startTime: newStartTime,
-            endTime: newEndTime,
-            employeeId: draggedShift.employeeId,
-            isPublished: false, // Mark as unpublished after drag
-          });
-        }
-      }
-
-      // Handle resizing
-      if (resizingShift && resizeHandle) {
-        // Para resize, usar la posición exacta del cursor (sin offset)
-        const adjustedX = x; // Sin offset para que el handle siga al cursor
-        const adjustedHourX = adjustedX - dayColumnWidth;
-        const adjustedHourIndex = Math.floor(adjustedHourX / hourColumnWidth);
-        
-        if (adjustedHourIndex < 0 || adjustedHourIndex >= hours.length) return;
-        
-        // Calculate which 10-minute increment within the hour
-        const adjustedHourStartX = adjustedHourIndex * hourColumnWidth;
-        const adjustedPositionInHour = adjustedHourX - adjustedHourStartX;
-        const adjustedMinuteIncrement = Math.floor((adjustedPositionInHour / hourColumnWidth) * 6); // 6 increments of 10min per hour
-        const adjustedMinutes = Math.max(0, Math.min(50, adjustedMinuteIncrement * 10)); // 0-50 minutes in 10min increments
-        
-        // Calculate new time based on target hour and minutes
-        const adjustedTargetHour = hours[adjustedHourIndex];
-        const adjustedNewTimeMinutes = adjustedTargetHour * 60 + adjustedMinutes;
-        const adjustedNewTime = minutesToTime(roundToIncrement(adjustedNewTimeMinutes, 10));
-        
-        if (resizeHandle === 'start') {
-          // Resize start time, keep end time fixed
-          const newStartTime = adjustedNewTime;
-          const endTimeMinutes = timeToMinutes(resizingShift.endTime);
-          const newStartHour = parseInt(newStartTime.split(':')[0]);
-          
-          // Ensure start time is before end time (minimum 10 minutes) and within visible range
-          const minHour = show24Hours ? 0 : startHour;
-          const maxHour = show24Hours ? 23 : endHour;
-          
-          if (adjustedNewTimeMinutes < endTimeMinutes - 10 && newStartHour >= minHour && newStartHour <= maxHour) {
-            await updateShift(resizingShift.id, {
-              date: resizingShift.date,
-              startTime: newStartTime,
-              endTime: resizingShift.endTime
-              // hours will be recalculated automatically in updateShift
-            });
-          }
-        } else if (resizeHandle === 'end') {
-          // Resize end time, keep start time fixed
-          const newEndTime = adjustedNewTime;
-          const startTimeMinutes = timeToMinutes(resizingShift.startTime);
-          const newEndHour = parseInt(newEndTime.split(':')[0]);
-          
-          // Ensure end time is after start time (minimum 10 minutes) and within visible range
-          const minHour = show24Hours ? 0 : startHour;
-          const maxHour = show24Hours ? 23 : endHour;
-          
-          if (adjustedNewTimeMinutes > startTimeMinutes + 10 && newEndHour >= minHour && newEndHour <= maxHour) {
-            await updateShift(resizingShift.id, {
-              date: resizingShift.date,
-              startTime: resizingShift.startTime,
-              endTime: newEndTime
-              // hours will be recalculated automatically in updateShift
-            });
-          }
-        }
+    const stopDrag = () => {
+      if (draggedElement) {
+        draggedElement.style.opacity = '1';
+        draggedElement.style.zIndex = '';
+        setDraggedElement(null);
       }
     };
 
-  const handleGlobalMouseUp = () => {
-    setDraggedShift(null);
-    setResizingShift(null);
-    setResizeHandle(null);
-    // Usar setTimeout para asegurar que el estado se actualice antes de que se procese el click
-    setTimeout(() => {
-      setIsDraggingOrResizing(false);
-    }, 10);
-  };
+    const resize = (e: MouseEvent) => {
+      if (!resizingElement || !containerRect) return;
+      
+      const deltaX = e.clientX - startX;
+      
+      if (isResizingLeft) {
+        // Redimensionar desde la izquierda
+        let newLeft = startLeft + deltaX;
+        let newWidth = startWidth - deltaX;
+        
+        // Límites
+        if (newWidth >= 20 && newLeft >= 0) {
+          resizingElement.style.left = newLeft + 'px';
+          resizingElement.style.width = newWidth + 'px';
+        }
+      } else {
+        // Redimensionar desde la derecha
+        let newWidth = startWidth + deltaX;
+        
+        // Límites
+        const maxWidth = containerRect.width - resizingElement.offsetLeft;
+        newWidth = Math.max(20, Math.min(newWidth, maxWidth));
+        
+        resizingElement.style.width = newWidth + 'px';
+      }
+    };
 
-    if (draggedShift || resizingShift) {
-      document.addEventListener('mousemove', handleGlobalMouseMove, { passive: false });
-      document.addEventListener('mouseup', handleGlobalMouseUp, { passive: false });
-      document.addEventListener('touchmove', handleGlobalMouseMove, { passive: false });
-      document.addEventListener('touchend', handleGlobalMouseUp, { passive: false });
+    const stopResize = () => {
+      setResizingElement(null);
+    };
+
+    if (draggedElement) {
+      document.addEventListener('mousemove', drag);
+      document.addEventListener('mouseup', stopDrag);
+    }
+
+    if (resizingElement) {
+      document.addEventListener('mousemove', resize);
+      document.addEventListener('mouseup', stopResize);
     }
 
     return () => {
-      document.removeEventListener('mousemove', handleGlobalMouseMove);
-      document.removeEventListener('mouseup', handleGlobalMouseUp);
-      document.removeEventListener('touchmove', handleGlobalMouseMove);
-      document.removeEventListener('touchend', handleGlobalMouseUp);
+      document.removeEventListener('mousemove', drag);
+      document.removeEventListener('mouseup', stopDrag);
+      document.removeEventListener('mousemove', resize);
+      document.removeEventListener('mouseup', stopResize);
     };
-  }, [draggedShift, resizingShift, resizeHandle, hours, updateShift, timeToMinutes, minutesToTime, roundToIncrement]);
+  }, [draggedElement, resizingElement, startX, startLeft, startWidth, containerRect, isResizingLeft]);
 
+  // Configurar event listeners en los elementos gantt-bar, exactamente como en el ejemplo HTML
+  useEffect(() => {
+    const ganttBars = document.querySelectorAll('.gantt-bar');
+    
+    ganttBars.forEach(bar => {
+      // Event listener para drag
+      const handleMouseDown = (e: Event) => {
+        // No iniciar arrastre si estamos redimensionando
+        if ((e.target as HTMLElement).classList.contains('resize-handle')) return;
+        
+        const target = e.currentTarget as HTMLDivElement;
+        setDraggedElement(target);
+        setContainerRect(target.parentElement?.getBoundingClientRect() || null);
+        setStartX((e as MouseEvent).clientX);
+        setStartLeft(target.offsetLeft);
+        
+        target.style.opacity = '0.7';
+        target.style.zIndex = '1000';
+        
+        e.preventDefault();
+      };
+      
+      // Event listeners para resize handles
+      const leftHandle = bar.querySelector('.resize-handle-left');
+      const rightHandle = bar.querySelector('.resize-handle-right');
+      
+      if (leftHandle) {
+        const handleLeftResize = (e: Event) => {
+          e.stopPropagation();
+          const target = e.currentTarget as HTMLDivElement;
+          setResizingElement(target.closest('.gantt-bar') as HTMLDivElement);
+          setContainerRect(target.closest('.gantt-bar')?.parentElement?.getBoundingClientRect() || null);
+          setStartX((e as MouseEvent).clientX);
+          setStartLeft((target.closest('.gantt-bar') as HTMLDivElement).offsetLeft);
+          setStartWidth((target.closest('.gantt-bar') as HTMLDivElement).offsetWidth);
+          setIsResizingLeft(true);
+          e.preventDefault();
+        };
+        leftHandle.addEventListener('mousedown', handleLeftResize);
+      }
+      
+      if (rightHandle) {
+        const handleRightResize = (e: Event) => {
+          e.stopPropagation();
+          const target = e.currentTarget as HTMLDivElement;
+          setResizingElement(target.closest('.gantt-bar') as HTMLDivElement);
+          setContainerRect(target.closest('.gantt-bar')?.parentElement?.getBoundingClientRect() || null);
+          setStartX((e as MouseEvent).clientX);
+          setStartLeft((target.closest('.gantt-bar') as HTMLDivElement).offsetLeft);
+          setStartWidth((target.closest('.gantt-bar') as HTMLDivElement).offsetWidth);
+          setIsResizingLeft(false);
+          e.preventDefault();
+        };
+        rightHandle.addEventListener('mousedown', handleRightResize);
+      }
+      
+      bar.addEventListener('mousedown', handleMouseDown);
+    });
+    
+    return () => {
+      ganttBars.forEach(bar => {
+        bar.removeEventListener('mousedown', () => {});
+        const leftHandle = bar.querySelector('.resize-handle-left');
+        const rightHandle = bar.querySelector('.resize-handle-right');
+        if (leftHandle) leftHandle.removeEventListener('mousedown', () => {});
+        if (rightHandle) rightHandle.removeEventListener('mousedown', () => {});
+      });
+    };
+  }, [shifts]); // Re-ejecutar cuando cambien los shifts
 
   return (
     <div className="space-y-6">
@@ -1077,11 +1038,7 @@ export default function ScheduleManagement() {
                     return employeesOnDay.map((employeeId, empIndex) => {
                       const employeeShifts = groupedShifts[dayString]?.[employeeId] || [];
                       
-                      // Calcular si este empleado tiene algún turno con outline
-                      const hasEmployeeOutline = employeeShifts.some(shift => {
-                        const conflictValidation = validateShiftConflicts(shift);
-                        return !shift.isPublished || conflictValidation.hasConflict;
-                      });
+                      // Sin outlines - barras completamente limpias
                       
                       return employeeShifts.map((shift, shiftIndex) => {
                         const currentIndex = globalShiftIndex++;
@@ -1111,14 +1068,13 @@ export default function ScheduleManagement() {
                         left = dayColumnWidth + (startPosition * availableWidth) + 2;
                         width = (durationPosition * availableWidth) - 4;
                         
-                        // Validar que la barra no se salga del día (considerando outline)
-                        const outlineSpace = hasEmployeeOutline ? 3 : 0; // 2px outline + 1px offset en cada lado
-                        const maxLeft = dayColumnWidth + availableWidth - 4 - outlineSpace;
+                        // Validar que la barra no se salga del día
+                        const maxLeft = dayColumnWidth + availableWidth - 4;
                         if (left + width > maxLeft) {
                           width = maxLeft - left;
                         }
-                        if (left < dayColumnWidth + 2 + outlineSpace) {
-                          left = dayColumnWidth + 2 + outlineSpace;
+                        if (left < dayColumnWidth + 2) {
+                          left = dayColumnWidth + 2;
                         }
                       } else {
                         // En móvil: calcular posición exacta basada en horas reales
@@ -1140,15 +1096,14 @@ export default function ScheduleManagement() {
                         left = dayColumnWidth + (startColumnIndex * columnWidth) + startPositionInColumn + 2;
                         width = ((endColumnIndex - startColumnIndex) * columnWidth) + (endPositionInColumn - startPositionInColumn) - 4;
                         
-                        // Validar que la barra no se salga del día en móvil (considerando outline)
-                        const outlineSpace = hasEmployeeOutline ? 3 : 0; // 2px outline + 1px offset en cada lado
+                        // Validar que la barra no se salga del día en móvil
                         const totalColumns = Math.ceil((endHour - startHour + 1) / 2);
-                        const maxLeft = dayColumnWidth + (totalColumns * columnWidth) - 4 - outlineSpace;
+                        const maxLeft = dayColumnWidth + (totalColumns * columnWidth) - 4;
                         if (left + width > maxLeft) {
                           width = maxLeft - left;
                         }
-                        if (left < dayColumnWidth + 2 + outlineSpace) {
-                          left = dayColumnWidth + 2 + outlineSpace;
+                        if (left < dayColumnWidth + 2) {
+                          left = dayColumnWidth + 2;
                         }
                       }
                       
@@ -1157,40 +1112,20 @@ export default function ScheduleManagement() {
                       const hasConflict = conflictValidation.hasConflict;
                       const conflictType = conflictValidation.conflictType;
                       
-                        // Determinar el estilo del borde
-                        let borderStyle = 'none';
-                        let borderOffset = '0px';
-                        let ringClass = '';
+                        // Sin bordes ni outlines - barras completamente limpias
                         let opacity = 1;
-                        let hasOutline = false;
-
-                        if (hasConflict) {
-                          // Borde rojo punteado para conflictos
-                          borderStyle = `2px dashed ${theme === 'dark' ? 'rgba(239, 68, 68, 0.9)' : 'rgba(220, 38, 38, 0.9)'}`;
-                          borderOffset = '1px';
-                          ringClass = 'ring-2 ring-red-500 ring-opacity-75 shadow-lg';
-                          opacity = 0.9;
-                          hasOutline = true;
-                        } else if (!shift.isPublished) {
-                          // Borde blanco/negro punteado para no publicados
-                          borderStyle = `2px dashed ${theme === 'dark' ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.7)'}`;
-                          borderOffset = '1px';
-                          ringClass = 'ring-2 ring-orange-400 ring-opacity-75 shadow-lg';
-                          opacity = 0.9;
-                          hasOutline = true;
-                        }
                       
-                      // Calcular posición vertical considerando el outlineOffset del empleado
+                      // Calcular posición vertical
                       const baseSpacing = 35; // Espaciado base entre barras
-                      const outlineSpacing = hasEmployeeOutline ? 6 : 0; // Espacio adicional para outline (2px arriba + 2px abajo + 2px margen)
-                      const totalSpacing = baseSpacing + outlineSpacing;
+                      const totalSpacing = baseSpacing;
                       const baseTop = (isHolidayDay ? 55 : 15) + (currentIndex * totalSpacing);
                       const top = baseTop;
                       
                       return (
                               <div
                                 key={shift.id}
-                                className={`absolute rounded text-xs shift-bar select-none ${ringClass}`}
+                                data-shift-id={shift.id}
+                                className="gantt-bar absolute rounded text-xs shift-bar select-none"
                           style={{
                             left: `${left}px`,
                             width: `${width}px`,
@@ -1198,148 +1133,20 @@ export default function ScheduleManagement() {
                             height: '32px', // Altura constante para todas las barras
                             zIndex: 5,
                             backgroundColor: employee?.color || '#3B82F6',
-                            color: getTextColorForBackground(employee?.color || '#3B82F6'),
-                            padding: '6px 8px 6px 8px',
                             touchAction: 'none',
-                            outline: borderStyle,
-                            outlineOffset: borderOffset,
                             opacity: opacity
                           }}
                           title={`${employee?.name} - ${shift.startTime} a ${shift.endTime} (${formatHours(shift.hours)})${!shift.isPublished ? ' - Sin publicar' : ''}${hasConflict ? ` - CONFLICTO: ${conflictType}` : ''}`}
-                          onMouseDown={(e) => handleDragStart(e, shift)}
-                          onTouchStart={(e) => handleDragStart(e, shift)}
+                          onMouseDown={(e) => startDrag(e, shift)}
                           onDoubleClick={(e) => {
                             e.stopPropagation();
                             e.preventDefault();
                             openEditShiftModal(shift);
                           }}
                         >
-                          {/* Resize handle - Start (left) */}
-                          <div
-                            className="absolute left-0 top-0 w-2 h-full cursor-ew-resize rounded-l"
-                            style={{
-                              backgroundColor: getTextColorForBackground(employee?.color || '#3B82F6'),
-                              opacity: 0.3,
-                              touchAction: 'none'
-                            }}
-                                  onMouseDown={(e) => {
-                                    e.stopPropagation();
-                                    handleResizeStart(e, shift, 'start');
-                                  }}
-                                  onTouchStart={(e) => {
-                                    e.stopPropagation();
-                                    handleResizeStart(e, shift, 'start');
-                                  }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.opacity = '0.5';
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.opacity = '0.3';
-                            }}
-                            title="Arrastra para cambiar hora de inicio"
-                          />
-                          
-                                {/* Main shift content */}
-                                <div className="w-full h-full cursor-move flex flex-col justify-center">
-                                  {(() => {
-                                    // Calcular qué elementos mostrar según el ancho de la barra
-                                    // Considerar también la longitud del texto para una mejor experiencia
-                                    const employeeNameLength = employee?.name?.length || 0;
-                                    const timeRangeText = `${shift.startTime}-${shift.endTime}`;
-                                    const durationText = formatHours(shift.hours);
-                                    
-                                    // Umbrales dinámicos basados en el contenido
-                                    const minWidthForName = Math.max(60, employeeNameLength * 6 + 20);
-                                    const minWidthForTimeRange = Math.max(100, timeRangeText.length * 6 + 20);
-                                    const minWidthForDuration = Math.max(80, durationText.length * 6 + 20);
-                                    const minWidthForUnpublishedIndicator = 50;
-                                    
-                                    const showEmployeeName = width >= minWidthForName;
-                                    const showTimeRange = width >= minWidthForTimeRange;
-                                    const showDuration = width >= minWidthForDuration;
-                                    const showUnpublishedIndicator = width >= minWidthForUnpublishedIndicator && !shift.isPublished;
-                                    
-                                    // Si la barra es extremadamente pequeña, mostrar solo un indicador
-                                    if (width < 40) {
-                                      return (
-                                        <div className="flex items-center justify-center h-full">
-                                          <div className="w-1.5 h-1.5 bg-white rounded-full opacity-80"></div>
-                                        </div>
-                                      );
-                                    }
-                                    
-                                    return (
-                                      <>
-                                        {/* Nombre del empleado - prioridad alta */}
-                                        {showEmployeeName && (
-                                          <div className="font-medium text-xs leading-tight flex items-center justify-between">
-                                            <span className="truncate" style={{ maxWidth: `${width - 10}px` }}>
-                                              {employee?.name}
-                                            </span>
-                                          </div>
-                                        )}
-                                        
-                                        {/* Rango de tiempo y duración - prioridad media */}
-                                        {(showTimeRange || showDuration) && (
-                                          <div className="text-xs opacity-90 leading-tight flex justify-between">
-                                            {showTimeRange && (
-                                              <span className="truncate" style={{ maxWidth: `${width - (showDuration ? 40 : 0)}px` }}>
-                                                {timeRangeText}
-                                              </span>
-                                            )}
-                                            {showDuration && (
-                                              <span className="opacity-75 font-medium flex-shrink-0 ml-1">{durationText}</span>
-                                            )}
-                                          </div>
-                                        )}
-                                        
-                                        {/* Si solo hay espacio para el nombre, mostrar iniciales */}
-                                        {!showEmployeeName && width >= 30 && (
-                                          <div className="flex items-center justify-center h-full">
-                                            <span className="text-xs font-medium truncate" style={{ maxWidth: `${width - 10}px` }}>
-                                              {(() => {
-                                                if (!employee?.name) return '?';
-                                                const nameParts = employee.name.trim().split(' ');
-                                                if (nameParts.length >= 2) {
-                                                  // Si tiene nombre y apellido, mostrar iniciales
-                                                  return `${nameParts[0].charAt(0)}${nameParts[nameParts.length - 1].charAt(0)}`.toUpperCase();
-                                                } else {
-                                                  // Si solo tiene un nombre, mostrar las primeras dos letras
-                                                  return employee.name.substring(0, 2).toUpperCase();
-                                                }
-                                              })()}
-                                            </span>
-                                          </div>
-                                        )}
-                                      </>
-                                    );
-                                  })()}
-                                </div>
-                          
-                          {/* Resize handle - End (right) */}
-                          <div
-                            className="absolute right-0 top-0 w-2 h-full cursor-ew-resize rounded-r"
-                            style={{
-                              backgroundColor: getTextColorForBackground(employee?.color || '#3B82F6'),
-                              opacity: 0.3,
-                              touchAction: 'none'
-                            }}
-                                  onMouseDown={(e) => {
-                                    e.stopPropagation();
-                                    handleResizeStart(e, shift, 'end');
-                                  }}
-                                  onTouchStart={(e) => {
-                                    e.stopPropagation();
-                                    handleResizeStart(e, shift, 'end');
-                                  }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.opacity = '0.5';
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.opacity = '0.3';
-                            }}
-                            title="Arrastra para cambiar hora de fin"
-                          />
+                          {/* Handles dentro de la barra, exactamente como en el ejemplo HTML */}
+                          <div className="resize-handle resize-handle-left"></div>
+                          <div className="resize-handle resize-handle-right"></div>
                         </div>
                       );
                     });

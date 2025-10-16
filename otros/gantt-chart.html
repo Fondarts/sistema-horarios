@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gantt Chart Interactivo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .gantt-bar {
+            cursor: move;
+            user-select: none;
+            min-width: 20px;
+        }
+        .resize-handle {
+            cursor: ew-resize;
+            width: 10px;
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.2);
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .gantt-bar:hover .resize-handle {
+            opacity: 1;
+        }
+        .resize-handle-left {
+            left: 0;
+        }
+        .resize-handle-right {
+            right: 0;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-7xl mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
+        <!-- Header con horas -->
+        <div class="grid grid-cols-13 bg-slate-700 text-white text-sm">
+            <div class="p-3 border-r border-slate-600 font-semibold">Día</div>
+            <div class="p-3 border-r border-slate-600 text-center">8:00</div>
+            <div class="p-3 border-r border-slate-600 text-center">9:00</div>
+            <div class="p-3 border-r border-slate-600 text-center">10:00</div>
+            <div class="p-3 border-r border-slate-600 text-center">11:00</div>
+            <div class="p-3 border-r border-slate-600 text-center">12:00</div>
+            <div class="p-3 border-r border-slate-600 text-center">13:00</div>
+            <div class="p-3 border-r border-slate-600 text-center">14:00</div>
+            <div class="p-3 border-r border-slate-600 text-center">15:00</div>
+            <div class="p-3 border-r border-slate-600 text-center">16:00</div>
+            <div class="p-3 border-r border-slate-600 text-center">17:00</div>
+            <div class="p-3 border-r border-slate-600 text-center">18:00</div>
+            <div class="p-3 text-center">19:00</div>
+        </div>
+
+        <!-- Días y barras -->
+        <div id="gantt-container">
+            <!-- Lunes -->
+            <div class="grid grid-cols-13 border-b border-gray-200 relative" data-day="lun">
+                <div class="p-3 bg-slate-600 text-white border-r border-slate-500">
+                    <div class="font-semibold">lun 13</div>
+                </div>
+                <div class="col-span-12 relative h-20 bg-slate-800" id="lun-grid">
+                    <!-- Grid lines -->
+                    <div class="absolute inset-0 grid grid-cols-12">
+                        <div class="border-r border-slate-700"></div>
+                        <div class="border-r border-slate-700"></div>
+                        <div class="border-r border-slate-700"></div>
+                        <div class="border-r border-slate-700"></div>
+                        <div class="border-r border-slate-700"></div>
+                        <div class="border-r border-slate-700"></div>
+                        <div class="border-r border-slate-700"></div>
+                        <div class="border-r border-slate-700"></div>
+                        <div class="border-r border-slate-700"></div>
+                        <div class="border-r border-slate-700"></div>
+                        <div class="border-r border-slate-700"></div>
+                        <div></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Martes -->
+            <div class="grid grid-cols-13 border-b border-gray-200 relative" data-day="mar">
+                <div class="p-3 bg-slate-600 text-white border-r border-slate-500">
+                    <div class="font-semibold">mar 14</div>
+                </div>
+                <div class="col-span-12 relative h-20 bg-slate-800" id="mar-grid">
+                    <div class="absolute inset-0 grid grid-cols-12">
+                        <div class="border-r border-slate-700"></div>
+                        <div class="border-r border-slate-700"></div>
+                        <div class="border-r border-slate-700"></div>
+                        <div class="border-r border-slate-700"></div>
+                        <div class="border-r border-slate-700"></div>
+                        <div class="border-r border-slate-700"></div>
+                        <div class="border-r border-slate-700"></div>
+                        <div class="border-r border-slate-700"></div>
+                        <div class="border-r border-slate-700"></div>
+                        <div class="border-r border-slate-700"></div>
+                        <div class="border-r border-slate-700"></div>
+                        <div></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Miércoles -->
+            <div class="grid grid-cols-13 border-b border-gray-200 relative" data-day="mie">
+                <div class="p-3 bg-slate-600 text-white border-r border-slate-500">
+                    <div class="font-semibold">mié 15</div>
+                    <div class="text-xs">Ana Martínez</div>
+                    <div class="text-xs">Luis Fernández</div>
+                </div>
+                <div class="col-span-12 relative h-20 bg-slate-800" id="mie-grid">
+                    <div class="absolute inset-0 grid grid-cols-12">
+                        <div class="border-r border-slate-700"></div>
+                        <div class="border-r border-slate-700"></div>
+                        <div class="border-r border-slate-700"></div>
+                        <div class="border-r border-slate-700"></div>
+                        <div class="border-r border-slate-700"></div>
+                        <div class="border-r border-slate-700"></div>
+                        <div class="border-r border-slate-700"></div>
+                        <div class="border-r border-slate-700"></div>
+                        <div class="border-r border-slate-700"></div>
+                        <div class="border-r border-slate-700"></div>
+                        <div class="border-r border-slate-700"></div>
+                        <div></div>
+                    </div>
+                    <!-- Barras de ejemplo -->
+                    <div class="gantt-bar absolute bg-orange-500 rounded px-2 py-1 text-xs text-white" 
+                         style="left: 25%; width: 20%; top: 10px;">
+                        <div class="resize-handle resize-handle-left"></div>
+                        <div class="resize-handle resize-handle-right"></div>
+                        Ana
+                    </div>
+                    <div class="gantt-bar absolute bg-red-500 rounded px-2 py-1 text-xs text-white" 
+                         style="left: 15%; width: 25%; top: 40px;">
+                        <div class="resize-handle resize-handle-left"></div>
+                        <div class="resize-handle resize-handle-right"></div>
+                        Luis
+                    </div>
+                </div>
+            </div>
+
+            <!-- Jueves -->
+            <div class="grid grid-cols-13 border-b border-gray-200 relative" data-day="jue">
+                <div class="p-3 bg-slate-600 text-white border-r border-slate-500">
+                    <div class="font-semibold">jue 16</div>
+                    <div class="text-xs">María González</div>
+                    <div class="text-xs">Carlos Rodríguez</div>
+                    <div class="text-xs">Ana Martínez</div>
+                </div>
+                <div class="col-span-12 relative h-20 bg-slate-800" id="jue-grid">
+                    <div class="absolute inset-0 grid grid-cols-12">
+                        <div class="border-r border-slate-700"></div>
+                        <div class="border-r border-slate-700"></div>
+                        <div class="border-r border-slate-700"></div>
+                        <div class="border-r border-slate-700"></div>
+                        <div class="border-r border-slate-700"></div>
+                        <div class="border-r border-slate-700"></div>
+                        <div class="border-r border-slate-700"></div>
+                        <div class="border-r border-slate-700"></div>
+                        <div class="border-r border-slate-700"></div>
+                        <div class="border-r border-slate-700"></div>
+                        <div class="border-r border-slate-700"></div>
+                        <div></div>
+                    </div>
+                    <!-- Barras de ejemplo -->
+                    <div class="gantt-bar absolute bg-blue-500 rounded px-2 py-1 text-xs text-white" 
+                         style="left: 40%; width: 15%; top: 5px;">
+                        <div class="resize-handle resize-handle-left"></div>
+                        <div class="resize-handle resize-handle-right"></div>
+                        María
+                    </div>
+                    <div class="gantt-bar absolute bg-green-500 rounded px-2 py-1 text-xs text-white border-2 border-dashed border-white" 
+                         style="left: 5%; width: 50%; top: 30px;">
+                        <div class="resize-handle resize-handle-left"></div>
+                        <div class="resize-handle resize-handle-right"></div>
+                        Carlos
+                    </div>
+                    <div class="gantt-bar absolute bg-orange-500 rounded px-2 py-1 text-xs text-white" 
+                         style="left: 60%; width: 20%; top: 55px;">
+                        <div class="resize-handle resize-handle-left"></div>
+                        <div class="resize-handle resize-handle-right"></div>
+                        Ana
+                    </div>
+                </div>
+            </div>
+
+            <!-- Viernes -->
+            <div class="grid grid-cols-13 border-b border-gray-200 relative" data-day="vie">
+                <div class="p-3 bg-slate-600 text-white border-r border-slate-500">
+                    <div class="font-semibold">vie 17</div>
+                    <div class="text-xs">Carlos Rodríguez</div>
+                    <div class="text-xs">Sofía López</div>
+                </div>
+                <div class="col-span-12 relative h-20 bg-slate-800" id="vie-grid">
+                    <div class="absolute inset-0 grid grid-cols-12">
+                        <div class="border-r border-slate-700"></div>
+                        <div class="border-r border-slate-700"></div>
+                        <div class="border-r border-slate-700"></div>
+                        <div class="border-r border-slate-700"></div>
+                        <div class="border-r border-slate-700"></div>
+                        <div class="border-r border-slate-700"></div>
+                        <div class="border-r border-slate-700"></div>
+                        <div class="border-r border-slate-700"></div>
+                        <div class="border-r border-slate-700"></div>
+                        <div class="border-r border-slate-700"></div>
+                        <div class="border-r border-slate-700"></div>
+                        <div></div>
+                    </div>
+                    <!-- Barras de ejemplo -->
+                    <div class="gantt-bar absolute bg-green-500 rounded px-2 py-1 text-xs text-white" 
+                         style="left: 35%; width: 15%; top: 10px;">
+                        <div class="resize-handle resize-handle-left"></div>
+                        <div class="resize-handle resize-handle-right"></div>
+                        Carlos
+                    </div>
+                    <div class="gantt-bar absolute bg-purple-500 rounded px-2 py-1 text-xs text-white" 
+                         style="left: 10%; width: 25%; top: 40px;">
+                        <div class="resize-handle resize-handle-left"></div>
+                        <div class="resize-handle resize-handle-right"></div>
+                        Sofía
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sábado -->
+            <div class="grid grid-cols-13 border-b border-gray-200 relative" data-day="sab">
+                <div class="p-3 bg-slate-600 text-white border-r border-slate-500">
+                    <div class="font-semibold">sáb 18</div>
+                </div>
+                <div class="col-span-12 relative h-20 bg-slate-800" id="sab-grid">
+                    <div class="absolute inset-0 grid grid-cols-12">
+                        <div class="border-r border-slate-700"></div>
+                        <div class="border-r border-slate-700"></div>
+                        <div class="border-r border-slate-700"></div>
+                        <div class="border-r border-slate-700"></div>
+                        <div class="border-r border-slate-700"></div>
+                        <div class="border-r border-slate-700"></div>
+                        <div class="border-r border-slate-700"></div>
+                        <div class="border-r border-slate-700"></div>
+                        <div class="border-r border-slate-700"></div>
+                        <div class="border-r border-slate-700"></div>
+                        <div class="border-r border-slate-700"></div>
+                        <div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let draggedElement = null;
+        let resizingElement = null;
+        let startX = 0;
+        let startLeft = 0;
+        let startWidth = 0;
+        let containerRect = null;
+        let isResizingLeft = false;
+
+        // Hacer que las barras sean arrastrables
+        document.querySelectorAll('.gantt-bar').forEach(bar => {
+            bar.addEventListener('mousedown', startDrag);
+            
+            // Agregar eventos para redimensionar
+            const leftHandle = bar.querySelector('.resize-handle-left');
+            const rightHandle = bar.querySelector('.resize-handle-right');
+            
+            if (leftHandle) {
+                leftHandle.addEventListener('mousedown', (e) => startResize(e, bar, true));
+            }
+            if (rightHandle) {
+                rightHandle.addEventListener('mousedown', (e) => startResize(e, bar, false));
+            }
+        });
+
+        function startDrag(e) {
+            // No iniciar arrastre si estamos redimensionando
+            if (e.target.classList.contains('resize-handle')) return;
+            
+            draggedElement = e.currentTarget;
+            containerRect = draggedElement.parentElement.getBoundingClientRect();
+            startX = e.clientX;
+            startLeft = draggedElement.offsetLeft;
+            
+            draggedElement.style.opacity = '0.7';
+            draggedElement.style.zIndex = '1000';
+            
+            document.addEventListener('mousemove', drag);
+            document.addEventListener('mouseup', stopDrag);
+            e.preventDefault();
+        }
+
+        function drag(e) {
+            if (!draggedElement) return;
+            
+            const deltaX = e.clientX - startX;
+            let newLeft = startLeft + deltaX;
+            
+            // Limitar dentro del contenedor
+            const maxLeft = containerRect.width - draggedElement.offsetWidth;
+            newLeft = Math.max(0, Math.min(newLeft, maxLeft));
+            
+            draggedElement.style.left = newLeft + 'px';
+        }
+
+        function stopDrag() {
+            if (draggedElement) {
+                draggedElement.style.opacity = '1';
+                draggedElement.style.zIndex = '';
+                draggedElement = null;
+            }
+            document.removeEventListener('mousemove', drag);
+            document.removeEventListener('mouseup', stopDrag);
+        }
+
+        function startResize(e, bar, isLeft) {
+            e.stopPropagation();
+            resizingElement = bar;
+            containerRect = bar.parentElement.getBoundingClientRect();
+            startX = e.clientX;
+            startLeft = bar.offsetLeft;
+            startWidth = bar.offsetWidth;
+            isResizingLeft = isLeft;
+            
+            document.addEventListener('mousemove', resize);
+            document.addEventListener('mouseup', stopResize);
+            e.preventDefault();
+        }
+
+        function resize(e) {
+            if (!resizingElement) return;
+            
+            const deltaX = e.clientX - startX;
+            
+            if (isResizingLeft) {
+                // Redimensionar desde la izquierda
+                let newLeft = startLeft + deltaX;
+                let newWidth = startWidth - deltaX;
+                
+                // Límites
+                if (newWidth >= 20 && newLeft >= 0) {
+                    resizingElement.style.left = newLeft + 'px';
+                    resizingElement.style.width = newWidth + 'px';
+                }
+            } else {
+                // Redimensionar desde la derecha
+                let newWidth = startWidth + deltaX;
+                
+                // Límites
+                const maxWidth = containerRect.width - resizingElement.offsetLeft;
+                newWidth = Math.max(20, Math.min(newWidth, maxWidth));
+                
+                resizingElement.style.width = newWidth + 'px';
+            }
+        }
+
+        function stopResize() {
+            resizingElement = null;
+            document.removeEventListener('mousemove', resize);
+            document.removeEventListener('mouseup', stopResize);
+        }
+    </script>
+</body>
+</html>

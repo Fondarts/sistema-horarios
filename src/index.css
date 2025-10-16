@@ -183,4 +183,35 @@
   }
 }
 
+/* Estilos para drag and drop como el ejemplo */
+.gantt-bar {
+  cursor: move;
+  user-select: none;
+  min-width: 20px;
+}
+
+.resize-handle {
+  cursor: ew-resize;
+  width: 8px;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: rgba(255,255,255,0.8);
+  opacity: 0;
+  transition: opacity 0.2s;
+  border: 1px solid rgba(0,0,0,0.3);
+}
+
+.gantt-bar:hover .resize-handle {
+  opacity: 1;
+}
+
+.resize-handle-left {
+  left: 0;
+}
+
+.resize-handle-right {
+  right: 0;
+}
+
 
