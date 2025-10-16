@@ -49,7 +49,7 @@ export const AbsenceManagement: React.FC = () => {
 
   // Formulario de nueva solicitud
   const [newRequest, setNewRequest] = useState({
-    employeeId: '',
+    employeeId: currentEmployee.role === 'empleado' ? currentEmployee.id : '',
     startDate: '',
     endDate: '',
     reason: '',
@@ -196,7 +196,16 @@ export const AbsenceManagement: React.FC = () => {
           <p className="text-gray-600">Administra todas las solicitudes de ausencias</p>
         </div>
         <button
-          onClick={() => setShowNewRequestForm(true)}
+          onClick={() => {
+            setNewRequest({
+              employeeId: currentEmployee.role === 'empleado' ? currentEmployee.id : '',
+              startDate: '',
+              endDate: '',
+              reason: '',
+              type: 'vacation' as AbsenceType
+            });
+            setShowNewRequestForm(true);
+          }}
           className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2"
         >
           <Plus className="w-4 h-4" />
@@ -389,20 +398,23 @@ export const AbsenceManagement: React.FC = () => {
                   <div className="bg-gray-200 dark:bg-gray-800 rounded-lg p-6 w-full max-w-md border border-gray-200 dark:border-gray-700">
                     <h3 className="text-lg font-medium text-gray-900 dark:text-gray-50 mb-4">Nueva Solicitud de Ausencia</h3>
                     <form onSubmit={handleSubmitRequest} className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Empleado</label>
-                        <select
-                          value={newRequest.employeeId}
-                          onChange={(e) => setNewRequest({...newRequest, employeeId: e.target.value})}
-                          className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-50"
-                          required
-                        >
-                          <option value="">Seleccionar empleado</option>
-                          {employees.map(employee => (
-                            <option key={employee.id} value={employee.id}>{employee.name}</option>
-                          ))}
-                        </select>
-                      </div>
+                      {/* Solo mostrar selector de empleado para encargados y encargados de distrito */}
+                      {(currentEmployee.role === 'encargado' || currentEmployee.role === 'distrito') && (
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Empleado</label>
+                          <select
+                            value={newRequest.employeeId}
+                            onChange={(e) => setNewRequest({...newRequest, employeeId: e.target.value})}
+                            className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-50"
+                            required
+                          >
+                            <option value="">Seleccionar empleado</option>
+                            {employees.map(employee => (
+                              <option key={employee.id} value={employee.id}>{employee.name}</option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tipo de Ausencia</label>
                         <select
