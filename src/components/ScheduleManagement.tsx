@@ -593,9 +593,12 @@ export default function ScheduleManagement() {
       const deltaX = e.clientX - startX;
       let newLeft = startLeft + deltaX;
       
-      // Limitar dentro del contenedor
-      const maxLeft = containerRect.width - draggedElement.offsetWidth;
-      newLeft = Math.max(0, Math.min(newLeft, maxLeft));
+      // Limitar dentro del contenedor y respetar las horas visibles
+      const dayColumnWidth = isMobile ? 60 : (isCompactMode ? 100 : 120); // Usar el mismo valor que en las funciones de conversión
+      const availableWidth = containerRect.width - dayColumnWidth;
+      const minLeft = dayColumnWidth; // No puede ir más a la izquierda que la columna del día
+      const maxLeft = dayColumnWidth + availableWidth - draggedElement.offsetWidth; // No puede salirse del área de horas
+      newLeft = Math.max(minLeft, Math.min(newLeft, maxLeft));
       
       draggedElement.style.left = newLeft + 'px';
     };
@@ -618,8 +621,12 @@ export default function ScheduleManagement() {
         let newLeft = startLeft + deltaX;
         let newWidth = startWidth - deltaX;
         
-        // Límites
-        if (newWidth >= 20 && newLeft >= 0) {
+        // Límites - respetar las horas visibles
+        const dayColumnWidth = isMobile ? 60 : (isCompactMode ? 100 : 120); // Usar el mismo valor que en las funciones de conversión
+        const minLeft = dayColumnWidth; // No puede ir más a la izquierda que la columna del día
+        const minWidth = 20; // Ancho mínimo
+        
+        if (newWidth >= minWidth && newLeft >= minLeft) {
           resizingElement.style.left = newLeft + 'px';
           resizingElement.style.width = newWidth + 'px';
         }
@@ -627,9 +634,12 @@ export default function ScheduleManagement() {
         // Redimensionar desde la derecha
         let newWidth = startWidth + deltaX;
         
-        // Límites
-        const maxWidth = containerRect.width - resizingElement.offsetLeft;
-        newWidth = Math.max(20, Math.min(newWidth, maxWidth));
+        // Límites - respetar las horas visibles
+        const dayColumnWidth = isMobile ? 60 : (isCompactMode ? 100 : 120); // Usar el mismo valor que en las funciones de conversión
+        const availableWidth = containerRect.width - dayColumnWidth;
+        const maxWidth = dayColumnWidth + availableWidth - resizingElement.offsetLeft; // No puede salirse del área de horas
+        const minWidth = 20; // Ancho mínimo
+        newWidth = Math.max(minWidth, Math.min(newWidth, maxWidth));
         
         resizingElement.style.width = newWidth + 'px';
       }
@@ -809,7 +819,7 @@ export default function ScheduleManagement() {
               className="px-4 py-2 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 text-sm font-medium rounded-lg transition-colors"
             >
               Esta Semana
-            </button>
+          </button>
           <button
             onClick={() => navigateWeek('next')}
             className="px-4 py-2 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 text-sm font-medium rounded-lg transition-colors"
