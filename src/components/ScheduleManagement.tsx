@@ -230,6 +230,14 @@ export default function ScheduleManagement() {
     return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
   };
 
+  // Función para redondear tiempos para visualización
+  const roundTimeForDisplay = (timeString: string): string => {
+    const [hours, minutes] = timeString.split(':');
+    const totalMinutes = parseInt(hours) * 60 + parseFloat(minutes);
+    const roundedMinutes = roundToIncrement(totalMinutes, 5);
+    return minutesToTime(roundedMinutes);
+  };
+
   const roundToIncrement = (minutes: number, increment: number = 5): number => {
     return Math.round(minutes / increment) * increment;
   };
@@ -1314,6 +1322,10 @@ export default function ScheduleManagement() {
                               const currentEndTime = (draggedElement?.dataset.shiftId === shift.id || resizingElement?.dataset.shiftId === shift.id) 
                                 ? (tempEndTime || shift.endTime) 
                                 : shift.endTime;
+                              
+                              // Redondear tiempos para visualización
+                              const displayStartTime = roundTimeForDisplay(currentStartTime);
+                              const displayEndTime = roundTimeForDisplay(currentEndTime);
                               const currentHours = (draggedElement?.dataset.shiftId === shift.id || resizingElement?.dataset.shiftId === shift.id) 
                                 ? (tempHours || shift.hours) 
                                 : shift.hours;
@@ -1331,7 +1343,7 @@ export default function ScheduleManagement() {
                                       <>
                                     <div className="text-left">
                                       <div className="font-semibold text-xs">{employee?.name}</div>
-                                      <div className="text-xs opacity-90">{currentStartTime} - {currentEndTime}</div>
+                                      <div className="text-xs opacity-90">{displayStartTime} - {displayEndTime}</div>
                                           </div>
                                     <div className="text-right text-xs opacity-75">
                                       {formatHours(currentHours)}
