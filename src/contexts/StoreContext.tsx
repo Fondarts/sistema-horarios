@@ -13,6 +13,7 @@ import {
   query,
   orderBy
 } from 'firebase/firestore';
+import { useAuth } from './AuthContext';
 
 interface StoreContextType {
   stores: Store[];
@@ -31,6 +32,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [stores, setStores] = useState<Store[]>([]);
   const [currentStore, setCurrentStoreState] = useState<Store | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const { isDistrictManager } = useAuth();
 
   useEffect(() => {
     const loadStores = async () => {
@@ -71,16 +73,19 @@ export function StoreProvider({ children }: { children: ReactNode }) {
               console.error('Error creating default store:', error);
             }
           } else {
-            // Si hay tiendas, solo usar la guardada si existe
-            // No seleccionar automáticamente para permitir que los encargados de distrito vean el selector
-            const savedCurrentStoreId = localStorage.getItem('horarios_current_store_id');
-            if (savedCurrentStoreId) {
-              const foundStore = storesData.find((s: Store) => s.id === savedCurrentStoreId);
-              if (foundStore) {
-                setCurrentStoreState(foundStore);
+            // Para district managers, no establecer automáticamente una tienda
+            // para que siempre vean el selector de tiendas primero
+            if (!isDistrictManager) {
+              // Solo para usuarios normales (empleados/encargados), usar la tienda guardada
+              const savedCurrentStoreId = localStorage.getItem('horarios_current_store_id');
+              if (savedCurrentStoreId) {
+                const foundStore = storesData.find((s: Store) => s.id === savedCurrentStoreId);
+                if (foundStore) {
+                  setCurrentStoreState(foundStore);
+                }
               }
             }
-            // No establecer currentStore automáticamente si no hay una guardada
+            // Los district managers siempre verán el selector de tiendas
           }
           
           setIsLoading(false);
@@ -97,7 +102,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     };
     
     loadStores();
-  }, []);
+  }, [isDistrictManager]);
 
   // Ya no necesitamos sincronizar con localStorage, Firebase maneja todo
 
