@@ -24,6 +24,7 @@ interface Notification {
 
 export function NotificationCenter({ employees, currentEmployee, isManager }: NotificationCenterProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [viewedNotifications, setViewedNotifications] = useState<Set<string>>(new Set());
 
   // Función para verificar si una fecha es cumpleaños
   const isBirthdayOnDate = (birthday: string, targetDate: Date): boolean => {
@@ -160,7 +161,7 @@ export function NotificationCenter({ employees, currentEmployee, isManager }: No
   };
 
   const notifications = generateNotifications();
-  const unreadCount = notifications.filter(n => n.priority === 'high').length;
+  const unreadCount = notifications.filter(n => n.priority === 'high' && !viewedNotifications.has(n.id)).length;
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -175,7 +176,15 @@ export function NotificationCenter({ employees, currentEmployee, isManager }: No
     <div className="relative">
       {/* Botón de notificaciones */}
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => {
+          if (!isOpen) {
+            // Marcar todas las notificaciones de alta prioridad como vistas cuando se abre
+            const highPriorityNotifications = notifications.filter(n => n.priority === 'high');
+            const newViewedIds = new Set([...viewedNotifications, ...highPriorityNotifications.map(n => n.id)]);
+            setViewedNotifications(newViewedIds);
+          }
+          setIsOpen(!isOpen);
+        }}
         className="relative p-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
         title="Notificaciones"
       >
