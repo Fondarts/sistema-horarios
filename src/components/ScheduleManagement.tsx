@@ -1100,7 +1100,7 @@ export default function ScheduleManagement() {
                     className="grid border-b border-gray-300 dark:border-gray-600 relative" 
                     style={{ 
                       gridTemplateColumns: `${isMobile ? '60px' : (isCompactMode ? '100px' : '120px')} ${isMobile ? `repeat(${hours.length}, ${mobileHourColumnWidth}px)` : `repeat(${hours.length}, 1fr)`}`, 
-                      minHeight: collapsedDays.has(dayString) ? '40px' : '120px',
+                      minHeight: collapsedDays.has(dayString) ? '32px' : '120px',
                       minWidth: 'max-content',
                       height: 'auto'
                     }}
@@ -1190,21 +1190,23 @@ export default function ScheduleManagement() {
                       <div 
                         key={`${day.toISOString()}-${hour}`} 
                         className={`relative border-r border-gray-200 dark:border-gray-600 ${backgroundColor}`} 
-                        style={{ minHeight: '120px', height: '100%' }}
+                        style={{ minHeight: collapsedDays.has(dayString) ? '32px' : '120px', height: '100%' }}
                         title={isHolidayDay ? `Feriado: ${holiday?.name}` : ''}
                       >
-                        {/* Hour line */}
-                        <div className="absolute w-full border-t border-gray-100 dark:border-gray-600" style={{ top: '0' }}>
-                          <div className={`text-xs px-1 ${
-                            isHolidayDay 
-                              ? 'text-orange-600 dark:text-orange-300 font-medium' 
-                              : isStoreHour 
-                                ? 'text-blue-600 dark:text-blue-300' 
-                                : 'text-gray-400 dark:text-gray-500'
-                          }`}>
-                            {hour}:00
+                        {/* Hour line - solo mostrar si no está colapsado */}
+                        {!collapsedDays.has(dayString) && (
+                          <div className="absolute w-full border-t border-gray-100 dark:border-gray-600" style={{ top: '0' }}>
+                            <div className={`text-xs px-1 ${
+                              isHolidayDay 
+                                ? 'text-orange-600 dark:text-orange-300 font-medium' 
+                                : isStoreHour 
+                                  ? 'text-blue-600 dark:text-blue-300' 
+                                  : 'text-gray-400 dark:text-gray-500'
+                            }`}>
+                              {hour}:00
+                            </div>
                           </div>
-                        </div>
+                        )}
                         
                       </div>
                     );
