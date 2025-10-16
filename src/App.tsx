@@ -17,9 +17,9 @@ function App() {
   return (
     <ThemeProvider>
       <CompactModeProvider>
-        <StoreProvider>
-          <EmployeeProvider>
-            <AuthProvider>
+        <EmployeeProvider>
+          <AuthProvider>
+            <StoreProvider>
               <HolidayProvider>
                 <NotificationProvider>
                   <NotificationStackProvider>
@@ -34,9 +34,9 @@ function App() {
                   </NotificationStackProvider>
                 </NotificationProvider>
               </HolidayProvider>
-            </AuthProvider>
-          </EmployeeProvider>
-        </StoreProvider>
+            </StoreProvider>
+          </AuthProvider>
+        </EmployeeProvider>
       </CompactModeProvider>
     </ThemeProvider>
   );
