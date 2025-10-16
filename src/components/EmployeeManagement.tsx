@@ -43,7 +43,7 @@ export function EmployeeManagement() {
     birthday: '',
     color: '#3B82F6',
     isActive: true,
-    role: 'empleado' as 'encargado' | 'empleado',
+    role: 'empleado' as 'encargado' | 'empleado' | 'distrito',
     unavailableTimes: [] as UnavailableTime[]
   });
 
