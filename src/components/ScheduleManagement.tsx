@@ -146,6 +146,22 @@ export default function ScheduleManagement() {
   const [tempHours, setTempHours] = useState<number | null>(null);
   const [tempWidth, setTempWidth] = useState<number | null>(null);
   
+  // Estado para días colapsados
+  const [collapsedDays, setCollapsedDays] = useState<Set<string>>(new Set());
+  
+  // Función para toggle del colapso de días
+  const toggleDayCollapse = (dayString: string) => {
+    setCollapsedDays(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(dayString)) {
+        newSet.delete(dayString);
+      } else {
+        newSet.add(dayString);
+      }
+      return newSet;
+    });
+  };
+  
   const ganttRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -1102,8 +1118,17 @@ export default function ScheduleManagement() {
                     }`}>
                       {isMobile ? (
                         <div className="text-center">
-                          <div className="text-xs font-semibold">
-                            {format(day, 'EEE', { locale: es })}
+                          <div className="flex items-center justify-center gap-1">
+                            <div className="text-xs font-semibold">
+                              {format(day, 'EEE', { locale: es })}
+                            </div>
+                            <button
+                              onClick={() => toggleDayCollapse(dayString)}
+                              className="text-xs hover:bg-gray-200 dark:hover:bg-gray-600 rounded px-1"
+                              title={collapsedDays.has(dayString) ? "Expandir día" : "Colapsar día"}
+                            >
+                              {collapsedDays.has(dayString) ? '+' : '-'}
+                            </button>
                           </div>
                           <div className="text-sm font-bold">
                             {format(day, 'd', { locale: es })}
@@ -1113,12 +1138,21 @@ export default function ScheduleManagement() {
                           )}
                         </div>
                       ) : (
-                        <>
-                          {format(day, 'EEE d', { locale: es })}
-                          {isHolidayDay && (
-                            <span className="ml-2 text-xs">🎉</span>
-                          )}
-                        </>
+                        <div className="flex items-center gap-2">
+                          <span>
+                            {format(day, 'EEE d', { locale: es })}
+                            {isHolidayDay && (
+                              <span className="ml-2 text-xs">🎉</span>
+                            )}
+                          </span>
+                          <button
+                            onClick={() => toggleDayCollapse(dayString)}
+                            className="text-sm hover:bg-gray-200 dark:hover:bg-gray-600 rounded px-1"
+                            title={collapsedDays.has(dayString) ? "Expandir día" : "Colapsar día"}
+                          >
+                            {collapsedDays.has(dayString) ? '+' : '-'}
+                          </button>
+                        </div>
                       )}
                     </div>
                     {/* Solo mostrar nombres de empleados en desktop */}
@@ -1298,15 +1332,15 @@ export default function ScheduleManagement() {
                             left: `${left}px`,
                             width: `${width}px`,
                             top: `${top}px`,
-                            height: '32px', // Altura constante para todas las barras
+                            height: collapsedDays.has(dayString) ? '8px' : '32px', // Altura reducida si está colapsado
                             zIndex: 5,
                             backgroundColor: employee?.color || '#3B82F6',
                             touchAction: 'none',
                             opacity: opacity
                           }}
                           title={`${employee?.name} - ${shift.startTime} a ${shift.endTime} (${formatHours(shift.hours)})${!shift.isPublished ? ' - Sin publicar' : ''}${hasConflict ? ` - CONFLICTO: ${conflictType}` : ''}`}
-                          onMouseDown={(e) => startDrag(e, shift)}
-                          onDoubleClick={(e) => {
+                          onMouseDown={collapsedDays.has(dayString) ? undefined : (e) => startDrag(e, shift)}
+                          onDoubleClick={collapsedDays.has(dayString) ? undefined : (e) => {
                             e.stopPropagation();
                             e.preventDefault();
                             openEditShiftModal(shift);
@@ -1333,6 +1367,11 @@ export default function ScheduleManagement() {
                                 ? (tempWidth || width) 
                                 : width;
                               
+                              // Si el día está colapsado, mostrar solo barra finita
+                              if (collapsedDays.has(dayString)) {
+                                return <div className="w-1 h-1 bg-white rounded-full"></div>;
+                              }
+                              
                               // Simplificar contenido basado en el ancho de la barra
                               if (currentWidth < 60) {
                                 return <div className="w-1 h-1 bg-white rounded-full"></div>;
@@ -1355,8 +1394,12 @@ export default function ScheduleManagement() {
                                 </div>
                           
                           {/* Handles dentro de la barra, exactamente como en el ejemplo HTML */}
-                          <div className="resize-handle resize-handle-left"></div>
-                          <div className="resize-handle resize-handle-right"></div>
+                          {!collapsedDays.has(dayString) && (
+                            <>
+                              <div className="resize-handle resize-handle-left"></div>
+                              <div className="resize-handle resize-handle-right"></div>
+                            </>
+                          )}
                         </div>
                       );
                     });
