@@ -396,11 +396,11 @@ export function EmployeeManagement() {
               
               <div className="space-y-3">
                 {formData.unavailableTimes.map((unavailable) => (
-                  <div key={unavailable.id} className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                  <div key={unavailable.id} className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-3 items-center">
                       {/* Día de la semana */}
                       <div className="md:col-span-1">
-                        <label className="block text-xs font-medium text-gray-600 mb-1">
+                        <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
                           Día
                         </label>
                         <select
@@ -416,7 +416,7 @@ export function EmployeeManagement() {
                       
                       {/* Hora de inicio */}
                       <div className="md:col-span-1">
-                        <label className="block text-xs font-medium text-gray-600 mb-1">
+                        <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
                           Desde
                         </label>
                         <TimeInput
@@ -429,7 +429,7 @@ export function EmployeeManagement() {
                       
                       {/* Hora de fin */}
                       <div className="md:col-span-1">
-                        <label className="block text-xs font-medium text-gray-600 mb-1">
+                        <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
                           Hasta
                         </label>
                         <TimeInput
@@ -445,7 +445,7 @@ export function EmployeeManagement() {
                         <button
                           type="button"
                           onClick={() => removeUnavailableTime(unavailable.id)}
-                          className="text-red-600 hover:text-red-800 p-2 hover:bg-red-50 rounded-lg transition-colors"
+                          className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
                           title="Eliminar horario no disponible"
                         >
                           <Trash2 className="w-4 h-4" />
