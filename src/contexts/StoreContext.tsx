@@ -13,7 +13,6 @@ import {
   query,
   orderBy
 } from 'firebase/firestore';
-import { useAuth } from './AuthContext';
 
 interface StoreContextType {
   stores: Store[];
@@ -32,7 +31,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [stores, setStores] = useState<Store[]>([]);
   const [currentStore, setCurrentStoreState] = useState<Store | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const { isDistrictManager } = useAuth();
 
   useEffect(() => {
     const loadStores = async () => {
@@ -73,8 +71,19 @@ export function StoreProvider({ children }: { children: ReactNode }) {
               console.error('Error creating default store:', error);
             }
           } else {
-            // Para district managers, no establecer automáticamente una tienda
-            // para que siempre vean el selector de tiendas primero
+            // Verificar si es district manager desde localStorage
+            const currentEmployee = localStorage.getItem('currentEmployee');
+            let isDistrictManager = false;
+            
+            if (currentEmployee) {
+              try {
+                const employee = JSON.parse(currentEmployee);
+                isDistrictManager = employee.username === 'admin' || employee.username === 'distrito';
+              } catch (error) {
+                console.error('Error parsing currentEmployee:', error);
+              }
+            }
+            
             if (!isDistrictManager) {
               // Solo para usuarios normales (empleados/encargados), usar la tienda guardada
               const savedCurrentStoreId = localStorage.getItem('horarios_current_store_id');
@@ -102,7 +111,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     };
     
     loadStores();
-  }, [isDistrictManager]);
+  }, []);
 
   // Ya no necesitamos sincronizar con localStorage, Firebase maneja todo
 
