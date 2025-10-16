@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useSchedule } from '../contexts/ScheduleContext';
 import { useEmployees } from '../contexts/EmployeeContext';
+import { useHolidays } from '../contexts/HolidayContext';
 import { format, startOfWeek, endOfWeek, eachDayOfInterval, addWeeks, subWeeks, startOfMonth, endOfMonth, addMonths, subMonths, isSameMonth, isSameDay } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { ChevronLeft, ChevronRight, LogOut, Calendar, Clock, UserX, List, Grid3X3 } from 'lucide-react';
@@ -19,6 +20,7 @@ export default function EmployeeDashboard() {
   const { currentEmployee, logout } = useAuth();
   const { shifts } = useSchedule();
   const { employees } = useEmployees();
+  const { holidays, isHoliday, getHolidayForDate } = useHolidays();
   const { isCompactMode, isMobile } = useCompactMode();
   const [currentWeek, setCurrentWeek] = useState(new Date());
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -121,6 +123,20 @@ export default function EmployeeDashboard() {
   const getShiftsForDay = (date: Date) => {
     const dateStr = format(date, 'yyyy-MM-dd');
     return employeeShiftsMonth.filter(shift => shift.date === dateStr);
+  };
+
+  // Obtener cumpleaños de compañeros de la tienda para un día específico
+  const getBirthdaysForDay = (date: Date) => {
+    const day = format(date, 'd');
+    const month = format(date, 'M');
+    
+    return employees.filter(employee => {
+      if (employee.id === currentEmployee.id) return false; // Excluir al empleado actual
+      if (!employee.birthday) return false;
+      
+      const [birthDay, birthMonth] = employee.birthday.split('/');
+      return birthDay === day && birthMonth === month;
+    });
   };
 
   const totalHours = employeeShifts.reduce((total, shift) => total + shift.hours, 0);
@@ -418,6 +434,9 @@ export default function EmployeeDashboard() {
               <div className="grid grid-cols-7 gap-1">
                 {calendarDays.map((day, index) => {
                   const dayShifts = getShiftsForDay(day);
+                  const dayBirthdays = getBirthdaysForDay(day);
+                  const dateStr = format(day, 'yyyy-MM-dd');
+                  const holiday = getHolidayForDate(dateStr);
                   const isCurrentMonth = isSameMonth(day, currentMonth);
                   const isToday = isSameDay(day, new Date());
                   
@@ -438,6 +457,24 @@ export default function EmployeeDashboard() {
                         {format(day, 'd')}
                       </div>
                       <div className="space-y-1">
+                        {/* Feriados */}
+                        {holiday && (
+                          <div className="text-xs p-1 rounded bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200">
+                            <div className="font-medium">🎉 {holiday.name}</div>
+                          </div>
+                        )}
+                        
+                        {/* Cumpleaños */}
+                        {dayBirthdays.map((employee) => (
+                          <div
+                            key={employee.id}
+                            className="text-xs p-1 rounded bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200"
+                          >
+                            <div className="font-medium">🎂 {employee.name}</div>
+                          </div>
+                        ))}
+                        
+                        {/* Turnos */}
                         {dayShifts.map((shift) => (
                           <div
                             key={shift.id}
@@ -445,7 +482,7 @@ export default function EmployeeDashboard() {
                             style={{ backgroundColor: currentEmployee.color }}
                           >
                             <div className="font-medium">{shift.startTime}</div>
-                            <div className="opacity-90">{formatHours(shift.hours)}</div>
+                            <div className="opacity-90">{shift.endTime}</div>
                           </div>
                         ))}
                       </div>
