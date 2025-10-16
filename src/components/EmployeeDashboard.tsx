@@ -43,7 +43,7 @@ export default function EmployeeDashboard() {
       key: '2',
       ctrlKey: true,
       action: () => setActiveTab('vacations'),
-      description: 'Ir a pestaña Vacaciones'
+      description: 'Ir a pestaña Vacaciones y Ausencias'
     },
     {
       key: 'ArrowLeft',
@@ -192,7 +192,7 @@ export default function EmployeeDashboard() {
             >
               <div className="flex items-center">
                 <UserX className="w-4 h-4 mr-2" />
-                Mis Vacaciones
+                Vacaciones y Ausencias
               </div>
             </button>
           </nav>

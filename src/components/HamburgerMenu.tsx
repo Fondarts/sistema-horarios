@@ -33,7 +33,7 @@ export function HamburgerMenu({ activeTab, onTabChange, isManager = false, onSho
 
   const employeeTabs = [
     { id: 'schedule', label: 'Mis Horarios', icon: Calendar },
-    { id: 'vacations', label: 'Mis Vacaciones', icon: UserX },
+    { id: 'vacations', label: 'Vacaciones y Ausencias', icon: UserX },
   ];
 
   const tabs = isManager ? managerTabs : employeeTabs;

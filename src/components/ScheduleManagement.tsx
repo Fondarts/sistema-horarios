@@ -7,6 +7,8 @@ import { useEmployees } from '../contexts/EmployeeContext';
 import { useVacation } from '../contexts/VacationContext';
 import { useHolidays } from '../contexts/HolidayContext';
 import { useCompactMode } from '../contexts/CompactModeContext';
+import { useNotifications } from '../contexts/NotificationContext';
+import { useTheme } from '../contexts/ThemeContext';
 import { Shift, Employee } from '../types';
 import TimeInput from './TimeInput';
 import { BirthdayNotification } from './BirthdayNotification';
@@ -17,6 +19,8 @@ export default function ScheduleManagement() {
   const { vacationRequests } = useVacation();
   const { isHoliday, getHolidayForDate } = useHolidays();
   const { isCompactMode, isMobile } = useCompactMode();
+  const { addNotification } = useNotifications();
+  const { theme } = useTheme();
   
   // Definir ancho fijo para columnas de horas en móvil
   const mobileHourColumnWidth = 57;
@@ -35,6 +39,72 @@ export default function ScheduleManagement() {
       const endDate = new Date(vacation.endDate);
       return targetDate >= startDate && targetDate <= endDate;
     });
+  };
+
+  // Función para validar conflictos en un turno
+  const validateShiftConflicts = (shift: Shift): { hasConflict: boolean; conflictType: string } => {
+    const shiftDate = new Date(shift.date);
+    const dayOfWeek = shiftDate.getDay();
+    const todaySchedule = storeSchedule.find(s => s.dayOfWeek === dayOfWeek);
+    
+    // 1. Verificar si está fuera del horario permitido de la tienda
+    if (todaySchedule && todaySchedule.isOpen && todaySchedule.openTime && todaySchedule.closeTime) {
+      const storeOpenTime = todaySchedule.openTime;
+      const storeCloseTime = todaySchedule.closeTime;
+      
+      if (shift.startTime < storeOpenTime || shift.endTime > storeCloseTime) {
+        return { hasConflict: true, conflictType: 'Fuera del horario de la tienda' };
+      }
+    }
+    
+    // 2. Verificar superposición con otros turnos del mismo empleado
+    const employeeShifts = weekShifts.filter(s => 
+      s.employeeId === shift.employeeId && 
+      s.id !== shift.id && 
+      format(new Date(s.date), 'yyyy-MM-dd') === format(shiftDate, 'yyyy-MM-dd')
+    );
+    
+    for (const otherShift of employeeShifts) {
+      if (isTimeOverlap(shift.startTime, shift.endTime, otherShift.startTime, otherShift.endTime)) {
+        return { hasConflict: true, conflictType: 'Superposición con otro turno' };
+      }
+    }
+    
+    // 3. Verificar exceso de horas semanales (máximo 48 horas por semana)
+    const weekStart = startOfWeek(shiftDate, { weekStartsOn: 1 });
+    const weekEnd = endOfWeek(shiftDate, { weekStartsOn: 1 });
+    
+    const weeklyShifts = weekShifts.filter(s => {
+      const sDate = new Date(s.date);
+      return s.employeeId === shift.employeeId && 
+             sDate >= weekStart && 
+             sDate <= weekEnd &&
+             s.id !== shift.id;
+    });
+    
+    const currentWeeklyHours = weeklyShifts.reduce((total, s) => total + s.hours, 0);
+    const newTotalHours = currentWeeklyHours + shift.hours;
+    
+    if (newTotalHours > 48) {
+      return { hasConflict: true, conflictType: 'Exceso de horas semanales (máx. 48h)' };
+    }
+    
+    return { hasConflict: false, conflictType: '' };
+  };
+
+  // Función auxiliar para verificar superposición de horarios
+  const isTimeOverlap = (start1: string, end1: string, start2: string, end2: string): boolean => {
+    const timeToMinutes = (time: string) => {
+      const [hours, minutes] = time.split(':').map(Number);
+      return hours * 60 + minutes;
+    };
+    
+    const start1Min = timeToMinutes(start1);
+    const end1Min = timeToMinutes(end1);
+    const start2Min = timeToMinutes(start2);
+    const end2Min = timeToMinutes(end2);
+    
+    return start1Min < end2Min && start2Min < end1Min;
   };
   
   const [currentWeek, setCurrentWeek] = useState(new Date());
@@ -173,11 +243,18 @@ export default function ScheduleManagement() {
         e.preventDefault(); // Prevenir scroll del chart
         setDraggedShift(shift);
         const target = e.currentTarget as HTMLDivElement;
-        const rect = target.getBoundingClientRect();
+        const ganttRect = ganttRef.current?.getBoundingClientRect();
+        if (!ganttRect) return;
+        
         const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
         const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
         setDragStart({ x: clientX, y: clientY });
-        setDragOffset(clientX - rect.left); // Guardar offset del click dentro de la barra
+        
+        // Calcular offset relativo al contenedor del gantt (no a la barra individual)
+        const ganttX = clientX - ganttRect.left;
+        const barRect = target.getBoundingClientRect();
+        const barGanttX = barRect.left - ganttRect.left;
+        setDragOffset(ganttX - barGanttX); // Offset del click dentro de la barra, relativo al gantt
         setIsDraggingOrResizing(true);
       };
 
@@ -187,11 +264,20 @@ export default function ScheduleManagement() {
     setResizingShift(shift);
     setResizeHandle(handle);
     const target = e.currentTarget as HTMLDivElement;
-    const rect = target.getBoundingClientRect();
+    const ganttRect = ganttRef.current?.getBoundingClientRect();
+    if (!ganttRect) return;
+    
     const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
     const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
     setDragStart({ x: clientX, y: clientY });
-    setDragOffset(clientX - rect.left); // Guardar offset del click dentro del handle
+    
+    // Calcular offset relativo al contenedor del gantt (no al handle individual)
+    const ganttX = clientX - ganttRect.left;
+    const handleRect = target.getBoundingClientRect();
+    const handleGanttX = handleRect.left - ganttRect.left;
+    
+    // Para handles de resize, NO aplicar offset - el handle debe seguir exactamente al cursor
+    setDragOffset(0); // Sin offset para que el handle siga al cursor
     setIsDraggingOrResizing(true);
   };
 
@@ -301,9 +387,22 @@ export default function ScheduleManagement() {
   };
 
 
-  const publishWeekShifts = () => {
+  const publishWeekShifts = async () => {
     const unpublishedShifts = weekShifts.filter(s => !s.isPublished);
-    publishShifts(unpublishedShifts.map(s => s.id));
+    await publishShifts(unpublishedShifts.map(s => s.id));
+    
+    // Mostrar notificación de éxito
+    addNotification({
+      userId: 'manager',
+      type: 'schedule_change',
+      title: 'Horarios Publicados',
+      message: `Se han publicado ${unpublishedShifts.length} turnos para la semana del ${format(weekStart, 'd MMM', { locale: es })} al ${format(weekEnd, 'd MMM', { locale: es })}.`,
+      data: {
+        publishedShifts: unpublishedShifts.length,
+        weekStart: weekStart.toISOString(),
+        weekEnd: weekEnd.toISOString()
+      }
+    });
   };
 
   const repeatPreviousWeek = async () => {
@@ -583,8 +682,8 @@ export default function ScheduleManagement() {
 
       // Handle resizing
       if (resizingShift && resizeHandle) {
-        // Adjust for the initial click offset within the handle
-        const adjustedX = x - dragOffset;
+        // Para resize, usar la posición exacta del cursor (sin offset)
+        const adjustedX = x; // Sin offset para que el handle siga al cursor
         const adjustedHourX = adjustedX - dayColumnWidth;
         const adjustedHourIndex = Math.floor(adjustedHourX / hourColumnWidth);
         
@@ -674,39 +773,39 @@ export default function ScheduleManagement() {
         <div>
           <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Gestión de Horarios</h2>
         </div>
-        <div className="flex items-center space-x-4">
-          
-          {/* 24h Toggle */}
-          <div className="flex items-center space-x-1 bg-gray-100 dark:bg-gray-700 rounded p-1">
-            <label className="flex items-center space-x-1 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={show24Hours}
-                onChange={(e) => setShow24Hours(e.target.checked)}
-                className="w-3 h-3 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-1"
-              />
-              <span className="text-xs text-gray-700 dark:text-gray-300 font-medium">
-                Ver 24h
-              </span>
-            </label>
-          </div>
+        <div className="flex items-center space-x-3">
+          {/* Contador de turnos sin publicar */}
+          {(() => {
+            const unpublishedCount = weekShifts.filter(s => !s.isPublished).length;
+            return unpublishedCount > 0 ? (
+              <div className="flex items-center px-3 py-2 bg-orange-100 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300 rounded-lg text-sm font-medium">
+                <div className="w-2 h-2 bg-orange-500 rounded-full mr-2 animate-pulse"></div>
+                {unpublishedCount} sin publicar
+              </div>
+            ) : null;
+          })()}
           
           <button
             onClick={() => setShowUnpublished(!showUnpublished)}
-            className={`flex items-center px-2 py-1 rounded text-xs transition-colors ${
+            className={`flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
               showUnpublished 
                 ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/20 dark:text-primary-300' 
                 : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
             }`}
           >
-            {showUnpublished ? <Eye className="w-3 h-3 mr-1" /> : <EyeOff className="w-3 h-3 mr-1" />}
+            {showUnpublished ? <Eye className="w-4 h-4 mr-2" /> : <EyeOff className="w-4 h-4 mr-2" />}
             {showUnpublished ? 'Ocultar' : 'Mostrar'}
           </button>
           <button
             onClick={publishWeekShifts}
-            className="flex items-center px-2 py-1 bg-primary-600 hover:bg-primary-700 text-white text-xs rounded transition-colors"
+            className={`flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+              weekShifts.filter(s => !s.isPublished).length > 0
+                ? 'bg-primary-600 hover:bg-primary-700 text-white'
+                : 'bg-gray-400 text-gray-200 cursor-not-allowed'
+            }`}
+            disabled={weekShifts.filter(s => !s.isPublished).length === 0}
           >
-            <Save className="w-3 h-3 mr-1" />
+            <Save className="w-4 h-4 mr-2" />
             Publicar
           </button>
         </div>
@@ -742,38 +841,66 @@ export default function ScheduleManagement() {
           <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 whitespace-nowrap">
             {format(weekStart, 'd MMM', { locale: es })} - {format(weekEnd, 'd MMM yyyy', { locale: es })}
           </h3>
+          {/* Alerta de turnos sin publicar */}
+          {(() => {
+            const unpublishedCount = weekShifts.filter(s => !s.isPublished).length;
+            return unpublishedCount > 0 ? (
+              <div className="mt-2 flex items-center justify-center space-x-2 text-orange-600 dark:text-orange-400">
+                <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
+                <span className="text-sm font-medium">
+                  {unpublishedCount} turno{unpublishedCount !== 1 ? 's' : ''} pendiente{unpublishedCount !== 1 ? 's' : ''} de publicación
+                </span>
+              </div>
+            ) : null;
+          })()}
         </div>
 
         {/* Botones de navegación */}
-        <div className="flex justify-center items-center space-x-2">
+        <div className="flex justify-center items-center space-x-3">
           <button
             onClick={() => navigateWeek('prev')}
-            className="px-3 py-1 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 text-sm rounded transition-colors"
+            className="px-4 py-2 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 text-sm font-medium rounded-lg transition-colors"
           >
             ← Anterior
           </button>
           <button
             onClick={() => navigateWeek('next')}
-            className="px-3 py-1 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 text-sm rounded transition-colors"
+            className="px-4 py-2 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 text-sm font-medium rounded-lg transition-colors"
           >
             Siguiente →
           </button>
+          
+          {/* 24h Toggle - Movido aquí junto con la navegación */}
+          <div className="flex items-center space-x-2 bg-gray-100 dark:bg-gray-700 rounded-lg px-3 py-2">
+            <label className="flex items-center space-x-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={show24Hours}
+                onChange={(e) => setShow24Hours(e.target.checked)}
+                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+              />
+              <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">
+                Ver 24h
+              </span>
+            </label>
+          </div>
+          
           <button
             onClick={repeatPreviousWeek}
             disabled={isCopyingShifts}
-            className={`flex items-center px-3 py-1 text-sm rounded transition-colors ${
+            className={`flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
               isCopyingShifts 
                 ? 'bg-white dark:bg-gray-700 opacity-50 cursor-not-allowed text-gray-500 dark:text-gray-400' 
                 : 'bg-primary-600 hover:bg-primary-700 text-white'
             }`}
             title={isCopyingShifts ? "Copiando turnos..." : "Copiar todos los turnos de la semana anterior"}
           >
-            <Copy className={`w-3 h-3 mr-1 ${isCopyingShifts ? 'animate-spin' : ''}`} />
+            <Copy className={`w-4 h-4 mr-2 ${isCopyingShifts ? 'animate-spin' : ''}`} />
             <span>{isCopyingShifts ? 'Copiando...' : 'Repetir'}</span>
           </button>
           <button
             onClick={() => setCurrentWeek(new Date())}
-            className="px-3 py-1 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 text-sm rounded transition-colors"
+            className="px-4 py-2 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 text-sm font-medium rounded-lg transition-colors"
           >
             Esta Semana
           </button>
@@ -949,6 +1076,13 @@ export default function ScheduleManagement() {
                     let globalShiftIndex = 0;
                     return employeesOnDay.map((employeeId, empIndex) => {
                       const employeeShifts = groupedShifts[dayString]?.[employeeId] || [];
+                      
+                      // Calcular si este empleado tiene algún turno con outline
+                      const hasEmployeeOutline = employeeShifts.some(shift => {
+                        const conflictValidation = validateShiftConflicts(shift);
+                        return !shift.isPublished || conflictValidation.hasConflict;
+                      });
+                      
                       return employeeShifts.map((shift, shiftIndex) => {
                         const currentIndex = globalShiftIndex++;
                       const employee = employees.find(emp => emp.id === shift.employeeId);
@@ -976,6 +1110,16 @@ export default function ScheduleManagement() {
                         const availableWidth = containerWidth - dayColumnWidth;
                         left = dayColumnWidth + (startPosition * availableWidth) + 2;
                         width = (durationPosition * availableWidth) - 4;
+                        
+                        // Validar que la barra no se salga del día (considerando outline)
+                        const outlineSpace = hasEmployeeOutline ? 3 : 0; // 2px outline + 1px offset en cada lado
+                        const maxLeft = dayColumnWidth + availableWidth - 4 - outlineSpace;
+                        if (left + width > maxLeft) {
+                          width = maxLeft - left;
+                        }
+                        if (left < dayColumnWidth + 2 + outlineSpace) {
+                          left = dayColumnWidth + 2 + outlineSpace;
+                        }
                       } else {
                         // En móvil: calcular posición exacta basada en horas reales
                         const columnWidth = mobileHourColumnWidth; // 57px por columna
@@ -995,25 +1139,73 @@ export default function ScheduleManagement() {
                         // Calcular left y width
                         left = dayColumnWidth + (startColumnIndex * columnWidth) + startPositionInColumn + 2;
                         width = ((endColumnIndex - startColumnIndex) * columnWidth) + (endPositionInColumn - startPositionInColumn) - 4;
+                        
+                        // Validar que la barra no se salga del día en móvil (considerando outline)
+                        const outlineSpace = hasEmployeeOutline ? 3 : 0; // 2px outline + 1px offset en cada lado
+                        const totalColumns = Math.ceil((endHour - startHour + 1) / 2);
+                        const maxLeft = dayColumnWidth + (totalColumns * columnWidth) - 4 - outlineSpace;
+                        if (left + width > maxLeft) {
+                          width = maxLeft - left;
+                        }
+                        if (left < dayColumnWidth + 2 + outlineSpace) {
+                          left = dayColumnWidth + 2 + outlineSpace;
+                        }
                       }
                       
-                      const top = (isHolidayDay ? 55 : 15) + (currentIndex * 35);
+                      // Validar conflictos del turno
+                      const conflictValidation = validateShiftConflicts(shift);
+                      const hasConflict = conflictValidation.hasConflict;
+                      const conflictType = conflictValidation.conflictType;
+                      
+                        // Determinar el estilo del borde
+                        let borderStyle = 'none';
+                        let borderOffset = '0px';
+                        let ringClass = '';
+                        let opacity = 1;
+                        let hasOutline = false;
+
+                        if (hasConflict) {
+                          // Borde rojo punteado para conflictos
+                          borderStyle = `2px dashed ${theme === 'dark' ? 'rgba(239, 68, 68, 0.9)' : 'rgba(220, 38, 38, 0.9)'}`;
+                          borderOffset = '1px';
+                          ringClass = 'ring-2 ring-red-500 ring-opacity-75 shadow-lg';
+                          opacity = 0.9;
+                          hasOutline = true;
+                        } else if (!shift.isPublished) {
+                          // Borde blanco/negro punteado para no publicados
+                          borderStyle = `2px dashed ${theme === 'dark' ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.7)'}`;
+                          borderOffset = '1px';
+                          ringClass = 'ring-2 ring-orange-400 ring-opacity-75 shadow-lg';
+                          opacity = 0.9;
+                          hasOutline = true;
+                        }
+                      
+                      // Calcular posición vertical considerando el outlineOffset del empleado
+                      const baseSpacing = 35; // Espaciado base entre barras
+                      const outlineSpacing = hasEmployeeOutline ? 6 : 0; // Espacio adicional para outline (2px arriba + 2px abajo + 2px margen)
+                      const totalSpacing = baseSpacing + outlineSpacing;
+                      const baseTop = (isHolidayDay ? 55 : 15) + (currentIndex * totalSpacing);
+                      const top = baseTop;
                       
                       return (
                               <div
                                 key={shift.id}
-                                className="absolute rounded text-xs shift-bar select-none"
+                                className={`absolute rounded text-xs shift-bar select-none ${ringClass}`}
                           style={{
                             left: `${left}px`,
                             width: `${width}px`,
                             top: `${top}px`,
-                            height: '32px',
+                            height: '32px', // Altura constante para todas las barras
                             zIndex: 5,
                             backgroundColor: employee?.color || '#3B82F6',
                             color: getTextColorForBackground(employee?.color || '#3B82F6'),
                             padding: '6px 8px 6px 8px',
-                            touchAction: 'none'
+                            touchAction: 'none',
+                            outline: borderStyle,
+                            outlineOffset: borderOffset,
+                            opacity: opacity
                           }}
+                          title={`${employee?.name} - ${shift.startTime} a ${shift.endTime} (${formatHours(shift.hours)})${!shift.isPublished ? ' - Sin publicar' : ''}${hasConflict ? ` - CONFLICTO: ${conflictType}` : ''}`}
                           onMouseDown={(e) => handleDragStart(e, shift)}
                           onTouchStart={(e) => handleDragStart(e, shift)}
                           onDoubleClick={(e) => {
@@ -1049,13 +1241,79 @@ export default function ScheduleManagement() {
                           
                                 {/* Main shift content */}
                                 <div className="w-full h-full cursor-move flex flex-col justify-center">
-                                  <div className="font-medium text-xs leading-tight">
-                                    {employee?.name}
-                                  </div>
-                                  <div className="text-xs opacity-90 leading-tight flex justify-between">
-                                    <span>{shift.startTime}-{shift.endTime}</span>
-                                    <span className="opacity-75 font-medium">{formatHours(shift.hours)}</span>
-                                  </div>
+                                  {(() => {
+                                    // Calcular qué elementos mostrar según el ancho de la barra
+                                    // Considerar también la longitud del texto para una mejor experiencia
+                                    const employeeNameLength = employee?.name?.length || 0;
+                                    const timeRangeText = `${shift.startTime}-${shift.endTime}`;
+                                    const durationText = formatHours(shift.hours);
+                                    
+                                    // Umbrales dinámicos basados en el contenido
+                                    const minWidthForName = Math.max(60, employeeNameLength * 6 + 20);
+                                    const minWidthForTimeRange = Math.max(100, timeRangeText.length * 6 + 20);
+                                    const minWidthForDuration = Math.max(80, durationText.length * 6 + 20);
+                                    const minWidthForUnpublishedIndicator = 50;
+                                    
+                                    const showEmployeeName = width >= minWidthForName;
+                                    const showTimeRange = width >= minWidthForTimeRange;
+                                    const showDuration = width >= minWidthForDuration;
+                                    const showUnpublishedIndicator = width >= minWidthForUnpublishedIndicator && !shift.isPublished;
+                                    
+                                    // Si la barra es extremadamente pequeña, mostrar solo un indicador
+                                    if (width < 40) {
+                                      return (
+                                        <div className="flex items-center justify-center h-full">
+                                          <div className="w-1.5 h-1.5 bg-white rounded-full opacity-80"></div>
+                                        </div>
+                                      );
+                                    }
+                                    
+                                    return (
+                                      <>
+                                        {/* Nombre del empleado - prioridad alta */}
+                                        {showEmployeeName && (
+                                          <div className="font-medium text-xs leading-tight flex items-center justify-between">
+                                            <span className="truncate" style={{ maxWidth: `${width - 10}px` }}>
+                                              {employee?.name}
+                                            </span>
+                                          </div>
+                                        )}
+                                        
+                                        {/* Rango de tiempo y duración - prioridad media */}
+                                        {(showTimeRange || showDuration) && (
+                                          <div className="text-xs opacity-90 leading-tight flex justify-between">
+                                            {showTimeRange && (
+                                              <span className="truncate" style={{ maxWidth: `${width - (showDuration ? 40 : 0)}px` }}>
+                                                {timeRangeText}
+                                              </span>
+                                            )}
+                                            {showDuration && (
+                                              <span className="opacity-75 font-medium flex-shrink-0 ml-1">{durationText}</span>
+                                            )}
+                                          </div>
+                                        )}
+                                        
+                                        {/* Si solo hay espacio para el nombre, mostrar iniciales */}
+                                        {!showEmployeeName && width >= 30 && (
+                                          <div className="flex items-center justify-center h-full">
+                                            <span className="text-xs font-medium truncate" style={{ maxWidth: `${width - 10}px` }}>
+                                              {(() => {
+                                                if (!employee?.name) return '?';
+                                                const nameParts = employee.name.trim().split(' ');
+                                                if (nameParts.length >= 2) {
+                                                  // Si tiene nombre y apellido, mostrar iniciales
+                                                  return `${nameParts[0].charAt(0)}${nameParts[nameParts.length - 1].charAt(0)}`.toUpperCase();
+                                                } else {
+                                                  // Si solo tiene un nombre, mostrar las primeras dos letras
+                                                  return employee.name.substring(0, 2).toUpperCase();
+                                                }
+                                              })()}
+                                            </span>
+                                          </div>
+                                        )}
+                                      </>
+                                    );
+                                  })()}
                                 </div>
                           
                           {/* Resize handle - End (right) */}
