@@ -259,6 +259,16 @@ export default function ScheduleManagement() {
     const containerWidth = scrollContainerRef.current?.offsetWidth || 800;
     const availableWidth = containerWidth - dayColumnWidth;
     
+    // Debug: verificar valores
+    console.log('timeToPosition debug:', {
+      timeInHours,
+      startHour,
+      endHour,
+      dayColumnWidth,
+      containerWidth,
+      availableWidth
+    });
+    
     // Redondear el tiempo para mantener consistencia con positionToTime
     const roundedTimeInMinutes = roundToIncrement(timeInHours * 60, 5);
     const roundedTimeInHours = roundedTimeInMinutes / 60;
@@ -267,7 +277,10 @@ export default function ScheduleManagement() {
     const totalHours = endHour - startHour + 1;
     const relativePosition = (roundedTimeInHours - startHour) / totalHours;
     
-    return dayColumnWidth + (relativePosition * availableWidth);
+    const result = dayColumnWidth + (relativePosition * availableWidth);
+    console.log('timeToPosition result:', result);
+    
+    return result;
   };
 
   // Función para calcular el contraste y determinar el color del texto
