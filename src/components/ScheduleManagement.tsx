@@ -287,7 +287,7 @@ export default function ScheduleManagement() {
     // No iniciar arrastre si estamos redimensionando
     if ((e.target as HTMLElement).classList.contains('resize-handle')) return;
     
-    const target = e.currentTarget as HTMLDivElement;
+        const target = e.currentTarget as HTMLDivElement;
     setDraggedElement(target);
     setContainerRect(target.parentElement?.getBoundingClientRect() || null);
     setStartX(e.clientX);
@@ -639,7 +639,7 @@ export default function ScheduleManagement() {
   }, [zoomLevel, show24Hours, hours.length]);
 
   // Event listeners globales - implementación exacta como el ejemplo HTML
-  useEffect(() => {
+      useEffect(() => {
     const drag = (e: MouseEvent) => {
       if (!draggedElement || !containerRect) return;
       
@@ -757,7 +757,7 @@ export default function ScheduleManagement() {
         if (shiftId) {
           // Actualizar el turno con los nuevos horarios
           await updateShift(shiftId, {
-            startTime: newStartTime,
+              startTime: newStartTime,
             endTime: newEndTime,
             hours: newHours
           });
@@ -869,28 +869,6 @@ export default function ScheduleManagement() {
           <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Gestión de Horarios</h2>
         </div>
         <div className="flex items-center space-x-3">
-          {/* Contador de turnos sin publicar */}
-          {(() => {
-            const unpublishedCount = weekShifts.filter(s => !s.isPublished).length;
-            return unpublishedCount > 0 ? (
-              <div className="flex items-center px-3 py-2 bg-orange-100 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300 rounded-lg text-sm font-medium">
-                <div className="w-2 h-2 bg-orange-500 rounded-full mr-2 animate-pulse"></div>
-                {unpublishedCount} sin publicar
-              </div>
-            ) : null;
-          })()}
-          
-          <button
-            onClick={() => setShowUnpublished(!showUnpublished)}
-            className={`flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              showUnpublished 
-                ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/20 dark:text-primary-300' 
-                : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
-            }`}
-          >
-            {showUnpublished ? <Eye className="w-4 h-4 mr-2" /> : <EyeOff className="w-4 h-4 mr-2" />}
-            {showUnpublished ? 'Ocultar' : 'Mostrar'}
-          </button>
           <button
             onClick={publishWeekShifts}
             className={`flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
@@ -931,8 +909,8 @@ export default function ScheduleManagement() {
 
       {/* Week Navigation */}
       <div className="card">
-        {/* Fecha centrada */}
-        <div className="text-center mb-4">
+        {/* Fechas de la semana y alerta de turnos pendientes */}
+        <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 whitespace-nowrap">
             {format(weekStart, 'd MMM', { locale: es })} - {format(weekEnd, 'd MMM yyyy', { locale: es })}
           </h3>
@@ -940,7 +918,7 @@ export default function ScheduleManagement() {
           {(() => {
             const unpublishedCount = weekShifts.filter(s => !s.isPublished).length;
             return unpublishedCount > 0 ? (
-              <div className="mt-2 flex items-center justify-center space-x-2 text-orange-600 dark:text-orange-400">
+              <div className="flex items-center space-x-2 text-orange-600 dark:text-orange-400">
                 <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
                 <span className="text-sm font-medium">
                   {unpublishedCount} turno{unpublishedCount !== 1 ? 's' : ''} pendiente{unpublishedCount !== 1 ? 's' : ''} de publicación
@@ -950,55 +928,77 @@ export default function ScheduleManagement() {
           })()}
         </div>
 
-        {/* Botones de navegación */}
-        <div className="flex justify-center items-center space-x-3">
-          <button
-            onClick={() => navigateWeek('prev')}
-            className="px-4 py-2 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 text-sm font-medium rounded-lg transition-colors"
-          >
-            ← Anterior
-          </button>
-          <button
-            onClick={() => navigateWeek('next')}
-            className="px-4 py-2 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 text-sm font-medium rounded-lg transition-colors"
-          >
-            Siguiente →
-          </button>
-          
-          {/* 24h Toggle - Movido aquí junto con la navegación */}
-          <div className="flex items-center space-x-2 bg-gray-100 dark:bg-gray-700 rounded-lg px-3 py-2">
-            <label className="flex items-center space-x-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={show24Hours}
-                onChange={(e) => setShow24Hours(e.target.checked)}
-                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-              />
-              <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">
-                Ver 24h
-              </span>
-            </label>
+        {/* Todos los botones distribuidos */}
+        <div className="flex items-center justify-between mb-4">
+          {/* Lado izquierdo: Navegación de semanas */}
+          <div className="flex items-center space-x-3">
+            <button
+              onClick={() => navigateWeek('prev')}
+              className="px-4 py-2 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 text-sm font-medium rounded-lg transition-colors"
+            >
+              ← Anterior
+            </button>
+            <button
+              onClick={() => setCurrentWeek(new Date())}
+              className="px-4 py-2 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 text-sm font-medium rounded-lg transition-colors"
+            >
+              Esta Semana
+            </button>
+            <button
+              onClick={() => navigateWeek('next')}
+              className="px-4 py-2 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 text-sm font-medium rounded-lg transition-colors"
+            >
+              Siguiente →
+            </button>
           </div>
-          
-          <button
-            onClick={repeatPreviousWeek}
-            disabled={isCopyingShifts}
-            className={`flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-              isCopyingShifts 
-                ? 'bg-white dark:bg-gray-700 opacity-50 cursor-not-allowed text-gray-500 dark:text-gray-400' 
-                : 'bg-primary-600 hover:bg-primary-700 text-white'
-            }`}
-            title={isCopyingShifts ? "Copiando turnos..." : "Copiar todos los turnos de la semana anterior"}
-          >
-            <Copy className={`w-4 h-4 mr-2 ${isCopyingShifts ? 'animate-spin' : ''}`} />
-            <span>{isCopyingShifts ? 'Copiando...' : 'Repetir'}</span>
-          </button>
-          <button
-            onClick={() => setCurrentWeek(new Date())}
-            className="px-4 py-2 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 text-sm font-medium rounded-lg transition-colors"
-          >
-            Esta Semana
-          </button>
+
+          {/* Centro: Botón Repetir */}
+          <div className="flex items-center">
+            <button
+              onClick={repeatPreviousWeek}
+              disabled={isCopyingShifts}
+              className={`flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                isCopyingShifts 
+                  ? 'bg-white dark:bg-gray-700 opacity-50 cursor-not-allowed text-gray-500 dark:text-gray-400' 
+                  : 'bg-primary-600 hover:bg-primary-700 text-white'
+              }`}
+              title={isCopyingShifts ? "Copiando turnos..." : "Copiar todos los turnos de la semana anterior"}
+            >
+              <Copy className={`w-4 h-4 mr-2 ${isCopyingShifts ? 'animate-spin' : ''}`} />
+              <span>{isCopyingShifts ? 'Copiando...' : 'Repetir'}</span>
+            </button>
+          </div>
+
+          {/* Lado derecho: Ver 24h y Borrador */}
+          <div className="flex items-center space-x-3">
+            {/* 24h Toggle */}
+            <div className="flex items-center space-x-2 bg-gray-100 dark:bg-gray-700 rounded-lg px-3 py-2">
+              <label className="flex items-center space-x-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={show24Hours}
+                  onChange={(e) => setShow24Hours(e.target.checked)}
+                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                />
+                <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">
+                  Ver 24h
+                </span>
+              </label>
+            </div>
+            
+            {/* Botón de borrador */}
+            <button
+              onClick={() => setShowUnpublished(!showUnpublished)}
+              className={`flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                showUnpublished 
+                  ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/20 dark:text-primary-300' 
+                  : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
+              }`}
+            >
+              {showUnpublished ? <Eye className="w-4 h-4 mr-2" /> : <EyeOff className="w-4 h-4 mr-2" />}
+              Borrador
+            </button>
+          </div>
         </div>
       </div>
 
@@ -1282,15 +1282,15 @@ export default function ScheduleManagement() {
                           <div className="resize-handle resize-handle-left"></div>
                           
                           {/* Contenido de texto de la barra */}
-                          <div 
+                          <div
                             className="w-full h-full cursor-move flex flex-col justify-center px-2"
                             style={{
                               color: getTextColorForBackground(employee?.color || '#3B82F6')
                             }}
                           >
-                            {(() => {
-                              // Calcular qué elementos mostrar según el ancho de la barra
-                              const employeeNameLength = employee?.name?.length || 0;
+                                  {(() => {
+                                    // Calcular qué elementos mostrar según el ancho de la barra
+                                    const employeeNameLength = employee?.name?.length || 0;
                               
                               // Usar horarios temporales si estamos en drag/resize, sino usar los originales
                               const isBeingDragged = draggedElement && draggedElement.getAttribute('data-shift-id') === shift.id;
@@ -1303,72 +1303,72 @@ export default function ScheduleManagement() {
                               
                               const timeRangeText = `${currentStartTime}-${currentEndTime}`;
                               const durationText = formatHours(currentHours);
-                              
-                              // Umbrales dinámicos basados en el contenido
-                              const minWidthForName = Math.max(60, employeeNameLength * 6 + 20);
-                              const minWidthForTimeRange = Math.max(100, timeRangeText.length * 6 + 20);
-                              const minWidthForDuration = Math.max(80, durationText.length * 6 + 20);
+                                    
+                                    // Umbrales dinámicos basados en el contenido
+                                    const minWidthForName = Math.max(60, employeeNameLength * 6 + 20);
+                                    const minWidthForTimeRange = Math.max(100, timeRangeText.length * 6 + 20);
+                                    const minWidthForDuration = Math.max(80, durationText.length * 6 + 20);
                               
                               const showEmployeeName = currentWidth >= minWidthForName;
                               const showTimeRange = currentWidth >= minWidthForTimeRange;
                               const showDuration = currentWidth >= minWidthForDuration;
-                              
-                              // Si la barra es extremadamente pequeña, mostrar solo un indicador
+                                    
+                                    // Si la barra es extremadamente pequeña, mostrar solo un indicador
                               if (currentWidth < 40) {
-                                return (
-                                  <div className="flex items-center justify-center h-full">
-                                    <div className="w-1.5 h-1.5 bg-white rounded-full opacity-80"></div>
-                                  </div>
-                                );
-                              }
-                              
-                              return (
-                                <>
-                                  {/* Nombre del empleado - prioridad alta */}
-                                  {showEmployeeName && (
-                                    <div className="font-medium text-xs leading-tight flex items-center justify-between">
+                                      return (
+                                        <div className="flex items-center justify-center h-full">
+                                          <div className="w-1.5 h-1.5 bg-white rounded-full opacity-80"></div>
+                                        </div>
+                                      );
+                                    }
+                                    
+                                    return (
+                                      <>
+                                        {/* Nombre del empleado - prioridad alta */}
+                                        {showEmployeeName && (
+                                          <div className="font-medium text-xs leading-tight flex items-center justify-between">
                                       <span className="truncate" style={{ maxWidth: `${currentWidth - 10}px` }}>
-                                        {employee?.name}
-                                      </span>
-                                    </div>
-                                  )}
-                                  
-                                  {/* Rango de tiempo y duración - prioridad media */}
-                                  {(showTimeRange || showDuration) && (
-                                    <div className="text-xs opacity-90 leading-tight flex justify-between">
-                                      {showTimeRange && (
+                                              {employee?.name}
+                                            </span>
+                                          </div>
+                                        )}
+                                        
+                                        {/* Rango de tiempo y duración - prioridad media */}
+                                        {(showTimeRange || showDuration) && (
+                                          <div className="text-xs opacity-90 leading-tight flex justify-between">
+                                            {showTimeRange && (
                                         <span className="truncate" style={{ maxWidth: `${currentWidth - (showDuration ? 40 : 0)}px` }}>
-                                          {timeRangeText}
-                                        </span>
-                                      )}
-                                      {showDuration && (
-                                        <span className="opacity-75 font-medium flex-shrink-0 ml-1">{durationText}</span>
-                                      )}
-                                    </div>
-                                  )}
-                                  
-                                  {/* Si solo hay espacio para el nombre, mostrar iniciales */}
+                                                {timeRangeText}
+                                              </span>
+                                            )}
+                                            {showDuration && (
+                                              <span className="opacity-75 font-medium flex-shrink-0 ml-1">{durationText}</span>
+                                            )}
+                                          </div>
+                                        )}
+                                        
+                                        {/* Si solo hay espacio para el nombre, mostrar iniciales */}
                                   {!showEmployeeName && currentWidth >= 30 && (
-                                    <div className="flex items-center justify-center h-full">
+                                          <div className="flex items-center justify-center h-full">
                                       <span className="text-xs font-medium truncate" style={{ maxWidth: `${currentWidth - 10}px` }}>
-                                        {(() => {
-                                          if (!employee?.name) return '?';
-                                          const nameParts = employee.name.trim().split(' ');
-                                          if (nameParts.length >= 2) {
-                                            // Si tiene nombre y apellido, mostrar iniciales
-                                            return `${nameParts[0].charAt(0)}${nameParts[nameParts.length - 1].charAt(0)}`.toUpperCase();
-                                          } else {
-                                            // Si solo tiene un nombre, mostrar las primeras dos letras
-                                            return employee.name.substring(0, 2).toUpperCase();
-                                          }
-                                        })()}
-                                      </span>
-                                    </div>
-                                  )}
-                                </>
-                              );
-                            })()}
-                          </div>
+                                              {(() => {
+                                                if (!employee?.name) return '?';
+                                                const nameParts = employee.name.trim().split(' ');
+                                                if (nameParts.length >= 2) {
+                                                  // Si tiene nombre y apellido, mostrar iniciales
+                                                  return `${nameParts[0].charAt(0)}${nameParts[nameParts.length - 1].charAt(0)}`.toUpperCase();
+                                                } else {
+                                                  // Si solo tiene un nombre, mostrar las primeras dos letras
+                                                  return employee.name.substring(0, 2).toUpperCase();
+                                                }
+                                              })()}
+                                            </span>
+                                          </div>
+                                        )}
+                                      </>
+                                    );
+                                  })()}
+                                </div>
                           
                           <div className="resize-handle resize-handle-right"></div>
                         </div>
