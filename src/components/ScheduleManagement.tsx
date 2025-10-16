@@ -259,13 +259,10 @@ export default function ScheduleManagement() {
     const containerWidth = scrollContainerRef.current?.offsetWidth || 800;
     const availableWidth = containerWidth - dayColumnWidth;
     
-    // Redondear el tiempo para mantener consistencia con positionToTime
-    const roundedTimeInMinutes = roundToIncrement(timeInHours * 60, 5);
-    const roundedTimeInHours = roundedTimeInMinutes / 60;
-    
-    // Usar la misma fórmula que en el cálculo inicial
+    // NO redondear aquí para evitar saltos visuales
+    // Solo redondear en positionToTime cuando se convierte de vuelta a tiempo
     const totalHours = endHour - startHour + 1;
-    const relativePosition = (roundedTimeInHours - startHour) / totalHours;
+    const relativePosition = (timeInHours - startHour) / totalHours;
     
     return dayColumnWidth + (relativePosition * availableWidth);
   };
