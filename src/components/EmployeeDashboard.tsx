@@ -235,65 +235,8 @@ export default function EmployeeDashboard() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {activeTab === 'schedule' ? (
           <>
-            {/* Navigation and View Toggle */}
-            <div className="bg-gray-200 rounded-lg shadow p-6 mb-6 dark:bg-gray-800 dark:border dark:border-gray-700">
-              <div className="flex justify-between items-center mb-4">
-                <div className="flex items-center space-x-4">
-                  {viewMode === 'list' ? (
-                    <>
-                      <button
-                        onClick={() => navigateWeek('prev')}
-                        className="flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
-                      >
-                        <ChevronLeft className="w-4 h-4" />
-                        <span>Semana Anterior</span>
-                      </button>
-                      <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                        {format(weekStart, 'd MMM', { locale: es })} - {format(weekEnd, 'd MMM yyyy', { locale: es })}
-                      </h2>
-                      <button
-                        onClick={() => navigateWeek('next')}
-                        className="flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
-                      >
-                        <span>Semana Siguiente</span>
-                        <ChevronRight className="w-4 h-4" />
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <button
-                        onClick={() => navigateMonth('prev')}
-                        className="flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
-                      >
-                        <ChevronLeft className="w-4 h-4" />
-                        <span>Mes Anterior</span>
-                      </button>
-                      <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                        {format(currentMonth, 'MMMM yyyy', { locale: es })}
-                      </h2>
-                      <button
-                        onClick={() => navigateMonth('next')}
-                        className="flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
-                      >
-                        <span>Mes Siguiente</span>
-                        <ChevronRight className="w-4 h-4" />
-                      </button>
-                    </>
-                  )}
-                </div>
-                <div className="flex items-center space-x-2">
-                  <button
-                    onClick={() => viewMode === 'list' ? setCurrentWeek(new Date()) : setCurrentMonth(new Date())}
-                    className="text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300"
-                  >
-                    {viewMode === 'list' ? 'Esta Semana' : 'Este Mes'}
-                  </button>
-                </div>
-              </div>
-            </div>
-
-        {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            {/* Summary Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
           <div className="bg-gray-200 rounded-lg shadow p-6 dark:bg-gray-800">
             <div className="flex items-center">
               <Calendar className="w-8 h-8 text-primary-600 mr-3" />
@@ -321,6 +264,63 @@ export default function EmployeeDashboard() {
                 <p className="text-sm text-gray-600 dark:text-gray-400">Tope Semanal</p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{currentEmployee.weeklyLimit}h</p>
               </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Navigation */}
+        <div className="bg-gray-200 rounded-lg shadow p-6 mb-6 dark:bg-gray-800 dark:border dark:border-gray-700">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center space-x-4">
+              {viewMode === 'list' ? (
+                <>
+                  <button
+                    onClick={() => navigateWeek('prev')}
+                    className="flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                    <span>Semana Anterior</span>
+                  </button>
+                  <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                    {format(weekStart, 'd MMM', { locale: es })} - {format(weekEnd, 'd MMM yyyy', { locale: es })}
+                  </h2>
+                  <button
+                    onClick={() => navigateWeek('next')}
+                    className="flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
+                  >
+                    <span>Semana Siguiente</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={() => navigateMonth('prev')}
+                    className="flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                    <span>Mes Anterior</span>
+                  </button>
+                  <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                    {format(currentMonth, 'MMMM yyyy', { locale: es })}
+                  </h2>
+                  <button
+                    onClick={() => navigateMonth('next')}
+                    className="flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
+                  >
+                    <span>Mes Siguiente</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </>
+              )}
+            </div>
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => viewMode === 'list' ? setCurrentWeek(new Date()) : setCurrentMonth(new Date())}
+                className="text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300"
+              >
+                {viewMode === 'list' ? 'Esta Semana' : 'Este Mes'}
+              </button>
             </div>
           </div>
         </div>
