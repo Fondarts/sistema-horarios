@@ -254,6 +254,25 @@ export default function ScheduleManagement() {
     return minutesToTime(roundedMinutes);
   };
 
+  // Versión sin redondeo para mantener posiciones exactas al guardar
+  const positionToTimeExact = (position: number, startHour: number, endHour: number): string => {
+    const dayColumnWidth = isMobile ? 60 : (isCompactMode ? 100 : 120);
+    const containerWidth = scrollContainerRef.current?.offsetWidth || 800;
+    const availableWidth = containerWidth - dayColumnWidth;
+    
+    // Calcular la posición relativa (0-1)
+    const relativePosition = Math.max(0, Math.min(1, (position - dayColumnWidth) / availableWidth));
+    
+    // Convertir a horas - usar la misma fórmula que en el cálculo inicial
+    const totalHours = endHour - startHour + 1;
+    const timeInHours = startHour + (relativePosition * totalHours);
+    
+    // NO redondear para mantener posición exacta
+    const timeInMinutes = timeInHours * 60;
+    
+    return minutesToTime(timeInMinutes);
+  };
+
   const timeToPosition = (timeInHours: number, startHour: number, endHour: number): number => {
     const dayColumnWidth = isMobile ? 60 : (isCompactMode ? 100 : 120);
     const containerWidth = scrollContainerRef.current?.offsetWidth || 800;
@@ -662,8 +681,8 @@ export default function ScheduleManagement() {
           const currentShift = shifts.find(s => s.id === shiftId);
           if (currentShift) {
             const { startHour, endHour } = getStoreHoursRange();
-            const newStartTime = positionToTime(draggedElement.offsetLeft, startHour, endHour);
-            const newEndTime = positionToTime(draggedElement.offsetLeft + draggedElement.offsetWidth, startHour, endHour);
+            const newStartTime = positionToTimeExact(draggedElement.offsetLeft, startHour, endHour);
+            const newEndTime = positionToTimeExact(draggedElement.offsetLeft + draggedElement.offsetWidth, startHour, endHour);
             const newHours = (timeToMinutes(newEndTime) - timeToMinutes(newStartTime)) / 60;
 
             updateShift(shiftId, {
@@ -752,8 +771,8 @@ export default function ScheduleManagement() {
           const currentShift = shifts.find(s => s.id === shiftId);
           if (currentShift) {
             const { startHour, endHour } = getStoreHoursRange();
-            const newStartTime = positionToTime(resizingElement.offsetLeft, startHour, endHour);
-            const newEndTime = positionToTime(resizingElement.offsetLeft + resizingElement.offsetWidth, startHour, endHour);
+            const newStartTime = positionToTimeExact(resizingElement.offsetLeft, startHour, endHour);
+            const newEndTime = positionToTimeExact(resizingElement.offsetLeft + resizingElement.offsetWidth, startHour, endHour);
             const newHours = (timeToMinutes(newEndTime) - timeToMinutes(newStartTime)) / 60;
 
             updateShift(shiftId, {
