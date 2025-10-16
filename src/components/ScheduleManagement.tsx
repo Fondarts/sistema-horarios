@@ -259,16 +259,6 @@ export default function ScheduleManagement() {
     const containerWidth = scrollContainerRef.current?.offsetWidth || 800;
     const availableWidth = containerWidth - dayColumnWidth;
     
-    // Debug: verificar valores
-    console.log('timeToPosition debug:', {
-      timeInHours,
-      startHour,
-      endHour,
-      dayColumnWidth,
-      containerWidth,
-      availableWidth
-    });
-    
     // Redondear el tiempo para mantener consistencia con positionToTime
     const roundedTimeInMinutes = roundToIncrement(timeInHours * 60, 5);
     const roundedTimeInHours = roundedTimeInMinutes / 60;
@@ -277,10 +267,7 @@ export default function ScheduleManagement() {
     const totalHours = endHour - startHour + 1;
     const relativePosition = (roundedTimeInHours - startHour) / totalHours;
     
-    const result = dayColumnWidth + (relativePosition * availableWidth);
-    console.log('timeToPosition result:', result);
-    
-    return result;
+    return dayColumnWidth + (relativePosition * availableWidth);
   };
 
   // Función para calcular el contraste y determinar el color del texto
@@ -672,6 +659,26 @@ export default function ScheduleManagement() {
 
     const stopDrag = () => {
       if (draggedElement) {
+        // Guardar los cambios antes de limpiar
+        const shiftId = draggedElement.dataset.shiftId;
+        if (shiftId) {
+          const currentShift = shifts.find(s => s.id === shiftId);
+          if (currentShift) {
+            const { startHour, endHour } = getStoreHoursRange();
+            const newStartTime = positionToTime(draggedElement.offsetLeft, startHour, endHour);
+            const newEndTime = positionToTime(draggedElement.offsetLeft + draggedElement.offsetWidth, startHour, endHour);
+            const newHours = (timeToMinutes(newEndTime) - timeToMinutes(newStartTime)) / 60;
+
+            updateShift(shiftId, {
+              ...currentShift,
+              startTime: newStartTime,
+              endTime: newEndTime,
+              hours: newHours,
+              isPublished: false,
+            });
+          }
+        }
+
         draggedElement.style.opacity = '1';
         draggedElement.style.zIndex = '';
         setDraggedElement(null);
@@ -741,7 +748,31 @@ export default function ScheduleManagement() {
     };
 
     const stopResize = () => {
-      setResizingElement(null);
+      if (resizingElement) {
+        // Guardar los cambios antes de limpiar
+        const shiftId = resizingElement.dataset.shiftId;
+        if (shiftId) {
+          const currentShift = shifts.find(s => s.id === shiftId);
+          if (currentShift) {
+            const { startHour, endHour } = getStoreHoursRange();
+            const newStartTime = positionToTime(resizingElement.offsetLeft, startHour, endHour);
+            const newEndTime = positionToTime(resizingElement.offsetLeft + resizingElement.offsetWidth, startHour, endHour);
+            const newHours = (timeToMinutes(newEndTime) - timeToMinutes(newStartTime)) / 60;
+
+            updateShift(shiftId, {
+              ...currentShift,
+              startTime: newStartTime,
+              endTime: newEndTime,
+              hours: newHours,
+              isPublished: false,
+            });
+          }
+        }
+
+        resizingElement.style.opacity = '1';
+        resizingElement.style.zIndex = '';
+        setResizingElement(null);
+      }
       
       // Limpiar estados temporales
       setTempStartTime(null);
