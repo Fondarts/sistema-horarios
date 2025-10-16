@@ -142,6 +142,7 @@ export default function ScheduleManagement() {
   const [tempStartTime, setTempStartTime] = useState<string>('');
   const [tempEndTime, setTempEndTime] = useState<string>('');
   const [tempHours, setTempHours] = useState<number>(0);
+  const [tempWidth, setTempWidth] = useState<number>(0);
   
   const [isCopyingShifts, setIsCopyingShifts] = useState(false);
   const [show24Hours, setShow24Hours] = useState(false); // Toggle for 24h vs focused view
@@ -296,6 +297,7 @@ export default function ScheduleManagement() {
     setTempStartTime(shift.startTime);
     setTempEndTime(shift.endTime);
     setTempHours(shift.hours);
+    setTempWidth(target.offsetWidth);
     
     target.style.opacity = '0.7';
     target.style.zIndex = '1000';
@@ -318,6 +320,7 @@ export default function ScheduleManagement() {
     setTempStartTime(shift.startTime);
     setTempEndTime(shift.endTime);
     setTempHours(shift.hours);
+    setTempWidth(target.offsetWidth);
     
     e.preventDefault();
   };
@@ -657,6 +660,7 @@ export default function ScheduleManagement() {
       setTempStartTime(newStartTime);
       setTempEndTime(newEndTime);
       setTempHours(newHours);
+      setTempWidth(draggedElement.offsetWidth);
     };
 
     const stopDrag = async () => {
@@ -687,6 +691,7 @@ export default function ScheduleManagement() {
         setTempStartTime('');
         setTempEndTime('');
         setTempHours(0);
+        setTempWidth(0);
       }
     };
 
@@ -713,6 +718,7 @@ export default function ScheduleManagement() {
           setTempStartTime(newStartTime);
           setTempEndTime(newEndTime);
           setTempHours(newHours);
+          setTempWidth(newWidth);
         }
       } else {
         // Redimensionar desde la derecha
@@ -732,6 +738,7 @@ export default function ScheduleManagement() {
         setTempStartTime(newStartTime);
         setTempEndTime(newEndTime);
         setTempHours(newHours);
+        setTempWidth(newWidth);
       }
     };
 
@@ -763,6 +770,7 @@ export default function ScheduleManagement() {
       setTempStartTime('');
       setTempEndTime('');
       setTempHours(0);
+      setTempWidth(0);
     };
 
     if (draggedElement) {
@@ -1291,6 +1299,7 @@ export default function ScheduleManagement() {
                               const currentStartTime = (isBeingDragged || isBeingResized) ? tempStartTime : shift.startTime;
                               const currentEndTime = (isBeingDragged || isBeingResized) ? tempEndTime : shift.endTime;
                               const currentHours = (isBeingDragged || isBeingResized) ? tempHours : shift.hours;
+                              const currentWidth = (isBeingDragged || isBeingResized) ? tempWidth : width;
                               
                               const timeRangeText = `${currentStartTime}-${currentEndTime}`;
                               const durationText = formatHours(currentHours);
@@ -1300,12 +1309,12 @@ export default function ScheduleManagement() {
                               const minWidthForTimeRange = Math.max(100, timeRangeText.length * 6 + 20);
                               const minWidthForDuration = Math.max(80, durationText.length * 6 + 20);
                               
-                              const showEmployeeName = width >= minWidthForName;
-                              const showTimeRange = width >= minWidthForTimeRange;
-                              const showDuration = width >= minWidthForDuration;
+                              const showEmployeeName = currentWidth >= minWidthForName;
+                              const showTimeRange = currentWidth >= minWidthForTimeRange;
+                              const showDuration = currentWidth >= minWidthForDuration;
                               
                               // Si la barra es extremadamente pequeña, mostrar solo un indicador
-                              if (width < 40) {
+                              if (currentWidth < 40) {
                                 return (
                                   <div className="flex items-center justify-center h-full">
                                     <div className="w-1.5 h-1.5 bg-white rounded-full opacity-80"></div>
@@ -1318,7 +1327,7 @@ export default function ScheduleManagement() {
                                   {/* Nombre del empleado - prioridad alta */}
                                   {showEmployeeName && (
                                     <div className="font-medium text-xs leading-tight flex items-center justify-between">
-                                      <span className="truncate" style={{ maxWidth: `${width - 10}px` }}>
+                                      <span className="truncate" style={{ maxWidth: `${currentWidth - 10}px` }}>
                                         {employee?.name}
                                       </span>
                                     </div>
@@ -1328,7 +1337,7 @@ export default function ScheduleManagement() {
                                   {(showTimeRange || showDuration) && (
                                     <div className="text-xs opacity-90 leading-tight flex justify-between">
                                       {showTimeRange && (
-                                        <span className="truncate" style={{ maxWidth: `${width - (showDuration ? 40 : 0)}px` }}>
+                                        <span className="truncate" style={{ maxWidth: `${currentWidth - (showDuration ? 40 : 0)}px` }}>
                                           {timeRangeText}
                                         </span>
                                       )}
@@ -1339,9 +1348,9 @@ export default function ScheduleManagement() {
                                   )}
                                   
                                   {/* Si solo hay espacio para el nombre, mostrar iniciales */}
-                                  {!showEmployeeName && width >= 30 && (
+                                  {!showEmployeeName && currentWidth >= 30 && (
                                     <div className="flex items-center justify-center h-full">
-                                      <span className="text-xs font-medium truncate" style={{ maxWidth: `${width - 10}px` }}>
+                                      <span className="text-xs font-medium truncate" style={{ maxWidth: `${currentWidth - 10}px` }}>
                                         {(() => {
                                           if (!employee?.name) return '?';
                                           const nameParts = employee.name.trim().split(' ');
