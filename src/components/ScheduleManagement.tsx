@@ -137,6 +137,12 @@ export default function ScheduleManagement() {
   const [startWidth, setStartWidth] = useState(0);
   const [containerRect, setContainerRect] = useState<DOMRect | null>(null);
   const [isResizingLeft, setIsResizingLeft] = useState(false);
+  
+  // Estados para horarios temporales durante drag/resize
+  const [tempStartTime, setTempStartTime] = useState<string>('');
+  const [tempEndTime, setTempEndTime] = useState<string>('');
+  const [tempHours, setTempHours] = useState<number>(0);
+  
   const [isCopyingShifts, setIsCopyingShifts] = useState(false);
   const [show24Hours, setShow24Hours] = useState(false); // Toggle for 24h vs focused view
   const ganttRef = useRef<HTMLDivElement>(null);
@@ -222,6 +228,40 @@ export default function ScheduleManagement() {
     return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
   };
 
+  // Función para convertir posición a tiempo
+  const positionToTime = (position: number, isStart: boolean = true): string => {
+    const dayColumnWidth = isMobile ? 60 : (isCompactMode ? 100 : 120);
+    const containerWidth = scrollContainerRef.current?.offsetWidth || 800;
+    const availableWidth = containerWidth - dayColumnWidth;
+    
+    // Calcular la posición relativa (0-1)
+    const relativePosition = Math.max(0, Math.min(1, (position - dayColumnWidth) / availableWidth));
+    
+    // Convertir a horas
+    const totalHours = endHour - startHour;
+    const timeInHours = startHour + (relativePosition * totalHours);
+    
+    // Redondear a incrementos de 5 minutos
+    const minutes = Math.round(timeInHours * 12) * 5; // 12 incrementos de 5 minutos por hora
+    
+    return minutesToTime(minutes);
+  };
+
+  // Función para convertir tiempo a posición
+  const timeToPosition = (time: string): number => {
+    const [hours, minutes] = time.split(':').map(Number);
+    const timeInHours = hours + (minutes / 60);
+    
+    const dayColumnWidth = isMobile ? 60 : (isCompactMode ? 100 : 120);
+    const containerWidth = scrollContainerRef.current?.offsetWidth || 800;
+    const availableWidth = containerWidth - dayColumnWidth;
+    
+    const totalHours = endHour - startHour;
+    const relativePosition = (timeInHours - startHour) / totalHours;
+    
+    return dayColumnWidth + (relativePosition * availableWidth);
+  };
+
   const roundToIncrement = (minutes: number, increment: number = 5): number => {
     return Math.round(minutes / increment) * increment;
   };
@@ -246,11 +286,16 @@ export default function ScheduleManagement() {
     // No iniciar arrastre si estamos redimensionando
     if ((e.target as HTMLElement).classList.contains('resize-handle')) return;
     
-        const target = e.currentTarget as HTMLDivElement;
+    const target = e.currentTarget as HTMLDivElement;
     setDraggedElement(target);
     setContainerRect(target.parentElement?.getBoundingClientRect() || null);
     setStartX(e.clientX);
     setStartLeft(target.offsetLeft);
+    
+    // Inicializar horarios temporales
+    setTempStartTime(shift.startTime);
+    setTempEndTime(shift.endTime);
+    setTempHours(shift.hours);
     
     target.style.opacity = '0.7';
     target.style.zIndex = '1000';
@@ -268,6 +313,11 @@ export default function ScheduleManagement() {
     setStartLeft(target.offsetLeft);
     setStartWidth(target.offsetWidth);
     setIsResizingLeft(isLeft);
+    
+    // Inicializar horarios temporales
+    setTempStartTime(shift.startTime);
+    setTempEndTime(shift.endTime);
+    setTempHours(shift.hours);
     
     e.preventDefault();
   };
@@ -598,13 +648,45 @@ export default function ScheduleManagement() {
       newLeft = Math.max(0, Math.min(newLeft, maxLeft));
       
       draggedElement.style.left = newLeft + 'px';
+      
+      // Actualizar horarios temporales en tiempo real
+      const newStartTime = positionToTime(newLeft);
+      const newEndTime = positionToTime(newLeft + draggedElement.offsetWidth, false);
+      const newHours = (timeToMinutes(newEndTime) - timeToMinutes(newStartTime)) / 60;
+      
+      setTempStartTime(newStartTime);
+      setTempEndTime(newEndTime);
+      setTempHours(newHours);
     };
 
-    const stopDrag = () => {
+    const stopDrag = async () => {
       if (draggedElement) {
+        // Calcular nuevos horarios basados en la posición final
+        const newLeft = draggedElement.offsetLeft;
+        const newStartTime = positionToTime(newLeft);
+        const newEndTime = positionToTime(newLeft + draggedElement.offsetWidth, false);
+        const newHours = (timeToMinutes(newEndTime) - timeToMinutes(newStartTime)) / 60;
+        
+        // Obtener el ID del turno
+        const shiftId = draggedElement.getAttribute('data-shift-id');
+        
+        if (shiftId) {
+          // Actualizar el turno con los nuevos horarios
+          await updateShift(shiftId, {
+            startTime: newStartTime,
+            endTime: newEndTime,
+            hours: newHours
+          });
+        }
+        
         draggedElement.style.opacity = '1';
         draggedElement.style.zIndex = '';
         setDraggedElement(null);
+        
+        // Limpiar estados temporales
+        setTempStartTime('');
+        setTempEndTime('');
+        setTempHours(0);
       }
     };
 
@@ -622,6 +704,15 @@ export default function ScheduleManagement() {
         if (newWidth >= 20 && newLeft >= 0) {
           resizingElement.style.left = newLeft + 'px';
           resizingElement.style.width = newWidth + 'px';
+          
+          // Actualizar horarios temporales en tiempo real
+          const newStartTime = positionToTime(newLeft);
+          const newEndTime = positionToTime(newLeft + newWidth, false);
+          const newHours = (timeToMinutes(newEndTime) - timeToMinutes(newStartTime)) / 60;
+          
+          setTempStartTime(newStartTime);
+          setTempEndTime(newEndTime);
+          setTempHours(newHours);
         }
       } else {
         // Redimensionar desde la derecha
@@ -632,11 +723,46 @@ export default function ScheduleManagement() {
         newWidth = Math.max(20, Math.min(newWidth, maxWidth));
         
         resizingElement.style.width = newWidth + 'px';
+        
+        // Actualizar horarios temporales en tiempo real
+        const newStartTime = positionToTime(startLeft);
+        const newEndTime = positionToTime(startLeft + newWidth, false);
+        const newHours = (timeToMinutes(newEndTime) - timeToMinutes(newStartTime)) / 60;
+        
+        setTempStartTime(newStartTime);
+        setTempEndTime(newEndTime);
+        setTempHours(newHours);
       }
     };
 
-    const stopResize = () => {
+    const stopResize = async () => {
+      if (resizingElement) {
+        // Calcular nuevos horarios basados en la posición y tamaño final
+        const newLeft = resizingElement.offsetLeft;
+        const newWidth = resizingElement.offsetWidth;
+        const newStartTime = positionToTime(newLeft);
+        const newEndTime = positionToTime(newLeft + newWidth, false);
+        const newHours = (timeToMinutes(newEndTime) - timeToMinutes(newStartTime)) / 60;
+        
+        // Obtener el ID del turno
+        const shiftId = resizingElement.getAttribute('data-shift-id');
+        
+        if (shiftId) {
+          // Actualizar el turno con los nuevos horarios
+          await updateShift(shiftId, {
+            startTime: newStartTime,
+            endTime: newEndTime,
+            hours: newHours
+          });
+        }
+      }
+      
       setResizingElement(null);
+      
+      // Limpiar estados temporales
+      setTempStartTime('');
+      setTempEndTime('');
+      setTempHours(0);
     };
 
     if (draggedElement) {
@@ -1146,6 +1272,95 @@ export default function ScheduleManagement() {
                         >
                           {/* Handles dentro de la barra, exactamente como en el ejemplo HTML */}
                           <div className="resize-handle resize-handle-left"></div>
+                          
+                          {/* Contenido de texto de la barra */}
+                          <div 
+                            className="w-full h-full cursor-move flex flex-col justify-center px-2"
+                            style={{
+                              color: getTextColorForBackground(employee?.color || '#3B82F6')
+                            }}
+                          >
+                            {(() => {
+                              // Calcular qué elementos mostrar según el ancho de la barra
+                              const employeeNameLength = employee?.name?.length || 0;
+                              
+                              // Usar horarios temporales si estamos en drag/resize, sino usar los originales
+                              const isBeingDragged = draggedElement && draggedElement.getAttribute('data-shift-id') === shift.id;
+                              const isBeingResized = resizingElement && resizingElement.getAttribute('data-shift-id') === shift.id;
+                              
+                              const currentStartTime = (isBeingDragged || isBeingResized) ? tempStartTime : shift.startTime;
+                              const currentEndTime = (isBeingDragged || isBeingResized) ? tempEndTime : shift.endTime;
+                              const currentHours = (isBeingDragged || isBeingResized) ? tempHours : shift.hours;
+                              
+                              const timeRangeText = `${currentStartTime}-${currentEndTime}`;
+                              const durationText = formatHours(currentHours);
+                              
+                              // Umbrales dinámicos basados en el contenido
+                              const minWidthForName = Math.max(60, employeeNameLength * 6 + 20);
+                              const minWidthForTimeRange = Math.max(100, timeRangeText.length * 6 + 20);
+                              const minWidthForDuration = Math.max(80, durationText.length * 6 + 20);
+                              
+                              const showEmployeeName = width >= minWidthForName;
+                              const showTimeRange = width >= minWidthForTimeRange;
+                              const showDuration = width >= minWidthForDuration;
+                              
+                              // Si la barra es extremadamente pequeña, mostrar solo un indicador
+                              if (width < 40) {
+                                return (
+                                  <div className="flex items-center justify-center h-full">
+                                    <div className="w-1.5 h-1.5 bg-white rounded-full opacity-80"></div>
+                                  </div>
+                                );
+                              }
+                              
+                              return (
+                                <>
+                                  {/* Nombre del empleado - prioridad alta */}
+                                  {showEmployeeName && (
+                                    <div className="font-medium text-xs leading-tight flex items-center justify-between">
+                                      <span className="truncate" style={{ maxWidth: `${width - 10}px` }}>
+                                        {employee?.name}
+                                      </span>
+                                    </div>
+                                  )}
+                                  
+                                  {/* Rango de tiempo y duración - prioridad media */}
+                                  {(showTimeRange || showDuration) && (
+                                    <div className="text-xs opacity-90 leading-tight flex justify-between">
+                                      {showTimeRange && (
+                                        <span className="truncate" style={{ maxWidth: `${width - (showDuration ? 40 : 0)}px` }}>
+                                          {timeRangeText}
+                                        </span>
+                                      )}
+                                      {showDuration && (
+                                        <span className="opacity-75 font-medium flex-shrink-0 ml-1">{durationText}</span>
+                                      )}
+                                    </div>
+                                  )}
+                                  
+                                  {/* Si solo hay espacio para el nombre, mostrar iniciales */}
+                                  {!showEmployeeName && width >= 30 && (
+                                    <div className="flex items-center justify-center h-full">
+                                      <span className="text-xs font-medium truncate" style={{ maxWidth: `${width - 10}px` }}>
+                                        {(() => {
+                                          if (!employee?.name) return '?';
+                                          const nameParts = employee.name.trim().split(' ');
+                                          if (nameParts.length >= 2) {
+                                            // Si tiene nombre y apellido, mostrar iniciales
+                                            return `${nameParts[0].charAt(0)}${nameParts[nameParts.length - 1].charAt(0)}`.toUpperCase();
+                                          } else {
+                                            // Si solo tiene un nombre, mostrar las primeras dos letras
+                                            return employee.name.substring(0, 2).toUpperCase();
+                                          }
+                                        })()}
+                                      </span>
+                                    </div>
+                                  )}
+                                </>
+                              );
+                            })()}
+                          </div>
+                          
                           <div className="resize-handle resize-handle-right"></div>
                         </div>
                       );
