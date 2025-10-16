@@ -206,7 +206,7 @@ export const AbsenceManagement: React.FC = () => {
 
               {/* Estadísticas */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow border border-gray-200 dark:border-gray-700">
+                <div className="bg-gray-200 dark:bg-gray-800 p-4 rounded-lg shadow border border-gray-200 dark:border-gray-700">
                   <div className="flex items-center">
                     <Calendar className="w-8 h-8 text-blue-500" />
                     <div className="ml-3">
@@ -215,7 +215,7 @@ export const AbsenceManagement: React.FC = () => {
                     </div>
                   </div>
                 </div>
-                <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow border border-gray-200 dark:border-gray-700">
+                <div className="bg-gray-200 dark:bg-gray-800 p-4 rounded-lg shadow border border-gray-200 dark:border-gray-700">
                   <div className="flex items-center">
                     <Clock className="w-8 h-8 text-yellow-500" />
                     <div className="ml-3">
@@ -224,7 +224,7 @@ export const AbsenceManagement: React.FC = () => {
                     </div>
                   </div>
                 </div>
-                <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow border border-gray-200 dark:border-gray-700">
+                <div className="bg-gray-200 dark:bg-gray-800 p-4 rounded-lg shadow border border-gray-200 dark:border-gray-700">
                   <div className="flex items-center">
                     <CheckCircle className="w-8 h-8 text-green-500" />
                     <div className="ml-3">
@@ -233,7 +233,7 @@ export const AbsenceManagement: React.FC = () => {
                     </div>
                   </div>
                 </div>
-                <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow border border-gray-200 dark:border-gray-700">
+                <div className="bg-gray-200 dark:bg-gray-800 p-4 rounded-lg shadow border border-gray-200 dark:border-gray-700">
                   <div className="flex items-center">
                     <User className="w-8 h-8 text-purple-500" />
                     <div className="ml-3">
@@ -245,14 +245,14 @@ export const AbsenceManagement: React.FC = () => {
               </div>
 
               {/* Filtros */}
-              <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow border border-gray-200 dark:border-gray-700">
+              <div className="bg-gray-200 dark:bg-gray-800 p-4 rounded-lg shadow border border-gray-200 dark:border-gray-700">
                 <div className="flex flex-wrap gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tipo</label>
                     <select
                       value={selectedType}
                       onChange={(e) => setSelectedType(e.target.value as AbsenceType)}
-                      className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-50"
+                      className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-50"
                     >
                       <option value="all">Todos los tipos</option>
                       {Object.entries(ABSENCE_TYPE_LABELS).map(([value, label]) => (
@@ -265,7 +265,7 @@ export const AbsenceManagement: React.FC = () => {
                     <select
                       value={selectedStatus}
                       onChange={(e) => setSelectedStatus(e.target.value as AbsenceStatus | 'all')}
-                      className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-50"
+                      className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-50"
                     >
                       <option value="all">Todos los estados</option>
                       {Object.entries(ABSENCE_STATUS_LABELS).map(([value, label]) => (
@@ -278,7 +278,7 @@ export const AbsenceManagement: React.FC = () => {
                     <select
                       value={selectedEmployee}
                       onChange={(e) => setSelectedEmployee(e.target.value)}
-                      className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-50"
+                      className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-50"
                     >
                       <option value="">Todos los empleados</option>
                       {employees.map(employee => (
@@ -290,7 +290,7 @@ export const AbsenceManagement: React.FC = () => {
               </div>
 
               {/* Lista de solicitudes */}
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden border border-gray-200 dark:border-gray-700">
+              <div className="bg-gray-200 dark:bg-gray-800 rounded-lg shadow overflow-hidden border border-gray-200 dark:border-gray-700">
                 <div className="overflow-x-auto">
                   <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                     <thead className="bg-gray-50 dark:bg-gray-700">
@@ -386,7 +386,7 @@ export const AbsenceManagement: React.FC = () => {
               {/* Modal de nueva solicitud */}
               {showNewRequestForm && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                  <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md border border-gray-200 dark:border-gray-700">
+                  <div className="bg-gray-200 dark:bg-gray-800 rounded-lg p-6 w-full max-w-md border border-gray-200 dark:border-gray-700">
                     <h3 className="text-lg font-medium text-gray-900 dark:text-gray-50 mb-4">Nueva Solicitud de Ausencia</h3>
                     <form onSubmit={handleSubmitRequest} className="space-y-4">
                       <div>

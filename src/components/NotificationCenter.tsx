@@ -180,7 +180,7 @@ export function NotificationCenter({ employees, currentEmployee, isManager }: No
           if (!isOpen) {
             // Marcar todas las notificaciones de alta prioridad como vistas cuando se abre
             const highPriorityNotifications = notifications.filter(n => n.priority === 'high');
-            const newViewedIds = new Set([...viewedNotifications, ...highPriorityNotifications.map(n => n.id)]);
+            const newViewedIds = new Set([...Array.from(viewedNotifications), ...highPriorityNotifications.map(n => n.id)]);
             setViewedNotifications(newViewedIds);
           }
           setIsOpen(!isOpen);
