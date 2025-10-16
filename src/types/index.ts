@@ -1,6 +1,6 @@
 // Tipos principales del sistema
 
-export type UserRole = 'encargado' | 'empleado';
+export type UserRole = 'encargado' | 'empleado' | 'distrito';
 
 export interface User {
   id: string;
@@ -20,7 +20,7 @@ export interface Employee {
   birthday: string; // formato YYYY-MM-DD
   isActive: boolean;
   color: string; // color hexadecimal para las barras del empleado
-  role: 'encargado' | 'empleado'; // rol del empleado
+  role: 'encargado' | 'empleado' | 'distrito'; // rol del empleado
   isManager?: boolean; // para compatibilidad con el sistema multitiendas
   storeId?: string; // ID de la tienda a la que pertenece el empleado
   monthlyHoursLimit?: number; // límite mensual de horas
