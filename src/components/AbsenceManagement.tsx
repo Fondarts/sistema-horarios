@@ -49,7 +49,7 @@ export const AbsenceManagement: React.FC = () => {
 
   // Formulario de nueva solicitud
   const [newRequest, setNewRequest] = useState({
-    employeeId: currentEmployee.role === 'empleado' ? currentEmployee.id : '',
+    employeeId: currentEmployee?.role === 'empleado' ? currentEmployee.id : '',
     startDate: '',
     endDate: '',
     reason: '',
@@ -198,7 +198,7 @@ export const AbsenceManagement: React.FC = () => {
         <button
           onClick={() => {
             setNewRequest({
-              employeeId: currentEmployee.role === 'empleado' ? currentEmployee.id : '',
+              employeeId: currentEmployee?.role === 'empleado' ? currentEmployee.id : '',
               startDate: '',
               endDate: '',
               reason: '',
@@ -399,7 +399,7 @@ export const AbsenceManagement: React.FC = () => {
                     <h3 className="text-lg font-medium text-gray-900 dark:text-gray-50 mb-4">Nueva Solicitud de Ausencia</h3>
                     <form onSubmit={handleSubmitRequest} className="space-y-4">
                       {/* Solo mostrar selector de empleado para encargados y encargados de distrito */}
-                      {(currentEmployee.role === 'encargado' || currentEmployee.role === 'distrito') && (
+                      {(currentEmployee?.role === 'encargado' || currentEmployee?.role === 'distrito') && (
                         <div>
                           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Empleado</label>
                           <select
