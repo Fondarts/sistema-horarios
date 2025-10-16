@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useSchedule } from '../contexts/ScheduleContext';
 import { useEmployees } from '../contexts/EmployeeContext';
-import { format, startOfWeek, endOfWeek, eachDayOfInterval, addWeeks, subWeeks } from 'date-fns';
+import { format, startOfWeek, endOfWeek, eachDayOfInterval, addWeeks, subWeeks, startOfMonth, endOfMonth, addMonths, subMonths, isSameMonth, isSameDay } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { ChevronLeft, ChevronRight, LogOut, Calendar, Clock, UserX } from 'lucide-react';
+import { ChevronLeft, ChevronRight, LogOut, Calendar, Clock, UserX, List, Grid3X3 } from 'lucide-react';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { useCompactMode } from '../contexts/CompactModeContext';
 import { ThemeToggle } from './ThemeToggle';
@@ -21,9 +21,11 @@ export default function EmployeeDashboard() {
   const { employees } = useEmployees();
   const { isCompactMode, isMobile } = useCompactMode();
   const [currentWeek, setCurrentWeek] = useState(new Date());
+  const [currentMonth, setCurrentMonth] = useState(new Date());
   const [showBirthdayNotification, setShowBirthdayNotification] = useState(true);
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
   const [activeTab, setActiveTab] = useState<'schedule' | 'vacations'>('schedule');
+  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
 
   // Atajos de teclado para empleados
   useKeyboardShortcuts([
@@ -73,6 +75,14 @@ export default function EmployeeDashboard() {
     }
   };
 
+  const navigateMonth = (direction: 'prev' | 'next') => {
+    if (direction === 'prev') {
+      setCurrentMonth(prev => subMonths(prev, 1));
+    } else {
+      setCurrentMonth(prev => addMonths(prev, 1));
+    }
+  };
+
   // Obtener turnos del empleado para la semana actual
   const employeeShifts = shifts.filter(shift => 
     shift.employeeId === currentEmployee.id &&
@@ -80,6 +90,22 @@ export default function EmployeeDashboard() {
     shift.date <= format(weekEnd, 'yyyy-MM-dd') &&
     shift.isPublished
   );
+
+  // Obtener turnos del empleado para el mes actual
+  const monthStart = startOfMonth(currentMonth);
+  const monthEnd = endOfMonth(currentMonth);
+  const employeeShiftsMonth = shifts.filter(shift => 
+    shift.employeeId === currentEmployee.id &&
+    shift.date >= format(monthStart, 'yyyy-MM-dd') &&
+    shift.date <= format(monthEnd, 'yyyy-MM-dd') &&
+    shift.isPublished
+  );
+
+  // Crear calendario mensual
+  const calendarDays = eachDayOfInterval({ 
+    start: startOfWeek(monthStart, { weekStartsOn: 1 }), 
+    end: endOfWeek(monthEnd, { weekStartsOn: 1 }) 
+  });
 
   const formatHours = (decimalHours: number): string => {
     const hours = Math.floor(decimalHours);
@@ -89,6 +115,12 @@ export default function EmployeeDashboard() {
       return `${hours}h`;
     }
     return `${hours}h ${minutes}m`;
+  };
+
+  // Obtener turnos de un día específico
+  const getShiftsForDay = (date: Date) => {
+    const dateStr = format(date, 'yyyy-MM-dd');
+    return employeeShiftsMonth.filter(shift => shift.date === dateStr);
   };
 
   const totalHours = employeeShifts.reduce((total, shift) => total + shift.hours, 0);
@@ -203,36 +235,90 @@ export default function EmployeeDashboard() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {activeTab === 'schedule' ? (
           <>
-            {/* Week Navigation */}
+            {/* Navigation and View Toggle */}
             <div className="bg-gray-200 rounded-lg shadow p-6 mb-6 dark:bg-gray-800 dark:border dark:border-gray-700">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center space-x-4">
-              <button
-                onClick={() => navigateWeek('prev')}
-                className="flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
-              >
-                <ChevronLeft className="w-4 h-4" />
-                <span>Semana Anterior</span>
-              </button>
-              <h2 className="text-lg font-semibold">
-                {format(weekStart, 'd MMM', { locale: es })} - {format(weekEnd, 'd MMM yyyy', { locale: es })}
-              </h2>
-              <button
-                onClick={() => navigateWeek('next')}
-                className="flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
-              >
-                <span>Semana Siguiente</span>
-                <ChevronRight className="w-4 h-4" />
-              </button>
+              <div className="flex justify-between items-center mb-4">
+                <div className="flex items-center space-x-4">
+                  {viewMode === 'list' ? (
+                    <>
+                      <button
+                        onClick={() => navigateWeek('prev')}
+                        className="flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
+                      >
+                        <ChevronLeft className="w-4 h-4" />
+                        <span>Semana Anterior</span>
+                      </button>
+                      <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                        {format(weekStart, 'd MMM', { locale: es })} - {format(weekEnd, 'd MMM yyyy', { locale: es })}
+                      </h2>
+                      <button
+                        onClick={() => navigateWeek('next')}
+                        className="flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
+                      >
+                        <span>Semana Siguiente</span>
+                        <ChevronRight className="w-4 h-4" />
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => navigateMonth('prev')}
+                        className="flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
+                      >
+                        <ChevronLeft className="w-4 h-4" />
+                        <span>Mes Anterior</span>
+                      </button>
+                      <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                        {format(currentMonth, 'MMMM yyyy', { locale: es })}
+                      </h2>
+                      <button
+                        onClick={() => navigateMonth('next')}
+                        className="flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
+                      >
+                        <span>Mes Siguiente</span>
+                        <ChevronRight className="w-4 h-4" />
+                      </button>
+                    </>
+                  )}
+                </div>
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => viewMode === 'list' ? setCurrentWeek(new Date()) : setCurrentMonth(new Date())}
+                    className="text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300"
+                  >
+                    {viewMode === 'list' ? 'Esta Semana' : 'Este Mes'}
+                  </button>
+                </div>
+              </div>
+              
+              {/* View Toggle */}
+              <div className="flex justify-center">
+                <div className="flex bg-gray-300 dark:bg-gray-700 rounded-lg p-1">
+                  <button
+                    onClick={() => setViewMode('list')}
+                    className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                      viewMode === 'list'
+                        ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100 shadow-sm'
+                        : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                    }`}
+                  >
+                    <List className="w-4 h-4" />
+                    <span>Lista</span>
+                  </button>
+                  <button
+                    onClick={() => setViewMode('calendar')}
+                    className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                      viewMode === 'calendar'
+                        ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100 shadow-sm'
+                        : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                    }`}
+                  >
+                    <Grid3X3 className="w-4 h-4" />
+                    <span>Calendario</span>
+                  </button>
+                </div>
+              </div>
             </div>
-            <button
-              onClick={() => setCurrentWeek(new Date())}
-              className="text-primary-600 hover:text-primary-800"
-            >
-              Esta Semana
-            </button>
-          </div>
-        </div>
 
         {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
@@ -267,55 +353,115 @@ export default function EmployeeDashboard() {
           </div>
         </div>
 
-        {/* Shifts List */}
+        {/* Shifts Display */}
         <div className="bg-gray-200 rounded-lg shadow dark:bg-gray-800">
           <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Mis Turnos</h3>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+              {viewMode === 'list' ? 'Mis Turnos' : 'Calendario de Turnos'}
+            </h3>
           </div>
           
-          {employeeShifts.length === 0 ? (
-            <div className="text-center py-12">
-              <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600 dark:text-gray-400">No tienes turnos asignados esta semana</p>
-            </div>
-          ) : (
-            <div className="divide-y divide-gray-200 dark:divide-gray-700">
-              {employeeShifts.map((shift) => {
-                const shiftDate = new Date(shift.date);
-                const dayName = format(shiftDate, 'EEEE', { locale: es });
-                const dayNumber = format(shiftDate, 'd');
-                const month = format(shiftDate, 'MMM', { locale: es });
-                
-                return (
-                  <div key={shift.id} className="px-6 py-4 flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      <div className="flex-shrink-0">
-                        <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-medium"
-                             style={{ backgroundColor: currentEmployee.color }}>
-                          {dayNumber}
+          {viewMode === 'list' ? (
+            // Vista de Lista
+            employeeShifts.length === 0 ? (
+              <div className="text-center py-12">
+                <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-600 dark:text-gray-400">No tienes turnos asignados esta semana</p>
+              </div>
+            ) : (
+              <div className="divide-y divide-gray-200 dark:divide-gray-700">
+                {employeeShifts.map((shift) => {
+                  const shiftDate = new Date(shift.date);
+                  const dayName = format(shiftDate, 'EEEE', { locale: es });
+                  const dayNumber = format(shiftDate, 'd');
+                  const month = format(shiftDate, 'MMM', { locale: es });
+                  
+                  return (
+                    <div key={shift.id} className="px-6 py-4 flex items-center justify-between">
+                      <div className="flex items-center space-x-4">
+                        <div className="flex-shrink-0">
+                          <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-medium"
+                               style={{ backgroundColor: currentEmployee.color }}>
+                            {dayNumber}
+                          </div>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-900 dark:text-gray-100 capitalize">
+                            {dayName}, {dayNumber} de {month}
+                          </p>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                            {shift.startTime} - {shift.endTime}
+                          </p>
                         </div>
                       </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-900 dark:text-gray-100 capitalize">
-                          {dayName}, {dayNumber} de {month}
+                      <div className="text-right">
+                        <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                          {formatHours(shift.hours)}
                         </p>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                          {shift.startTime} - {shift.endTime}
-                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">duración</p>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                        {formatHours(shift.hours)}
-                      </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">duración</p>
-                    </div>
+                  );
+                })}
+              </div>
+            )
+          ) : (
+            // Vista de Calendario
+            <div className="p-6">
+              <div className="grid grid-cols-7 gap-1 mb-4">
+                {['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'].map((day) => (
+                  <div key={day} className="text-center text-sm font-medium text-gray-600 dark:text-gray-400 py-2">
+                    {day}
                   </div>
-                );
-              })}
+                ))}
+              </div>
+              <div className="grid grid-cols-7 gap-1">
+                {calendarDays.map((day, index) => {
+                  const dayShifts = getShiftsForDay(day);
+                  const isCurrentMonth = isSameMonth(day, currentMonth);
+                  const isToday = isSameDay(day, new Date());
+                  
+                  return (
+                    <div
+                      key={index}
+                      className={`min-h-[80px] p-2 border border-gray-200 dark:border-gray-700 ${
+                        isCurrentMonth 
+                          ? 'bg-white dark:bg-gray-800' 
+                          : 'bg-gray-100 dark:bg-gray-900 text-gray-400 dark:text-gray-600'
+                      } ${isToday ? 'ring-2 ring-primary-500 dark:ring-primary-400' : ''}`}
+                    >
+                      <div className={`text-sm font-medium mb-1 ${
+                        isCurrentMonth 
+                          ? 'text-gray-900 dark:text-gray-100' 
+                          : 'text-gray-400 dark:text-gray-600'
+                      }`}>
+                        {format(day, 'd')}
+                      </div>
+                      <div className="space-y-1">
+                        {dayShifts.map((shift) => (
+                          <div
+                            key={shift.id}
+                            className="text-xs p-1 rounded text-white"
+                            style={{ backgroundColor: currentEmployee.color }}
+                          >
+                            <div className="font-medium">{shift.startTime}</div>
+                            <div className="opacity-90">{formatHours(shift.hours)}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              {employeeShiftsMonth.length === 0 && (
+                <div className="text-center py-8">
+                  <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-600 dark:text-gray-400">No tienes turnos asignados este mes</p>
+                </div>
+              )}
             </div>
           )}
-            </div>
+        </div>
           </>
         ) : (
           <AbsenceManagement />
