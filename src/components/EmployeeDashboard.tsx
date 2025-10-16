@@ -290,34 +290,6 @@ export default function EmployeeDashboard() {
                   </button>
                 </div>
               </div>
-              
-              {/* View Toggle */}
-              <div className="flex justify-center">
-                <div className="flex bg-gray-300 dark:bg-gray-700 rounded-lg p-1">
-                  <button
-                    onClick={() => setViewMode('list')}
-                    className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                      viewMode === 'list'
-                        ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100 shadow-sm'
-                        : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
-                    }`}
-                  >
-                    <List className="w-4 h-4" />
-                    <span>Lista</span>
-                  </button>
-                  <button
-                    onClick={() => setViewMode('calendar')}
-                    className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                      viewMode === 'calendar'
-                        ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100 shadow-sm'
-                        : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
-                    }`}
-                  >
-                    <Grid3X3 className="w-4 h-4" />
-                    <span>Calendario</span>
-                  </button>
-                </div>
-              </div>
             </div>
 
         {/* Summary Cards */}
@@ -356,9 +328,37 @@ export default function EmployeeDashboard() {
         {/* Shifts Display */}
         <div className="bg-gray-200 rounded-lg shadow dark:bg-gray-800">
           <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
-              {viewMode === 'list' ? 'Mis Turnos' : 'Calendario de Turnos'}
-            </h3>
+            <div className="flex justify-between items-center">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+                {viewMode === 'list' ? 'Mis Turnos' : 'Calendario de Turnos'}
+              </h3>
+              
+              {/* View Toggle */}
+              <div className="flex bg-gray-300 dark:bg-gray-700 rounded-lg p-1">
+                <button
+                  onClick={() => setViewMode('list')}
+                  className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    viewMode === 'list'
+                      ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100 shadow-sm'
+                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                  }`}
+                >
+                  <List className="w-4 h-4" />
+                  <span>Lista</span>
+                </button>
+                <button
+                  onClick={() => setViewMode('calendar')}
+                  className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    viewMode === 'calendar'
+                      ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100 shadow-sm'
+                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                  }`}
+                >
+                  <Grid3X3 className="w-4 h-4" />
+                  <span>Calendario</span>
+                </button>
+              </div>
+            </div>
           </div>
           
           {viewMode === 'list' ? (
