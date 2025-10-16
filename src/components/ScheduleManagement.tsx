@@ -1156,16 +1156,17 @@ export default function ScheduleManagement() {
                       const dayColumnWidth = isMobile ? 60 : (isCompactMode ? 100 : 120);
                       const hourDivisor = isMobile ? 2 : 1;
                       
-                      // En desktop con 1fr, calcular posición basada en porcentaje
+                      // En desktop con 1fr, calcular posición usando las funciones corregidas
                       let left, width;
                       if (!isMobile) {
-                        const totalHours = endHour - startHour + 1;
-                        const startPosition = (shiftStartTimeInHours - startHour) / totalHours;
-                        const durationPosition = durationInHours / totalHours;
+                        // Usar las funciones timeToPosition para mantener consistencia
+                        left = timeToPosition(shiftStartTimeInHours, startHour, endHour) + 2;
+                        const rightPosition = timeToPosition(shiftEndTimeInHours, startHour, endHour);
+                        width = rightPosition - left - 4;
+                        
+                        // Calcular availableWidth para validaciones
                         const containerWidth = scrollContainerRef.current?.offsetWidth || 800;
                         const availableWidth = containerWidth - dayColumnWidth;
-                        left = dayColumnWidth + (startPosition * availableWidth) + 2;
-                        width = (durationPosition * availableWidth) - 4;
                         
                         // Validar que la barra no se salga del día
                         const maxLeft = dayColumnWidth + availableWidth - 4;
