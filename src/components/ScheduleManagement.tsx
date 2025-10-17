@@ -797,10 +797,10 @@ export default function ScheduleManagement() {
       
       draggedElement.style.left = newLeft + 'px';
       
-      // Calcular tiempos en tiempo real
+      // Calcular tiempos en tiempo real - usar la misma función que al guardar
       const { startHour, endHour } = getStoreHoursRange();
-      const newStartTime = positionToTime(newLeft, startHour, endHour);
-      const newEndTime = positionToTime(newLeft + draggedElement.offsetWidth, startHour, endHour);
+      const newStartTime = positionToTimeExact(newLeft, startHour, endHour);
+      const newEndTime = positionToTimeExact(newLeft + draggedElement.offsetWidth, startHour, endHour);
       const newHours = (timeToMinutes(newEndTime) - timeToMinutes(newStartTime)) / 60;
       
       setTempStartTime(newStartTime);
@@ -862,10 +862,10 @@ export default function ScheduleManagement() {
           resizingElement.style.left = newLeft + 'px';
           resizingElement.style.width = newWidth + 'px';
           
-          // Calcular tiempos en tiempo real
+          // Calcular tiempos en tiempo real - usar la misma función que al guardar
           const { startHour, endHour } = getStoreHoursRange();
-          const newStartTime = positionToTime(newLeft, startHour, endHour);
-          const newEndTime = positionToTime(newLeft + newWidth, startHour, endHour);
+          const newStartTime = positionToTimeExact(newLeft, startHour, endHour);
+          const newEndTime = positionToTimeExact(newLeft + newWidth, startHour, endHour);
           const newHours = (timeToMinutes(newEndTime) - timeToMinutes(newStartTime)) / 60;
           
           setTempStartTime(newStartTime);
@@ -886,10 +886,10 @@ export default function ScheduleManagement() {
         
         resizingElement.style.width = newWidth + 'px';
         
-        // Calcular tiempos en tiempo real
+        // Calcular tiempos en tiempo real - usar la misma función que al guardar
         const { startHour, endHour } = getStoreHoursRange();
-        const newStartTime = positionToTime(resizingElement.offsetLeft, startHour, endHour);
-        const newEndTime = positionToTime(resizingElement.offsetLeft + newWidth, startHour, endHour);
+        const newStartTime = positionToTimeExact(resizingElement.offsetLeft, startHour, endHour);
+        const newEndTime = positionToTimeExact(resizingElement.offsetLeft + newWidth, startHour, endHour);
         const newHours = (timeToMinutes(newEndTime) - timeToMinutes(newStartTime)) / 60;
         
         setTempStartTime(newStartTime);
