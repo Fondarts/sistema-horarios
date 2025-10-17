@@ -1,16 +1,10 @@
 import React, { useState } from 'react';
-import { useStore } from '../contexts/StoreContext';
-import { useEmployees } from '../contexts/EmployeeContext';
-import { useSchedule } from '../contexts/ScheduleContext';
 import { v4 as uuidv4 } from 'uuid';
 import { Download, Users, Calendar, Database, Trash2 } from 'lucide-react';
 import { db } from '../firebase';
 import { collection, addDoc, getDocs, deleteDoc, doc } from 'firebase/firestore';
 
 export function TestDataGenerator() {
-  const { stores, getAllStores } = useStore();
-  const { addEmployee } = useEmployees();
-  const { addShift } = useSchedule();
   const [isGenerating, setIsGenerating] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
   const [progress, setProgress] = useState('');
@@ -551,7 +545,7 @@ export function TestDataGenerator() {
           const createdEmployees = [];
           for (const employeeData of storeData.employees) {
             try {
-              const employee = await addEmployee({
+              const employeeDoc = await addDoc(collection(db, 'employees'), {
                 name: employeeData.name,
                 username: employeeData.name.toLowerCase().replace(/\s+/g, '.'),
                 password: "123456",
@@ -565,9 +559,17 @@ export function TestDataGenerator() {
                 unavailableTimes: employeeData.unavailableTimes.map(ut => ({
                   id: uuidv4(),
                   ...ut
-                }))
+                })),
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
               });
-              createdEmployees.push(employee);
+              
+              createdEmployees.push({
+                id: employeeDoc.id,
+                name: employeeData.name,
+                color: employeeData.color,
+                unavailableTimes: employeeData.unavailableTimes
+              });
               results.employeesCreated++;
             } catch (error) {
               results.errors.push(`Error creando empleado ${employeeData.name}: ${error instanceof Error ? error.message : String(error)}`);
@@ -600,7 +602,7 @@ export function TestDataGenerator() {
           
           for (const shiftData of shifts) {
             try {
-              await addShiftToStore(shiftData);
+              await addDoc(collection(db, 'shifts'), shiftData);
               results.shiftsCreated++;
             } catch (error) {
               results.errors.push(`Error creando turno: ${error instanceof Error ? error.message : String(error)}`);
