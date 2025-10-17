@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { format, addDays, startOfWeek, endOfWeek, eachDayOfInterval } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { Eye, EyeOff, Save, Copy } from 'lucide-react';
+import { Eye, EyeOff, Save, Copy, Trash2 } from 'lucide-react';
 import { useSchedule } from '../contexts/ScheduleContext';
 import { useEmployees } from '../contexts/EmployeeContext';
 import { useVacation } from '../contexts/VacationContext';
@@ -285,6 +285,60 @@ export default function ScheduleManagement() {
       return true;
     }
     return false;
+  };
+
+  // Función para calcular la altura dinámica de las celdas solo en modo compacto
+  const calculateCompactCellHeight = (dayString: string): number => {
+    // Solo calcular altura dinámica si está en modo compacto
+    if (!isDayInCompactMode(dayString)) {
+      console.log(`Day ${dayString}: Not in compact mode, returning 120px`);
+      return 120; // Altura fija para modo normal
+    }
+
+    console.log(`Day ${dayString}: In compact mode, calculating dynamic height`);
+
+    // Contar el número total de barras para este día
+    const dayShifts = weekShifts.filter(shift => shift.date === dayString);
+    const totalBars = dayShifts.length;
+    
+    // Debug: Mostrar información detallada del filtro
+    console.log(`Day ${dayString}: Filtering shifts for date. Total weekShifts: ${weekShifts.length}, dayShifts found: ${dayShifts.length}`);
+    console.log(`Day ${dayString}: Looking for date format: "${dayString}"`);
+    
+    // Debug: Mostrar TODOS los shifts para verificar datos
+    if (dayString === '2025-10-18') {
+      console.log(`Day ${dayString}: ALL weekShifts:`, weekShifts.map(s => ({ id: s.id, date: s.date, employeeId: s.employeeId })));
+      console.log(`Day ${dayString}: Filtering for exact match: "${dayString}"`);
+      const exactMatches = weekShifts.filter(shift => shift.date === dayString);
+      console.log(`Day ${dayString}: Exact matches found:`, exactMatches.length);
+    }
+    
+    if (weekShifts.length > 0) {
+      console.log(`Day ${dayString}: Sample shift dates:`, weekShifts.slice(0, 3).map(s => s.date));
+    }
+    if (dayShifts.length > 0) {
+      console.log(`Day ${dayString}: Found shifts:`, dayShifts.map(s => ({ id: s.id, date: s.date, employeeId: s.employeeId })));
+    }
+
+    if (totalBars === 0) {
+      // Si no hay barras, altura mínima compacta para todos los días en modo compacto
+      console.log(`Day ${dayString}: No bars, returning 32px`);
+      return 32;
+    }
+
+    // Usar parámetros compactos para TODOS los días en modo compacto
+    const barHeight = 8; // Altura pequeña para todos los días compactos
+    const barSpacing = 2; // Espaciado mínimo
+    const minHeight = 32; // Mínimo pequeño para todos los días compactos
+    const baseHeight = 8; // Altura base pequeña
+    const bottomPadding = 5; // Padding inferior mínimo
+    
+    const calculatedHeight = baseHeight + (totalBars * (barHeight + barSpacing)) + bottomPadding;
+    const finalHeight = Math.max(minHeight, calculatedHeight);
+    
+    console.log(`Day ${dayString}: ${totalBars} bars, barHeight: ${barHeight}px, calculated: ${calculatedHeight}px, final: ${finalHeight}px`);
+    
+    return finalHeight;
   };
 
   // Funciones de conversión para texto en tiempo real
@@ -588,6 +642,31 @@ export default function ScheduleManagement() {
       
     } finally {
       setIsCopyingShifts(false);
+    }
+  };
+
+  // Función para borrar toda la semana visible
+  const deleteCurrentWeek = async () => {
+    if (!confirm('¿Estás seguro de que quieres borrar todos los turnos de esta semana? Esta acción no se puede deshacer.')) {
+      return;
+    }
+
+    try {
+      // Obtener todos los turnos de la semana actual
+      const currentWeekShifts = weekShifts.filter(shift => {
+        const shiftDate = new Date(shift.date);
+        return shiftDate >= startOfWeek(currentWeek, { weekStartsOn: 1 }) && 
+               shiftDate <= endOfWeek(currentWeek, { weekStartsOn: 1 });
+      });
+
+      // Eliminar todos los turnos de la semana
+      for (const shift of currentWeekShifts) {
+        await deleteShift(shift.id);
+      }
+
+      console.log(`Eliminados ${currentWeekShifts.length} turnos de la semana`);
+    } catch (error) {
+      console.error('Error al eliminar turnos de la semana:', error);
     }
   };
 
@@ -1033,8 +1112,8 @@ export default function ScheduleManagement() {
           </button>
           </div>
 
-          {/* Centro: Botón Repetir */}
-          <div className="flex items-center">
+          {/* Centro: Botones Repetir y Borrar Semana */}
+          <div className="flex items-center space-x-3">
             <button
               onClick={repeatPreviousWeek}
               disabled={isCopyingShifts}
@@ -1047,6 +1126,15 @@ export default function ScheduleManagement() {
             >
               <Copy className={`w-4 h-4 mr-2 ${isCopyingShifts ? 'animate-spin' : ''}`} />
               <span>{isCopyingShifts ? 'Copiando...' : 'Repetir'}</span>
+            </button>
+            
+            <button
+              onClick={deleteCurrentWeek}
+              className="flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors bg-red-600 hover:bg-red-700 text-white"
+              title="Borrar todos los turnos de la semana actual"
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              <span>Borrar Semana</span>
             </button>
           </div>
 
@@ -1118,12 +1206,14 @@ export default function ScheduleManagement() {
           >
             {days.map((day) => {
               // Get employees working on this day
-              const dayShifts = weekShifts.filter(shift => 
-                shift.date === format(day, 'yyyy-MM-dd')
-              );
-              const employeesOnDay = Array.from(new Set(dayShifts.map(shift => shift.employeeId)));
-              
               const dayString = format(day, 'yyyy-MM-dd');
+              const dayShifts = weekShifts.filter(shift => 
+                shift.date === dayString
+              );
+              
+              // Debug: Verificar consistencia entre cálculo de altura y renderizado
+              console.log(`RENDER Day ${dayString}: Found ${dayShifts.length} shifts for rendering`);
+              const employeesOnDay = Array.from(new Set(dayShifts.map(shift => shift.employeeId)));
               const isHolidayDay = isHoliday(dayString);
               const holiday = getHolidayForDate(dayString);
 
@@ -1133,9 +1223,9 @@ export default function ScheduleManagement() {
                     className="grid border-b border-gray-300 dark:border-gray-600 relative" 
                     style={{ 
                       gridTemplateColumns: `${isMobile ? '60px' : (isCompactMode ? '100px' : '120px')} ${isMobile ? `repeat(${hours.length}, ${mobileHourColumnWidth}px)` : `repeat(${hours.length}, 1fr)`}`, 
-                      minHeight: collapsedDays.has(dayString) ? '32px' : '120px',
+                      minHeight: collapsedDays.has(dayString) ? '32px' : `${calculateCompactCellHeight(dayString)}px`,
                       minWidth: 'max-content',
-                      height: 'auto'
+                      height: isDayInCompactMode(dayString) ? `${calculateCompactCellHeight(dayString)}px` : 'auto'
                     }}
                   >
                   {/* Day and employees */}
@@ -1223,7 +1313,10 @@ export default function ScheduleManagement() {
                       <div 
                         key={`${day.toISOString()}-${hour}`} 
                         className={`relative border-r border-gray-200 dark:border-gray-600 ${backgroundColor}`} 
-                        style={{ minHeight: collapsedDays.has(dayString) ? '32px' : '120px', height: '100%' }}
+                        style={{ 
+                          minHeight: collapsedDays.has(dayString) ? '32px' : `${calculateCompactCellHeight(dayString)}px`, 
+                          height: isDayInCompactMode(dayString) ? `${calculateCompactCellHeight(dayString)}px` : '100%' 
+                        }}
                         title={isHolidayDay ? `Feriado: ${holiday?.name}` : ''}
                       >
                         {/* Hour line - solo mostrar si no está colapsado */}
