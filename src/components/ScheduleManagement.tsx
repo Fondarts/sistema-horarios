@@ -175,6 +175,16 @@ export default function ScheduleManagement() {
     const dayOfWeek = today.getDay();
     const todaySchedule = storeSchedule.find(s => s.dayOfWeek === dayOfWeek);
     
+    console.log('getStoreHoursRange Debug:', {
+      today: today.toDateString(),
+      dayOfWeek,
+      storeScheduleLength: storeSchedule.length,
+      todaySchedule: todaySchedule,
+      isOpen: todaySchedule?.isOpen,
+      openTime: todaySchedule?.openTime,
+      closeTime: todaySchedule?.closeTime
+    });
+    
     if (todaySchedule && todaySchedule.isOpen && todaySchedule.openTime && todaySchedule.closeTime) {
       const openHour = parseInt(todaySchedule.openTime.split(':')[0]);
       const closeHour = parseInt(todaySchedule.closeTime.split(':')[0]);
@@ -183,7 +193,7 @@ export default function ScheduleManagement() {
       const startHour = Math.max(0, openHour - 1);
       const endHour = Math.min(23, closeHour + 1);
       
-      console.log('getStoreHoursRange Debug:', {
+      console.log('getStoreHoursRange Calculated:', {
         openHour,
         closeHour,
         calculatedStartHour: startHour,
@@ -194,7 +204,8 @@ export default function ScheduleManagement() {
     }
     
     // Horario por defecto si no hay configuración
-    return { startHour: 9, endHour: 20 };
+    console.log('getStoreHoursRange: Using default hours 8-21');
+    return { startHour: 8, endHour: 21 };
   };
 
   // Función para obtener los horarios de apertura de la tienda para un día específico
