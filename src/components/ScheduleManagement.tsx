@@ -183,6 +183,13 @@ export default function ScheduleManagement() {
       const startHour = Math.max(0, openHour - 1);
       const endHour = Math.min(23, closeHour + 1);
       
+      console.log('getStoreHoursRange Debug:', {
+        openHour,
+        closeHour,
+        calculatedStartHour: startHour,
+        calculatedEndHour: endHour
+      });
+      
       return { startHour, endHour };
     }
     
@@ -243,6 +250,14 @@ export default function ScheduleManagement() {
   const { startHour: storeStartHour, endHour: storeEndHour } = getStoreHoursRange();
   const startHour = show24Hours ? 0 : storeStartHour; // 0 si 24h, o horario de tienda si enfocado
   const endHour = show24Hours ? 23 : storeEndHour;    // 23 si 24h, o horario de tienda si enfocado
+  
+  console.log('Timeline Debug:', {
+    storeStartHour,
+    storeEndHour,
+    show24Hours,
+    finalStartHour: startHour,
+    finalEndHour: endHour
+  });
   // En móvil mostrar cada 2 horas, en desktop cada hora
   const hours = isMobile 
     ? Array.from({ length: Math.ceil((endHour - startHour + 1) / 2) }, (_, i) => startHour + (i * 2))
