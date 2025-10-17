@@ -8,7 +8,7 @@ import { es } from 'date-fns/locale';
 import { ChevronLeft, ChevronRight, LogOut, Calendar, Clock, UserX, List, Grid3X3 } from 'lucide-react';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { useCompactMode } from '../contexts/CompactModeContext';
-import { Maximize2, Minimize2 } from 'lucide-react';
+import { Settings } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { BirthdayNotification } from './BirthdayNotification';
 import { NotificationCenter } from './NotificationCenter';
@@ -16,6 +16,7 @@ import { KeyboardShortcuts } from './KeyboardShortcuts';
 import { Logo } from './Logo';
 import { AbsenceManagement } from './AbsenceManagement';
 import { HamburgerMenu } from './HamburgerMenu';
+import { ConfigurationModal } from './ConfigurationModal';
 
 export default function EmployeeDashboard() {
   const { currentEmployee, logout } = useAuth();
@@ -29,6 +30,7 @@ export default function EmployeeDashboard() {
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
   const [activeTab, setActiveTab] = useState<'schedule' | 'vacations'>('schedule');
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
+  const [showConfig, setShowConfig] = useState(false);
 
   // Atajos de teclado para empleados
   useKeyboardShortcuts([
@@ -185,14 +187,11 @@ export default function EmployeeDashboard() {
                     isManager={false}
                   />
                   <button
-                    onClick={() => {
-                      console.log('Compact mode button clicked! Current state:', isCompactMode);
-                      toggleCompactMode();
-                    }}
+                    onClick={() => setShowConfig(true)}
                     className="flex items-center text-gray-600 hover:text-gray-900 transition-colors dark:text-gray-400 dark:hover:text-gray-100"
-                    title={isCompactMode ? 'Modo normal' : 'Modo compacto'}
+                    title="Configuración"
                   >
-                    {isCompactMode ? <Maximize2 className="w-5 h-5" /> : <Minimize2 className="w-5 h-5" />}
+                    <Settings className="w-5 h-5" />
                   </button>
                   <ThemeToggle />
                 </>
@@ -523,6 +522,12 @@ export default function EmployeeDashboard() {
           onClose={() => setShowBirthdayNotification(false)}
         />
       )}
+
+      {/* Configuration Modal */}
+      <ConfigurationModal 
+        isOpen={showConfig}
+        onClose={() => setShowConfig(false)}
+      />
     </div>
   );
 }

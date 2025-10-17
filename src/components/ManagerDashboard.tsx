@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useEmployees } from '../contexts/EmployeeContext';
 import { useStore } from '../contexts/StoreContext';
-import { LogOut, Calendar, Users, Home, BarChart3, FileText, CalendarDays, Maximize2, Minimize2, Building2, UserX } from 'lucide-react';
+import { LogOut, Calendar, Users, Home, BarChart3, FileText, CalendarDays, Settings, Building2, UserX } from 'lucide-react';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { useCompactMode } from '../contexts/CompactModeContext';
 import { EmployeeManagement } from './EmployeeManagement';
@@ -18,6 +18,7 @@ import { NotificationCenter } from './NotificationCenter';
 import { KeyboardShortcuts } from './KeyboardShortcuts';
 import { Logo } from './Logo';
 import { HamburgerMenu } from './HamburgerMenu';
+import { ConfigurationModal } from './ConfigurationModal';
 
 type TabType = 'schedule' | 'employees' | 'settings' | 'statistics' | 'export' | 'absences' | 'holidays';
 
@@ -29,6 +30,7 @@ export function ManagerDashboard() {
   const [activeTab, setActiveTab] = useState<TabType>('schedule');
   const [showBirthdayNotification, setShowBirthdayNotification] = useState(true);
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
+  const [showConfig, setShowConfig] = useState(false);
 
   const tabs = [
     { id: 'schedule' as TabType, label: 'Horarios', icon: Calendar },
@@ -175,14 +177,11 @@ export function ManagerDashboard() {
                     isManager={true}
                   />
                   <button
-                    onClick={() => {
-                      console.log('Compact mode button clicked! Current state:', isCompactMode);
-                      toggleCompactMode();
-                    }}
+                    onClick={() => setShowConfig(true)}
                     className="flex items-center text-gray-600 hover:text-gray-900 transition-colors dark:text-gray-400 dark:hover:text-gray-100"
-                    title={isCompactMode ? 'Modo normal' : 'Modo compacto'}
+                    title="Configuración"
                   >
-                    {isCompactMode ? <Maximize2 className="w-5 h-5" /> : <Minimize2 className="w-5 h-5" />}
+                    <Settings className="w-5 h-5" />
                   </button>
                   <ThemeToggle />
                 </>
@@ -265,6 +264,12 @@ export function ManagerDashboard() {
           onClose={() => setShowBirthdayNotification(false)}
         />
       )}
+
+      {/* Configuration Modal */}
+      <ConfigurationModal 
+        isOpen={showConfig}
+        onClose={() => setShowConfig(false)}
+      />
     </div>
   );
 }
