@@ -1370,13 +1370,25 @@ export default function ScheduleManagement() {
                       
                       // Calcular posición vertical usando función inteligente
                       const dayInCompactMode = isDayInCompactMode(dayString);
-                      const baseSpacing = dayInCompactMode ? 2 : 35;
-                      const totalSpacing = baseSpacing;
-                      const baseTop = (isHolidayDay ? 55 : 15) + (currentIndex * totalSpacing);
+                      const barHeight = collapsedDays.has(dayString) ? 8 : (dayInCompactMode ? 20 : 32);
+                      const spacing = dayInCompactMode ? 2 : 35; // Espaciado entre barras
+                      
+                      // Calcular posición basada en la barra anterior
+                      let baseTop = isHolidayDay ? 55 : 15; // Posición inicial
+                      
+                      if (dayInCompactMode) {
+                        // En modo compacto, calcular posición acumulativa
+                        for (let i = 0; i < currentIndex; i++) {
+                          baseTop += barHeight + spacing; // Altura de la barra anterior + espaciado
+                        }
+                      } else {
+                        // En modo normal, usar el cálculo original
+                        baseTop += currentIndex * spacing;
+                      }
                       
                       // Debug: Log para verificar el espaciado
                       if (currentIndex === 0) {
-                        console.log(`Day: ${dayString} - Global Compact: ${isCompactMode}, Day Collapsed: ${collapsedDays.has(dayString)}, Day In Compact: ${dayInCompactMode}, baseSpacing: ${baseSpacing}`);
+                        console.log(`Day: ${dayString} - Global Compact: ${isCompactMode}, Day Collapsed: ${collapsedDays.has(dayString)}, Day In Compact: ${dayInCompactMode}, barHeight: ${barHeight}, spacing: ${spacing}, baseTop: ${baseTop}`);
                       }
                       const top = baseTop;
                       
@@ -1389,7 +1401,7 @@ export default function ScheduleManagement() {
                             left: `${left}px`,
                             width: `${width}px`,
                             top: `${top}px`,
-                            height: collapsedDays.has(dayString) ? '8px' : '32px', // Altura reducida si está colapsado
+                            height: `${barHeight}px`, // Altura calculada dinámicamente
                             zIndex: 5,
                             backgroundColor: employee?.color || '#3B82F6',
                             touchAction: 'none',
