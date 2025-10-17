@@ -6,7 +6,7 @@ import { collection, addDoc, getDocs, deleteDoc, doc } from 'firebase/firestore'
 import { useStore } from '../contexts/StoreContext';
 
 export function TestDataGenerator() {
-  const { setCurrentStore } = useStore();
+  const { setCurrentStore, pauseListeners, resumeListeners } = useStore();
   const [isGenerating, setIsGenerating] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
   const [progress, setProgress] = useState('');
@@ -271,12 +271,18 @@ export function TestDataGenerator() {
       let deletedCount = 0;
       const errors: string[] = [];
 
-      // Temporalmente desactivar la tienda actual para evitar recreación automática
-      setProgress('Desactivando tienda actual...');
+      // Pausar todos los listeners para evitar recreación automática
+      setProgress('Pausando listeners...');
+      pauseListeners();
+      
+      // Temporalmente desactivar la tienda actual
       setCurrentStore('');
       
       // Marcar que estamos en proceso de borrado para evitar recreación automática
       localStorage.setItem('isClearingData', 'true');
+      
+      // Esperar un poco para que los listeners se desactiven completamente
+      await new Promise(resolve => setTimeout(resolve, 2000));
 
       // Lista de todas las colecciones a borrar
       const collections = [
@@ -388,6 +394,11 @@ export function TestDataGenerator() {
     } finally {
       // Limpiar el flag de borrado
       localStorage.removeItem('isClearingData');
+      
+      // Reanudar los listeners
+      setProgress('Reanudando listeners...');
+      resumeListeners();
+      
       setIsClearing(false);
     }
   };

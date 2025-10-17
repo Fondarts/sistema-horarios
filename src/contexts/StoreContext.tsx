@@ -23,6 +23,8 @@ interface StoreContextType {
   deleteStore: (storeId: string) => Promise<void>;
   getAllStores: () => Promise<Store[]>;
   isLoading: boolean;
+  pauseListeners: () => void;
+  resumeListeners: () => void;
 }
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
@@ -31,8 +33,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [stores, setStores] = useState<Store[]>([]);
   const [currentStore, setCurrentStoreState] = useState<Store | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [listenersPaused, setListenersPaused] = useState(false);
+  const [unsubscribeFunction, setUnsubscribeFunction] = useState<(() => void) | null>(null);
 
   useEffect(() => {
+    if (listenersPaused) {
+      return;
+    }
+
     const loadStores = async () => {
       setIsLoading(true);
       
@@ -105,6 +113,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           setIsLoading(false);
         });
 
+        setUnsubscribeFunction(() => unsubscribe);
         return () => unsubscribe();
       } catch (error) {
         console.error('Error setting up stores listener:', error);
@@ -113,7 +122,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     };
     
     loadStores();
-  }, []);
+  }, [listenersPaused]);
 
   // Ya no necesitamos sincronizar con localStorage, Firebase maneja todo
 
@@ -201,6 +210,17 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const pauseListeners = () => {
+    setListenersPaused(true);
+    if (unsubscribeFunction) {
+      unsubscribeFunction();
+    }
+  };
+
+  const resumeListeners = () => {
+    setListenersPaused(false);
+  };
+
   return (
     <StoreContext.Provider value={{
       stores,
@@ -210,7 +230,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       updateStore,
       deleteStore,
       getAllStores,
-      isLoading
+      isLoading,
+      pauseListeners,
+      resumeListeners
     }}>
       {children}
     </StoreContext.Provider>
