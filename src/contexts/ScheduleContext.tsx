@@ -142,6 +142,40 @@ const calculateHours = (startTime: string, endTime: string): number => {
   return (endMinutes - startMinutes) / 60;
 };
 
+// Función para convertir tiempo a minutos
+const timeToMinutes = (time: string): number => {
+  const [hours, minutes] = time.split(':').map(Number);
+  return hours * 60 + minutes;
+};
+
+// Función para detectar conflictos entre turnos del mismo empleado
+const checkShiftConflict = (newShift: { employeeId: string; date: string; startTime: string; endTime: string }, existingShifts: Shift[], excludeId?: string): boolean => {
+  const newStartMinutes = timeToMinutes(newShift.startTime);
+  const newEndMinutes = timeToMinutes(newShift.endTime);
+  
+  return existingShifts.some(shift => {
+    // Excluir el turno que se está editando
+    if (excludeId && shift.id === excludeId) {
+      return false;
+    }
+    
+    // Solo verificar turnos del mismo empleado en la misma fecha
+    if (shift.employeeId !== newShift.employeeId || shift.date !== newShift.date) {
+      return false;
+    }
+    
+    const existingStartMinutes = timeToMinutes(shift.startTime);
+    const existingEndMinutes = timeToMinutes(shift.endTime);
+    
+    // Verificar si hay solapamiento
+    // Un turno se solapa si:
+    // - Su inicio está dentro del rango del otro turno, O
+    // - Su fin está dentro del rango del otro turno, O
+    // - Contiene completamente al otro turno
+    return (newStartMinutes < existingEndMinutes && newEndMinutes > existingStartMinutes);
+  });
+};
+
 export function ScheduleProvider({ children }: { children: ReactNode }) {
   const [shifts, setShifts] = useState<Shift[]>([]);
   const [allShifts, setAllShifts] = useState<Shift[]>([]);
@@ -391,6 +425,12 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
       errors.push({ type: 'schedule', message: 'No se puede asignar un turno durante las vacaciones aprobadas del empleado' });
     }
     
+    // Validar que no haya conflictos con otros turnos del mismo empleado
+    const hasShiftConflict = checkShiftConflict(shiftData, shifts);
+    if (hasShiftConflict) {
+      errors.push({ type: 'schedule', message: 'El empleado ya tiene un turno asignado en ese horario' });
+    }
+    
     if (errors.length > 0) {
       return errors;
     }
@@ -459,6 +499,24 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
         const hasVacationConflict = await checkVacationConflict(employeeId, date);
         if (hasVacationConflict) {
           errors.push({ type: 'schedule', message: 'No se puede asignar un turno durante las vacaciones aprobadas del empleado' });
+        }
+      }
+    }
+    
+    // Validar conflictos de turnos si se actualiza horario, empleado o fecha
+    if (updates.startTime || updates.endTime || updates.employeeId || updates.date) {
+      const currentShift = shifts.find(s => s.id === id);
+      if (currentShift) {
+        const updatedShift = {
+          employeeId: updates.employeeId || currentShift.employeeId,
+          date: updates.date || currentShift.date,
+          startTime: updates.startTime || currentShift.startTime,
+          endTime: updates.endTime || currentShift.endTime
+        };
+        
+        const hasShiftConflict = checkShiftConflict(updatedShift, shifts, id);
+        if (hasShiftConflict) {
+          errors.push({ type: 'schedule', message: 'El empleado ya tiene un turno asignado en ese horario' });
         }
       }
     }
