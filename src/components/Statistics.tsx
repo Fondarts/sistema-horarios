@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useSchedule } from '../contexts/ScheduleContext';
 import { useEmployees } from '../contexts/EmployeeContext';
 import { useCompactMode } from '../contexts/CompactModeContext';
-import { BarChart3, TrendingUp, Users, ChevronLeft, ChevronRight } from 'lucide-react';
+import { BarChart3, TrendingUp, Users, ChevronLeft, ChevronRight, AlertTriangle } from 'lucide-react';
 import { Statistics as StatisticsType, Shift, Employee } from '../types';
 import { format, startOfWeek, endOfWeek, addWeeks, subWeeks, subDays } from 'date-fns';
 import { es } from 'date-fns/locale';
