@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { HelpCircle, X, Keyboard } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export {};
 
@@ -16,27 +17,28 @@ interface Shortcut {
 
 export function KeyboardShortcuts({ currentTab, isManager = false }: KeyboardShortcutsProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const { t } = useLanguage();
 
   const shortcuts: Shortcut[] = [
     // Atajos generales
     {
       key: 'Ctrl + /',
-      description: 'Mostrar/ocultar ayuda de atajos',
+      description: t('showHideShortcutsHelp'),
       category: 'General'
     },
     {
       key: 'Ctrl + D',
-      description: 'Alternar modo oscuro',
+      description: t('toggleDarkMode'),
       category: 'General'
     },
     {
       key: 'Escape',
-      description: 'Cerrar modales y paneles',
+      description: t('closeModalsAndPanels'),
       category: 'General'
     },
     {
       key: 'Ctrl + B',
-      description: 'Abrir centro de notificaciones',
+      description: t('openNotificationCenter'),
       category: 'General'
     },
   ];
@@ -47,27 +49,27 @@ export function KeyboardShortcuts({ currentTab, isManager = false }: KeyboardSho
       // Navegación entre pestañas
       {
         key: 'Ctrl + 1',
-        description: 'Ir a pestaña Horarios',
+        description: t('goToScheduleTab'),
         category: 'Navegación'
       },
       {
         key: 'Ctrl + 2',
-        description: 'Ir a pestaña Empleados',
+        description: t('goToEmployeesTab'),
         category: 'Navegación'
       },
       {
         key: 'Ctrl + 3',
-        description: 'Ir a pestaña Configuración',
+        description: t('goToConfigurationTab'),
         category: 'Navegación'
       },
       {
         key: 'Ctrl + 4',
-        description: 'Ir a pestaña Estadísticas',
+        description: t('goToStatisticsTab'),
         category: 'Navegación'
       },
       {
         key: 'Ctrl + 5',
-        description: 'Ir a pestaña Exportar',
+        description: t('goToExportTab'),
         category: 'Navegación'
       }
     );
@@ -77,32 +79,32 @@ export function KeyboardShortcuts({ currentTab, isManager = false }: KeyboardSho
       shortcuts.push(
         {
           key: 'Ctrl + N',
-          description: 'Crear nuevo turno',
+          description: t('createNewShift'),
           category: 'Horarios'
         },
         {
           key: 'Ctrl + S',
-          description: 'Guardar horarios',
+          description: t('saveSchedules'),
           category: 'Horarios'
         },
         {
           key: 'Ctrl + P',
-          description: 'Publicar horarios',
+          description: t('publishSchedules'),
           category: 'Horarios'
         },
         {
           key: '← / →',
-          description: 'Navegar entre semanas',
+          description: t('navigateBetweenWeeks'),
           category: 'Horarios'
         },
         {
           key: '+ / -',
-          description: 'Zoom in/out',
+          description: t('zoomInOut'),
           category: 'Horarios'
         },
         {
           key: 'R',
-          description: 'Resetear zoom',
+          description: t('resetZoom'),
           category: 'Horarios'
         }
       );
@@ -113,22 +115,22 @@ export function KeyboardShortcuts({ currentTab, isManager = false }: KeyboardSho
       shortcuts.push(
         {
           key: 'Ctrl + N',
-          description: 'Agregar nuevo empleado',
+          description: t('addNewEmployee'),
           category: 'Empleados'
         },
         {
           key: 'Ctrl + F',
-          description: 'Buscar empleados',
+          description: t('searchEmployees'),
           category: 'Empleados'
         },
         {
           key: 'Enter',
-          description: 'Guardar empleado',
+          description: t('saveEmployee'),
           category: 'Empleados'
         },
         {
           key: 'Escape',
-          description: 'Cancelar edición',
+          description: t('cancelEdit'),
           category: 'Empleados'
         }
       );
@@ -139,12 +141,12 @@ export function KeyboardShortcuts({ currentTab, isManager = false }: KeyboardSho
       shortcuts.push(
         {
           key: 'Ctrl + R',
-          description: 'Refrescar estadísticas',
+          description: t('refreshStatistics'),
           category: 'Estadísticas'
         },
         {
           key: 'Ctrl + E',
-          description: 'Exportar estadísticas',
+          description: t('exportStatistics'),
           category: 'Estadísticas'
         }
       );
@@ -154,12 +156,12 @@ export function KeyboardShortcuts({ currentTab, isManager = false }: KeyboardSho
     shortcuts.push(
       {
         key: '← / →',
-        description: 'Navegar entre semanas',
+        description: t('navigateBetweenWeeks'),
         category: 'Horarios'
       },
       {
         key: 'Ctrl + R',
-        description: 'Refrescar horarios',
+        description: t('refreshSchedules'),
         category: 'Horarios'
       }
     );
@@ -180,7 +182,7 @@ export function KeyboardShortcuts({ currentTab, isManager = false }: KeyboardSho
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="relative p-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-        title="Atajos de teclado"
+        title={t('keyboardShortcuts')}
       >
         <HelpCircle className="w-5 h-5" />
       </button>
@@ -193,7 +195,7 @@ export function KeyboardShortcuts({ currentTab, isManager = false }: KeyboardSho
               <div className="flex items-center">
                 <Keyboard className="w-5 h-5 text-blue-500 mr-2" />
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                  Atajos de Teclado
+                  {t('keyboardShortcuts')}
                 </h3>
               </div>
               <button
@@ -229,7 +231,7 @@ export function KeyboardShortcuts({ currentTab, isManager = false }: KeyboardSho
 
           <div className="p-3 border-t border-gray-200 dark:border-gray-700">
             <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
-              Presiona <kbd className="px-1 py-0.5 text-xs font-mono bg-gray-100 dark:bg-gray-700 rounded">Ctrl + /</kbd> para mostrar/ocultar esta ayuda
+              {t('pressCtrlSlashToShowHideHelp')}
             </p>
           </div>
         </div>

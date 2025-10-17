@@ -3,6 +3,7 @@ import { Bell, X, Calendar, Users, Clock, AlertCircle, Cake, Gift } from 'lucide
 import { Employee } from '../types';
 import { format, addDays, isAfter, isBefore, differenceInDays } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export {};
 
@@ -25,6 +26,7 @@ interface Notification {
 export function NotificationCenter({ employees, currentEmployee, isManager }: NotificationCenterProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [viewedNotifications, setViewedNotifications] = useState<Set<string>>(new Set());
+  const { t } = useLanguage();
 
   // Función para verificar si una fecha es cumpleaños
   const isBirthdayOnDate = (birthday: string, targetDate: Date): boolean => {
@@ -94,8 +96,8 @@ export function NotificationCenter({ employees, currentEmployee, isManager }: No
       notifications.push({
         id: 'unassigned-employees',
         type: 'reminder',
-        title: 'Revisar asignaciones',
-        message: 'Verifica que todos los empleados tengan horarios asignados',
+        title: t('reviewAssignments'),
+        message: t('verifyAllEmployeesHaveAssignedSchedules'),
         priority: 'low',
         icon: <Users className="w-4 h-4 text-orange-500" />
       });
@@ -186,7 +188,7 @@ export function NotificationCenter({ employees, currentEmployee, isManager }: No
           setIsOpen(!isOpen);
         }}
         className="relative p-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-        title="Notificaciones"
+        title={t('notifications')}
       >
         <Bell className="w-5 h-5" />
         {unreadCount > 0 && (
@@ -202,7 +204,7 @@ export function NotificationCenter({ employees, currentEmployee, isManager }: No
           <div className="p-4 border-b border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                Notificaciones
+                {t('notifications')}
               </h3>
               <button
                 onClick={() => setIsOpen(false)}
@@ -252,7 +254,7 @@ export function NotificationCenter({ employees, currentEmployee, isManager }: No
 
           <div className="p-3 border-t border-gray-200 dark:border-gray-700">
             <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
-              {notifications.length} notificación{notifications.length !== 1 ? 'es' : ''}
+              {notifications.length} {notifications.length === 1 ? t('notification') : t('notifications')}
             </p>
           </div>
         </div>

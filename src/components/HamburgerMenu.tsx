@@ -174,7 +174,7 @@ export function HamburgerMenu({ activeTab, onTabChange, isManager = false, onSho
                   className="w-full flex items-center px-4 py-3 rounded-lg text-left transition-colors text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
                 >
                   <HelpCircle className="w-5 h-5" style={{ marginRight: '12px' }} />
-                  Atajos de Teclado
+                  {t('keyboardShortcuts')}
                 </button>
               </li>
             )}
