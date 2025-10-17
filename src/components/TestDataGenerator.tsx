@@ -3,8 +3,10 @@ import { v4 as uuidv4 } from 'uuid';
 import { Download, Users, Calendar, Database, Trash2 } from 'lucide-react';
 import { db } from '../firebase';
 import { collection, addDoc, getDocs, deleteDoc, doc } from 'firebase/firestore';
+import { useStore } from '../contexts/StoreContext';
 
 export function TestDataGenerator() {
+  const { setCurrentStore } = useStore();
   const [isGenerating, setIsGenerating] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
   const [progress, setProgress] = useState('');
@@ -268,6 +270,10 @@ export function TestDataGenerator() {
     try {
       let deletedCount = 0;
       const errors: string[] = [];
+
+      // Temporalmente desactivar la tienda actual para evitar recreación automática
+      setProgress('Desactivando tienda actual...');
+      setCurrentStore('');
 
       // Lista de todas las colecciones a borrar
       const collections = [

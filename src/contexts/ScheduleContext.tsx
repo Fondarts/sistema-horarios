@@ -240,21 +240,26 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
           });
 
           // Verificar si faltan horarios por defecto y agregarlos
+          // Solo si hay una tienda seleccionada y hay datos de schedule
           const missingDefaultDays = defaultStoreSchedule.filter(defaultDay =>
             !scheduleData.some(s => s.dayOfWeek === defaultDay.dayOfWeek)
           );
 
-          // Agregar días faltantes a Firebase
-          for (const missingDay of missingDefaultDays) {
-            try {
-              await addDoc(collection(db, 'storeSchedule'), {
-                dayOfWeek: missingDay.dayOfWeek,
-                isOpen: missingDay.isOpen,
-                openTime: missingDay.openTime || null,
-                closeTime: missingDay.closeTime || null,
-              });
-            } catch (error) {
-              console.error(`Error adding default store schedule for day ${missingDay.dayOfWeek}:`, error);
+          // Solo agregar días faltantes si hay una tienda seleccionada
+          // Esto evita la recreación automática durante el borrado de datos
+          if (currentStore && missingDefaultDays.length > 0 && scheduleData.length > 0) {
+            // Agregar días faltantes a Firebase
+            for (const missingDay of missingDefaultDays) {
+              try {
+                await addDoc(collection(db, 'storeSchedule'), {
+                  dayOfWeek: missingDay.dayOfWeek,
+                  isOpen: missingDay.isOpen,
+                  openTime: missingDay.openTime || null,
+                  closeTime: missingDay.closeTime || null,
+                });
+              } catch (error) {
+                console.error(`Error adding default store schedule for day ${missingDay.dayOfWeek}:`, error);
+              }
             }
           }
 
