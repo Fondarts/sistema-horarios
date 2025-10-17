@@ -37,6 +37,16 @@ const formatDateInput = (value: string): string => {
   }
 };
 
+// Función para convertir fecha dd/mm/yyyy a formato ISO para JavaScript
+const convertToISODate = (dateString: string): string => {
+  if (!dateString || !dateString.includes('/')) {
+    return dateString; // Si no tiene formato dd/mm/yyyy, devolver tal como está
+  }
+  
+  const [day, month, year] = dateString.split('/');
+  return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+};
+
 import { 
   AbsenceType, 
   AbsenceStatus, 
@@ -120,8 +130,8 @@ export const AbsenceManagement: React.FC = () => {
         employeeName: employee.name,
         storeId: employee.storeId!,
         type: newRequest.type,
-        startDate: newRequest.startDate,
-        endDate: newRequest.endDate,
+        startDate: convertToISODate(newRequest.startDate),
+        endDate: convertToISODate(newRequest.endDate),
         reason: newRequest.reason,
         status: 'pending' as const
       };
@@ -187,12 +197,24 @@ export const AbsenceManagement: React.FC = () => {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('es-ES');
+    const isoDate = convertToISODate(dateString);
+    const date = new Date(isoDate);
+    if (isNaN(date.getTime())) {
+      return 'Fecha inválida';
+    }
+    return date.toLocaleDateString('es-ES');
   };
 
   const getDaysDifference = (startDate: string, endDate: string) => {
-    const start = new Date(startDate);
-    const end = new Date(endDate);
+    const startIso = convertToISODate(startDate);
+    const endIso = convertToISODate(endDate);
+    const start = new Date(startIso);
+    const end = new Date(endIso);
+    
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+      return 0;
+    }
+    
     const diffTime = Math.abs(end.getTime() - start.getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
     return diffDays;
