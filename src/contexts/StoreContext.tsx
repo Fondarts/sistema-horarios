@@ -50,7 +50,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           setStores(storesData);
           
           // Si no hay tiendas, crear una por defecto
-          if (storesData.length === 0) {
+          // Solo si no estamos en proceso de borrado (verificar localStorage)
+          const isClearingData = localStorage.getItem('isClearingData') === 'true';
+          if (storesData.length === 0 && !isClearingData) {
             const defaultStore: Omit<Store, 'id'> = {
               name: 'Mi Tienda Principal',
               address: 'Calle Falsa 123',

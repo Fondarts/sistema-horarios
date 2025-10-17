@@ -274,6 +274,9 @@ export function TestDataGenerator() {
       // Temporalmente desactivar la tienda actual para evitar recreación automática
       setProgress('Desactivando tienda actual...');
       setCurrentStore('');
+      
+      // Marcar que estamos en proceso de borrado para evitar recreación automática
+      localStorage.setItem('isClearingData', 'true');
 
       // Lista de todas las colecciones a borrar
       const collections = [
@@ -383,6 +386,8 @@ export function TestDataGenerator() {
         error: error instanceof Error ? error.message : String(error)
       });
     } finally {
+      // Limpiar el flag de borrado
+      localStorage.removeItem('isClearingData');
       setIsClearing(false);
     }
   };

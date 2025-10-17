@@ -338,7 +338,9 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
         const storeScheduleRef = collection(db, 'storeSchedule');
         const scheduleSnapshot = await getDocs(storeScheduleRef);
         
-        if (scheduleSnapshot.empty) {
+        // Solo crear datos por defecto si no estamos en proceso de borrado
+        const isClearingData = localStorage.getItem('isClearingData') === 'true';
+        if (scheduleSnapshot.empty && !isClearingData) {
           // Agregar horario por defecto
           const addPromises = defaultStoreSchedule.map(schedule => {
             const { id, ...scheduleData } = schedule;
