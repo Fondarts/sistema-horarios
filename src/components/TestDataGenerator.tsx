@@ -267,96 +267,91 @@ export function TestDataGenerator() {
 
     try {
       let deletedCount = 0;
+      const errors: string[] = [];
 
-      // Borrar todos los turnos
-      setProgress('Borrando turnos...');
-      const shiftsSnapshot = await getDocs(collection(db, 'shifts'));
-      for (const shiftDoc of shiftsSnapshot.docs) {
-        await deleteDoc(doc(db, 'shifts', shiftDoc.id));
-        deletedCount++;
+      // Lista de todas las colecciones a borrar
+      const collections = [
+        'shifts',
+        'employees', 
+        'stores',
+        'storeSchedule',
+        'storeExceptions',
+        'templates',
+        'vacationRequests',
+        'absenceRequests',
+        'holidays',
+        'notifications'
+      ];
+
+      // Función para borrar una colección completa
+      const deleteCollection = async (collectionName: string) => {
+        try {
+          setProgress(`Borrando ${collectionName}...`);
+          const snapshot = await getDocs(collection(db, collectionName));
+          let collectionDeleted = 0;
+          
+          for (const docSnapshot of snapshot.docs) {
+            try {
+              await deleteDoc(doc(db, collectionName, docSnapshot.id));
+              collectionDeleted++;
+              deletedCount++;
+            } catch (docError) {
+              errors.push(`Error borrando documento ${docSnapshot.id} de ${collectionName}: ${docError instanceof Error ? docError.message : String(docError)}`);
+            }
+          }
+          
+          console.log(`${collectionName}: ${collectionDeleted} documentos eliminados`);
+          return collectionDeleted;
+        } catch (collectionError) {
+          errors.push(`Error accediendo a colección ${collectionName}: ${collectionError instanceof Error ? collectionError.message : String(collectionError)}`);
+          return 0;
+        }
+      };
+
+      // Borrar todas las colecciones
+      for (const collectionName of collections) {
+        await deleteCollection(collectionName);
       }
 
-      // Borrar todos los empleados
-      setProgress('Borrando empleados...');
-      const employeesSnapshot = await getDocs(collection(db, 'employees'));
-      for (const employeeDoc of employeesSnapshot.docs) {
-        await deleteDoc(doc(db, 'employees', employeeDoc.id));
-        deletedCount++;
+      // Verificar que realmente se borraron todos los datos
+      setProgress('Verificando borrado completo...');
+      let remainingDocs = 0;
+      for (const collectionName of collections) {
+        try {
+          const verifySnapshot = await getDocs(collection(db, collectionName));
+          remainingDocs += verifySnapshot.docs.length;
+          if (verifySnapshot.docs.length > 0) {
+            errors.push(`ADVERTENCIA: ${collectionName} aún tiene ${verifySnapshot.docs.length} documentos`);
+          }
+        } catch (verifyError) {
+          errors.push(`Error verificando ${collectionName}: ${verifyError instanceof Error ? verifyError.message : String(verifyError)}`);
+        }
       }
 
-      // Borrar todas las tiendas
-      setProgress('Borrando tiendas...');
-      const storesSnapshot = await getDocs(collection(db, 'stores'));
-      for (const storeDoc of storesSnapshot.docs) {
-        await deleteDoc(doc(db, 'stores', storeDoc.id));
-        deletedCount++;
+      if (errors.length > 0) {
+        setProgress(`Borrado completado con ${errors.length} advertencias. ${deletedCount} documentos eliminados.`);
+        setResults({
+          cleared: true,
+          deletedCount,
+          errors,
+          remainingDocs
+        });
+      } else {
+        setProgress(`Datos borrados exitosamente. ${deletedCount} documentos eliminados.`);
+        setResults({
+          cleared: true,
+          deletedCount,
+          remainingDocs
+        });
       }
-
-      // Borrar horarios de tienda
-      setProgress('Borrando horarios de tienda...');
-      const storeScheduleSnapshot = await getDocs(collection(db, 'storeSchedule'));
-      for (const scheduleDoc of storeScheduleSnapshot.docs) {
-        await deleteDoc(doc(db, 'storeSchedule', scheduleDoc.id));
-        deletedCount++;
-      }
-
-      // Borrar excepciones de tienda
-      setProgress('Borrando excepciones de tienda...');
-      const storeExceptionsSnapshot = await getDocs(collection(db, 'storeExceptions'));
-      for (const exceptionDoc of storeExceptionsSnapshot.docs) {
-        await deleteDoc(doc(db, 'storeExceptions', exceptionDoc.id));
-        deletedCount++;
-      }
-
-      // Borrar plantillas
-      setProgress('Borrando plantillas...');
-      const templatesSnapshot = await getDocs(collection(db, 'templates'));
-      for (const templateDoc of templatesSnapshot.docs) {
-        await deleteDoc(doc(db, 'templates', templateDoc.id));
-        deletedCount++;
-      }
-
-      // Borrar solicitudes de vacaciones
-      setProgress('Borrando solicitudes de vacaciones...');
-      const vacationRequestsSnapshot = await getDocs(collection(db, 'vacationRequests'));
-      for (const vacationDoc of vacationRequestsSnapshot.docs) {
-        await deleteDoc(doc(db, 'vacationRequests', vacationDoc.id));
-        deletedCount++;
-      }
-
-      // Borrar solicitudes de ausencia
-      setProgress('Borrando solicitudes de ausencia...');
-      const absenceRequestsSnapshot = await getDocs(collection(db, 'absenceRequests'));
-      for (const absenceDoc of absenceRequestsSnapshot.docs) {
-        await deleteDoc(doc(db, 'absenceRequests', absenceDoc.id));
-        deletedCount++;
-      }
-
-      // Borrar feriados
-      setProgress('Borrando feriados...');
-      const holidaysSnapshot = await getDocs(collection(db, 'holidays'));
-      for (const holidayDoc of holidaysSnapshot.docs) {
-        await deleteDoc(doc(db, 'holidays', holidayDoc.id));
-        deletedCount++;
-      }
-
-      // Borrar notificaciones
-      setProgress('Borrando notificaciones...');
-      const notificationsSnapshot = await getDocs(collection(db, 'notifications'));
-      for (const notificationDoc of notificationsSnapshot.docs) {
-        await deleteDoc(doc(db, 'notifications', notificationDoc.id));
-        deletedCount++;
-      }
-
-      setProgress(`Datos borrados exitosamente. ${deletedCount} documentos eliminados.`);
-      setResults({
-        cleared: true,
-        deletedCount
-      });
 
     } catch (error) {
       console.error('Error borrando datos:', error);
       setProgress(`Error borrando datos: ${error instanceof Error ? error.message : String(error)}`);
+      setResults({
+        cleared: false,
+        error: error instanceof Error ? error.message : String(error)
+      });
     } finally {
       setIsClearing(false);
     }
@@ -700,23 +695,59 @@ export function TestDataGenerator() {
         )}
 
         {results && (
-          <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
-            <h3 className="font-medium text-green-900 dark:text-green-100 mb-2">
-              Resultados:
+          <div className={`border rounded-lg p-4 ${
+            results.cleared === false 
+              ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
+              : results.errors && results.errors.length > 0
+              ? 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800'
+              : 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
+          }`}>
+            <h3 className={`font-medium mb-2 ${
+              results.cleared === false 
+                ? 'text-red-900 dark:text-red-100'
+                : results.errors && results.errors.length > 0
+                ? 'text-yellow-900 dark:text-yellow-100'
+                : 'text-green-900 dark:text-green-100'
+            }`}>
+              {results.cleared === false ? 'Error:' : 'Resultados:'}
             </h3>
-            <div className="text-sm text-green-800 dark:text-green-200 space-y-1">
-              <p>Tiendas procesadas: {results.stores}</p>
-              <p>Empleados creados: {results.employeesCreated}</p>
-              <p>Turnos generados: {results.shiftsCreated}</p>
-              {results.errors && results.errors.length > 0 && (
-                <div className="mt-2">
-                  <p className="font-medium">Errores:</p>
-                  <ul className="list-disc list-inside">
-                    {results.errors.map((error: string, index: number) => (
-                      <li key={index}>{error}</li>
-                    ))}
-                  </ul>
-                </div>
+            <div className={`text-sm space-y-1 ${
+              results.cleared === false 
+                ? 'text-red-800 dark:text-red-200'
+                : results.errors && results.errors.length > 0
+                ? 'text-yellow-800 dark:text-yellow-200'
+                : 'text-green-800 dark:text-green-200'
+            }`}>
+              {results.cleared === false ? (
+                <p>Error: {results.error}</p>
+              ) : (
+                <>
+                  {results.deletedCount !== undefined && (
+                    <p>Documentos eliminados: {results.deletedCount}</p>
+                  )}
+                  {results.remainingDocs !== undefined && (
+                    <p>Documentos restantes: {results.remainingDocs}</p>
+                  )}
+                  {results.stores !== undefined && (
+                    <p>Tiendas procesadas: {results.stores}</p>
+                  )}
+                  {results.employeesCreated !== undefined && (
+                    <p>Empleados creados: {results.employeesCreated}</p>
+                  )}
+                  {results.shiftsCreated !== undefined && (
+                    <p>Turnos generados: {results.shiftsCreated}</p>
+                  )}
+                  {results.errors && results.errors.length > 0 && (
+                    <div className="mt-2">
+                      <p className="font-medium">Advertencias/Errores:</p>
+                      <ul className="list-disc list-inside max-h-32 overflow-y-auto">
+                        {results.errors.map((error: string, index: number) => (
+                          <li key={index} className="text-xs">{error}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </div>
