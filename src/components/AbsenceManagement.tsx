@@ -389,7 +389,7 @@ export const AbsenceManagement: React.FC = () => {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${ABSENCE_TYPE_COLORS[request.type]}`}>
-                              {ABSENCE_TYPE_LABELS[request.type]}
+                              {t(request.type)}
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-50">
@@ -401,7 +401,7 @@ export const AbsenceManagement: React.FC = () => {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${ABSENCE_STATUS_COLORS[request.status]}`}>
-                              {ABSENCE_STATUS_LABELS[request.status]}
+                              {t(request.status)}
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -479,7 +479,7 @@ export const AbsenceManagement: React.FC = () => {
                           className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-50"
                         >
                           {Object.entries(ABSENCE_TYPE_LABELS).map(([value, label]) => (
-                            <option key={value} value={value}>{label}</option>
+                            <option key={value} value={value}>{t(value as AbsenceType)}</option>
                           ))}
                         </select>
                       </div>
@@ -599,7 +599,7 @@ export const AbsenceManagement: React.FC = () => {
                                   <span className="text-sm text-gray-500 dark:text-gray-400">{t('type')}:</span>
                                   <p className="text-gray-900 dark:text-gray-50">
                                     <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${ABSENCE_TYPE_COLORS[request.type]}`}>
-                                      {ABSENCE_TYPE_LABELS[request.type]}
+                                      {t(request.type)}
                                     </span>
                                   </p>
                                 </div>
@@ -607,7 +607,7 @@ export const AbsenceManagement: React.FC = () => {
                                   <span className="text-sm text-gray-500 dark:text-gray-400">{t('status')}:</span>
                                   <p className="text-gray-900 dark:text-gray-50">
                                     <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${ABSENCE_STATUS_COLORS[request.status]}`}>
-                                      {ABSENCE_STATUS_LABELS[request.status]}
+                                      {t(request.status)}
                                     </span>
                                   </p>
                                 </div>
