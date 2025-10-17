@@ -215,7 +215,9 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
 
   // Cargar datos desde Firebase
   useEffect(() => {
+    console.log('ScheduleContext: useEffect ejecutándose, currentStore:', currentStore?.id || 'ninguna');
     if (!currentStore) {
+      console.log('ScheduleContext: No hay tienda seleccionada, limpiando datos');
       setShifts([]);
       setStoreSchedule([]);
       setStoreExceptions([]);
@@ -238,6 +240,10 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
           snapshot.forEach((doc) => {
             scheduleData.push({ id: doc.id, ...doc.data() } as StoreSchedule);
           });
+          
+          console.log('ScheduleContext: Cargando storeSchedule desde Firebase:', scheduleData.length, 'documentos encontrados');
+          console.log('ScheduleContext: IDs de storeSchedule:', scheduleData.map(s => s.id));
+          console.log('ScheduleContext: isClearingData flag:', localStorage.getItem('isClearingData'));
 
           // COMENTADO: No crear storeSchedule automáticamente para evitar recreación durante borrado
           // Los horarios de tienda deben ser creados explícitamente por el usuario o el generador de datos
