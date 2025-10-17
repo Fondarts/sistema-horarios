@@ -236,7 +236,7 @@ export const AbsenceManagement: React.FC = () => {
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">{t('absenceManagement')}</h2>
-          <p className="text-gray-600">Administra todas las solicitudes de ausencias</p>
+          <p className="text-gray-600">{t('manageAllAbsenceRequests')}</p>
         </div>
         <button
           onClick={() => {
@@ -262,7 +262,7 @@ export const AbsenceManagement: React.FC = () => {
                   <div className="flex items-center">
                     <Calendar className="w-8 h-8 text-blue-500" />
                     <div className="ml-3">
-                      <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Ausencias</p>
+                      <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('totalAbsences')}</p>
                       <p className="text-2xl font-bold text-gray-900 dark:text-gray-50">{stats.totalAbsences}</p>
                     </div>
                   </div>
@@ -311,7 +311,7 @@ export const AbsenceManagement: React.FC = () => {
                       onChange={(e) => setSelectedType(e.target.value as AbsenceType)}
                       className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-50"
                     >
-                      <option value="all">Todos los tipos</option>
+                      <option value="all">{t('allTypes')}</option>
                       {Object.entries(ABSENCE_TYPE_LABELS).map(([value, label]) => (
                         <option key={value} value={value}>{label}</option>
                       ))}
@@ -324,7 +324,7 @@ export const AbsenceManagement: React.FC = () => {
                       onChange={(e) => setSelectedStatus(e.target.value as AbsenceStatus | 'all')}
                       className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-50"
                     >
-                      <option value="all">Todos los estados</option>
+                      <option value="all">{t('allStatuses')}</option>
                       {Object.entries(ABSENCE_STATUS_LABELS).map(([value, label]) => (
                         <option key={value} value={value}>{label}</option>
                       ))}
@@ -339,7 +339,7 @@ export const AbsenceManagement: React.FC = () => {
                         onChange={(e) => setSelectedEmployee(e.target.value)}
                         className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-50"
                       >
-                        <option value="">Todos los empleados</option>
+                        <option value="">{t('allEmployees')}</option>
                         {employees.map(employee => (
                           <option key={employee.id} value={employee.id}>{employee.name}</option>
                         ))}
@@ -397,7 +397,7 @@ export const AbsenceManagement: React.FC = () => {
                             <div className="text-gray-500 dark:text-gray-400">al {formatDate(request.endDate)}</div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-50">
-                            {getDaysDifference(request.startDate, request.endDate)} días
+                            {getDaysDifference(request.startDate, request.endDate)} {t('days')}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${ABSENCE_STATUS_COLORS[request.status]}`}>
@@ -512,7 +512,7 @@ export const AbsenceManagement: React.FC = () => {
                         </div>
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Motivo</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('reason')}</label>
                         <textarea
                           value={newRequest.reason}
                           onChange={(e) => setNewRequest({...newRequest, reason: e.target.value})}
@@ -565,7 +565,7 @@ export const AbsenceManagement: React.FC = () => {
                         <>
                           <div className="flex justify-between items-center mb-4">
                             <h3 className="text-lg font-medium text-gray-900 dark:text-gray-50">
-                              Detalles de la Solicitud
+                              {t('requestDetails')}
                             </h3>
                             <button
                               onClick={() => setShowDetails(null)}
@@ -581,7 +581,7 @@ export const AbsenceManagement: React.FC = () => {
                               <h4 className="font-medium text-gray-900 dark:text-gray-50 mb-2">Información del {t('employee')}</h4>
                               <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                  <span className="text-sm text-gray-500 dark:text-gray-400">Nombre:</span>
+                                  <span className="text-sm text-gray-500 dark:text-gray-400">{t('name')}:</span>
                                   <p className="text-gray-900 dark:text-gray-50">{request.employeeName}</p>
                                 </div>
                                 <div>
@@ -593,10 +593,10 @@ export const AbsenceManagement: React.FC = () => {
 
                             {/* Información de la ausencia */}
                             <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                              <h4 className="font-medium text-gray-900 dark:text-gray-50 mb-2">Información de la Ausencia</h4>
+                              <h4 className="font-medium text-gray-900 dark:text-gray-50 mb-2">{t('absenceInformation')}</h4>
                               <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                  <span className="text-sm text-gray-500 dark:text-gray-400">Tipo:</span>
+                                  <span className="text-sm text-gray-500 dark:text-gray-400">{t('type')}:</span>
                                   <p className="text-gray-900 dark:text-gray-50">
                                     <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${ABSENCE_TYPE_COLORS[request.type]}`}>
                                       {ABSENCE_TYPE_LABELS[request.type]}
@@ -604,7 +604,7 @@ export const AbsenceManagement: React.FC = () => {
                                   </p>
                                 </div>
                                 <div>
-                                  <span className="text-sm text-gray-500 dark:text-gray-400">Estado:</span>
+                                  <span className="text-sm text-gray-500 dark:text-gray-400">{t('status')}:</span>
                                   <p className="text-gray-900 dark:text-gray-50">
                                     <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${ABSENCE_STATUS_COLORS[request.status]}`}>
                                       {ABSENCE_STATUS_LABELS[request.status]}
@@ -612,19 +612,19 @@ export const AbsenceManagement: React.FC = () => {
                                   </p>
                                 </div>
                                 <div>
-                                  <span className="text-sm text-gray-500 dark:text-gray-400">Fecha de Inicio:</span>
+                                  <span className="text-sm text-gray-500 dark:text-gray-400">{t('startDate')}:</span>
                                   <p className="text-gray-900 dark:text-gray-50">{formatDate(request.startDate)}</p>
                                 </div>
                                 <div>
-                                  <span className="text-sm text-gray-500 dark:text-gray-400">Fecha de Fin:</span>
+                                  <span className="text-sm text-gray-500 dark:text-gray-400">{t('endDate')}:</span>
                                   <p className="text-gray-900 dark:text-gray-50">{formatDate(request.endDate)}</p>
                                 </div>
                                 <div>
-                                  <span className="text-sm text-gray-500 dark:text-gray-400">Duración:</span>
-                                  <p className="text-gray-900 dark:text-gray-50">{getDaysDifference(request.startDate, request.endDate)} días</p>
+                                  <span className="text-sm text-gray-500 dark:text-gray-400">{t('duration')}:</span>
+                                  <p className="text-gray-900 dark:text-gray-50">{getDaysDifference(request.startDate, request.endDate)} {t('days')}</p>
                                 </div>
                                 <div>
-                                  <span className="text-sm text-gray-500 dark:text-gray-400">Fecha de Solicitud:</span>
+                                  <span className="text-sm text-gray-500 dark:text-gray-400">{t('requestDate')}:</span>
                                   <p className="text-gray-900 dark:text-gray-50">{formatDate(request.createdAt)}</p>
                                 </div>
                               </div>
@@ -633,7 +633,7 @@ export const AbsenceManagement: React.FC = () => {
                             {/* Motivo */}
                             {request.reason && (
                               <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                                <h4 className="font-medium text-gray-900 dark:text-gray-50 mb-2">Motivo</h4>
+                                <h4 className="font-medium text-gray-900 dark:text-gray-50 mb-2">{t('reason')}</h4>
                                 <p className="text-gray-900 dark:text-gray-50">{request.reason}</p>
                               </div>
                             )}

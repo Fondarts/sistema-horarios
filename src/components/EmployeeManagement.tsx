@@ -592,7 +592,7 @@ export function EmployeeManagement() {
                   </div>
                   {employee.unavailableTimes.length > 0 && (
                     <div className="text-xs text-gray-500">
-                      <div className="font-medium mb-1">Restricciones de horario:</div>
+                      <div className="font-medium mb-1">{t('scheduleRestrictions')}:</div>
                       {employee.unavailableTimes.map((ut, index) => (
                         <div key={ut.id} className="ml-2">
                           {getDayName(ut.dayOfWeek)}: {ut.startTime}-{ut.endTime}

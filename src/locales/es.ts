@@ -151,6 +151,16 @@ export const es = {
   approvedBy: 'Aprobado por:',
   rejectedBy: 'Rechazado por:',
   rejectionReason: 'Motivo del rechazo:',
+  manageAllAbsenceRequests: 'Administra todas las solicitudes de ausencias',
+  totalAbsences: 'Total Ausencias',
+  allTypes: 'Todos los tipos',
+  allStatuses: 'Todos los estados',
+  allEmployees: 'Todos los empleados',
+  requestDetails: 'Detalles de la Solicitud',
+  name: 'Nombre',
+  absenceInformation: 'Información de la Ausencia',
+  duration: 'Duración',
+  scheduleRestrictions: 'Restricciones de horario',
   
   // Holidays
   holidayName: 'Nombre del Feriado',
