@@ -179,9 +179,9 @@ export default function ScheduleManagement() {
       const openHour = parseInt(todaySchedule.openTime.split(':')[0]);
       const closeHour = parseInt(todaySchedule.closeTime.split(':')[0]);
       
-      // Usar el rango real de la tienda para alineación precisa
-      const startHour = openHour;
-      const endHour = closeHour;
+      // Agregar 1 hora antes y después para mostrar contexto
+      const startHour = Math.max(0, openHour - 1);
+      const endHour = Math.min(23, closeHour + 1);
       
       return { startHour, endHour };
     }
@@ -1639,7 +1639,7 @@ export default function ScheduleManagement() {
                         // Usar las funciones timeToPosition para mantener consistencia
                         left = timeToPosition(shiftStartTimeInHours, startHour, endHour) + 2;
                         const rightPosition = timeToPosition(shiftEndTimeInHours, startHour, endHour);
-                        width = rightPosition - left - 2; // Reducir margen para conectar barras perfectamente
+                        width = rightPosition - left; // Sin margen para conectar barras perfectamente
                         
                         // Calcular availableWidth para validaciones
                         const containerWidth = scrollContainerRef.current?.offsetWidth || 800;
