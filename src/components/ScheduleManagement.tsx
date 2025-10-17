@@ -1861,68 +1861,63 @@ export default function ScheduleManagement() {
             <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Problemas de Cobertura</h3>
             
             {coverageProblems.length === 0 ? (
-              <div className="text-center py-8">
-                <AlertTriangle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-600 dark:text-gray-400">No se detectaron problemas de cobertura</p>
-                <p className="text-sm text-gray-500 dark:text-gray-500 mt-2">
-                  El sistema verificará automáticamente la cobertura mínima configurada
-                </p>
+              <div className="text-center py-4">
+                <AlertTriangle className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                <p className="text-sm text-gray-600 dark:text-gray-400">No se detectaron problemas de cobertura</p>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-1">
                 {coverageProblems.map((problem, index) => {
                   const getProblemIcon = () => {
                     switch (problem.type) {
                       case 'gap':
-                        return <Clock className="w-5 h-5 text-red-500" />;
+                        return <Clock className="w-4 h-4 text-red-500" />;
                       case 'unavailable':
-                        return <X className="w-5 h-5 text-red-500" />;
+                        return <X className="w-4 h-4 text-red-500" />;
                       case 'overtime':
-                        return <AlertTriangle className="w-5 h-5 text-orange-500" />;
+                        return <AlertTriangle className="w-4 h-4 text-orange-500" />;
                       case 'empty_day':
-                        return <AlertTriangle className="w-5 h-5 text-red-500" />;
+                        return <AlertTriangle className="w-4 h-4 text-red-500" />;
                       default:
-                        return <AlertTriangle className="w-5 h-5 text-red-500" />;
+                        return <AlertTriangle className="w-4 h-4 text-red-500" />;
                     }
                   };
 
                   const getProblemTitle = () => {
                     switch (problem.type) {
                       case 'gap':
-                        return 'Hueco sin cobertura';
+                        return 'Hueco';
                       case 'unavailable':
-                        return 'Conflicto de horario';
+                        return 'Conflicto';
                       case 'overtime':
                         return 'Jornada excesiva';
                       case 'empty_day':
-                        return 'Día sin turnos';
+                        return 'Sin turnos';
                       default:
-                        return 'Problema de cobertura';
+                        return 'Problema';
                     }
                   };
 
                   return (
                     <div 
                       key={index}
-                      className="p-4 rounded-lg border-l-4 bg-red-50 border-red-500 dark:bg-red-900/20 dark:border-red-400"
+                      className="flex items-center p-2 rounded bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800"
                     >
-                      <div className="flex items-start">
-                        <div className="flex-shrink-0">
-                          {getProblemIcon()}
+                      <div className="flex-shrink-0 mr-2">
+                        {getProblemIcon()}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-medium text-red-800 dark:text-red-200">
+                            {getProblemTitle()}
+                          </span>
+                          <span className="text-xs text-red-600 dark:text-red-400 ml-2">
+                            {problem.day} - {problem.time}
+                          </span>
                         </div>
-                        <div className="ml-3 flex-1">
-                          <div className="flex items-center justify-between">
-                            <h4 className="text-sm font-medium text-red-800 dark:text-red-200">
-                              {getProblemTitle()}
-                            </h4>
-                          </div>
-                          <p className="text-sm mt-1 text-red-700 dark:text-red-300">
-                            <strong>{problem.day}</strong> - {problem.time}
-                          </p>
-                          <p className="text-sm text-red-600 dark:text-red-400">
-                            {problem.description}
-                          </p>
-                        </div>
+                        <p className="text-xs text-red-600 dark:text-red-400 truncate">
+                          {problem.description}
+                        </p>
                       </div>
                     </div>
                   );
