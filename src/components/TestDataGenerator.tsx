@@ -283,35 +283,56 @@ export function TestDataGenerator() {
         'notifications'
       ];
 
-      // Función para borrar una colección completa
-      const deleteCollection = async (collectionName: string) => {
-        try {
-          setProgress(`Borrando ${collectionName}...`);
-          const snapshot = await getDocs(collection(db, collectionName));
-          let collectionDeleted = 0;
-          
-          for (const docSnapshot of snapshot.docs) {
-            try {
-              await deleteDoc(doc(db, collectionName, docSnapshot.id));
-              collectionDeleted++;
-              deletedCount++;
-            } catch (docError) {
-              errors.push(`Error borrando documento ${docSnapshot.id} de ${collectionName}: ${docError instanceof Error ? docError.message : String(docError)}`);
+      // Función para borrar una colección completa con reintentos
+      const deleteCollection = async (collectionName: string, maxRetries = 3) => {
+        for (let attempt = 1; attempt <= maxRetries; attempt++) {
+          try {
+            setProgress(`Borrando ${collectionName} (intento ${attempt}/${maxRetries})...`);
+            const snapshot = await getDocs(collection(db, collectionName));
+            let collectionDeleted = 0;
+            
+            for (const docSnapshot of snapshot.docs) {
+              try {
+                await deleteDoc(doc(db, collectionName, docSnapshot.id));
+                collectionDeleted++;
+                deletedCount++;
+              } catch (docError) {
+                errors.push(`Error borrando documento ${docSnapshot.id} de ${collectionName}: ${docError instanceof Error ? docError.message : String(docError)}`);
+              }
             }
+            
+            console.log(`${collectionName}: ${collectionDeleted} documentos eliminados (intento ${attempt})`);
+            
+            // Si no hay documentos, salir del bucle de reintentos
+            if (collectionDeleted === 0) {
+              break;
+            }
+            
+            // Esperar un poco antes del siguiente intento para evitar conflictos
+            if (attempt < maxRetries && collectionDeleted > 0) {
+              await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+            
+            return collectionDeleted;
+          } catch (collectionError) {
+            errors.push(`Error accediendo a colección ${collectionName} (intento ${attempt}): ${collectionError instanceof Error ? collectionError.message : String(collectionError)}`);
+            if (attempt === maxRetries) {
+              return 0;
+            }
+            await new Promise(resolve => setTimeout(resolve, 1000));
           }
-          
-          console.log(`${collectionName}: ${collectionDeleted} documentos eliminados`);
-          return collectionDeleted;
-        } catch (collectionError) {
-          errors.push(`Error accediendo a colección ${collectionName}: ${collectionError instanceof Error ? collectionError.message : String(collectionError)}`);
-          return 0;
         }
+        return 0;
       };
 
-      // Borrar todas las colecciones
+      // Borrar todas las colecciones con reintentos
       for (const collectionName of collections) {
         await deleteCollection(collectionName);
       }
+
+      // Esperar un poco más para que se complete la sincronización
+      setProgress('Esperando sincronización...');
+      await new Promise(resolve => setTimeout(resolve, 2000));
 
       // Verificar que realmente se borraron todos los datos
       setProgress('Verificando borrado completo...');
@@ -322,6 +343,9 @@ export function TestDataGenerator() {
           remainingDocs += verifySnapshot.docs.length;
           if (verifySnapshot.docs.length > 0) {
             errors.push(`ADVERTENCIA: ${collectionName} aún tiene ${verifySnapshot.docs.length} documentos`);
+            // Mostrar IDs de documentos restantes para debugging
+            const remainingIds = verifySnapshot.docs.map(doc => doc.id).join(', ');
+            errors.push(`IDs restantes en ${collectionName}: ${remainingIds}`);
           }
         } catch (verifyError) {
           errors.push(`Error verificando ${collectionName}: ${verifyError instanceof Error ? verifyError.message : String(verifyError)}`);
