@@ -806,7 +806,7 @@ export default function ScheduleManagement() {
   // Función para detectar problemas de cobertura
   const detectCoverageProblems = (shifts: Shift[], employees: Employee[], storeSchedule: any) => {
     const problems: Array<{
-      type: 'gap' | 'conflict' | 'unavailable' | 'overtime' | 'empty_day' | 'weekly_overtime';
+      type: 'gap' | 'conflict' | 'unavailable' | 'overtime' | 'empty_day' | 'weekly_overtime' | 'store_closed';
       day: string;
       time: string;
       description: string;
@@ -833,7 +833,30 @@ export default function ScheduleManagement() {
       
       // Obtener horario de la tienda para este día
       const daySchedule = storeSchedule.find((s: any) => s && s.dayOfWeek === dayOfWeek);
-      if (!daySchedule || !daySchedule.timeRanges || daySchedule.timeRanges.length === 0) return;
+      
+      // Verificar si la tienda está cerrada pero hay empleados asignados
+      if (!daySchedule || !daySchedule.isOpen || !daySchedule.timeRanges || daySchedule.timeRanges.length === 0) {
+        const validShifts = (dayShifts as Shift[]).filter(shift => 
+          shift && shift.startTime && shift.endTime && 
+          typeof shift.startTime === 'string' && typeof shift.endTime === 'string'
+        );
+        
+        if (validShifts.length > 0) {
+          // Obtener nombres de empleados asignados
+          const assignedEmployees = validShifts.map(shift => {
+            const employee = employees.find(emp => emp && emp.id === shift.employeeId);
+            return employee?.name || 'Empleado desconocido';
+          });
+          
+          problems.push({
+            type: 'store_closed',
+            day: new Date(date).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric' }),
+            time: 'Todo el día',
+            description: `Tienda cerrada pero hay empleados asignados: ${assignedEmployees.join(', ')}`
+          });
+        }
+        return; // No verificar más problemas si la tienda está cerrada
+      }
 
       // Filtrar turnos válidos
       const validShifts = (dayShifts as Shift[]).filter(shift => 
@@ -1987,6 +2010,8 @@ export default function ScheduleManagement() {
                         return <AlertTriangle className="w-4 h-4 text-red-500" />;
                       case 'weekly_overtime':
                         return <AlertTriangle className="w-4 h-4 text-orange-500" />;
+                      case 'store_closed':
+                        return <X className="w-4 h-4 text-red-500" />;
                       default:
                         return <AlertTriangle className="w-4 h-4 text-red-500" />;
                     }
@@ -2004,6 +2029,8 @@ export default function ScheduleManagement() {
                         return 'Sin turnos';
                       case 'weekly_overtime':
                         return 'Horas semanales excesivas';
+                      case 'store_closed':
+                        return 'Tienda cerrada';
                       default:
                         return 'Problema';
                     }
