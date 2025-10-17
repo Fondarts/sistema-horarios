@@ -31,6 +31,10 @@ export const en = {
   username: 'Username',
   password: 'Password',
   loginError: 'Invalid username or password',
+  scheduleSystem: 'Schedule System',
+  loginWithCredentials: 'Log in with your username and password',
+  loggingIn: 'Logging in...',
+  testInformation: 'Test Information',
   
   // Store
   storeSelector: 'Store Selector',
@@ -108,6 +112,7 @@ export const en = {
   view24h: 'View 24h',
   
   // Absences
+  absenceManagement: 'Absence Management',
   absenceType: 'Absence Type',
   vacation: 'Vacation',
   sick: 'Sick Leave',
@@ -122,6 +127,19 @@ export const en = {
   rejected: 'Rejected',
   newRequest: 'New Request',
   requestSubmitted: 'Request submitted successfully',
+  remainingVacationDays: 'Remaining Vacation Days',
+  type: 'Type',
+  dates: 'Dates',
+  days: 'Days',
+  actions: 'Actions',
+  absenceTypeLabel: 'Absence Type',
+  startDate: 'Start Date',
+  endDate: 'End Date',
+  employeeInfo: 'Employee Information',
+  requestDate: 'Request Date',
+  approvedBy: 'Approved by:',
+  rejectedBy: 'Rejected by:',
+  rejectionReason: 'Rejection reason:',
   
   // Holidays
   holidayName: 'Holiday Name',

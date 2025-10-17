@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAbsence } from '../contexts/AbsenceContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import { useEmployees } from '../contexts/EmployeeContext';
 import { useAuth } from '../contexts/AuthContext';
 import { FileUpload } from './FileUpload';
@@ -57,6 +58,7 @@ import {
 } from '../types/absence';
 
 export const AbsenceManagement: React.FC = () => {
+  const { t } = useLanguage();
   const { 
     absenceRequests, 
     addAbsenceRequest, 
@@ -112,15 +114,15 @@ export const AbsenceManagement: React.FC = () => {
       console.log('Buscando empleado con ID:', newRequest.employeeId);
       const employee = employees.find(emp => emp.id === newRequest.employeeId);
       if (!employee) {
-        console.error('Empleado no encontrado');
-        alert('Empleado no encontrado');
+        console.error('{t('employee')} no encontrado');
+        alert('{t('employee')} no encontrado');
         return;
       }
 
-      console.log('Empleado encontrado:', employee);
+      console.log('{t('employee')} encontrado:', employee);
       
       if (!employee.storeId) {
-        console.error('Empleado sin storeId:', employee);
+        console.error('{t('employee')} sin storeId:', employee);
         alert('El empleado no tiene una tienda asignada');
         return;
       }
@@ -233,7 +235,7 @@ export const AbsenceManagement: React.FC = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Gestión de Ausencias</h2>
+          <h2 className="text-2xl font-bold text-gray-900">{t('absenceManagement')}</h2>
           <p className="text-gray-600">Administra todas las solicitudes de ausencias</p>
         </div>
         <button
@@ -250,7 +252,7 @@ export const AbsenceManagement: React.FC = () => {
           className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2"
         >
           <Plus className="w-4 h-4" />
-          Nueva Solicitud
+          {t('newRequest')}
         </button>
       </div>
 
@@ -269,7 +271,7 @@ export const AbsenceManagement: React.FC = () => {
                   <div className="flex items-center">
                     <Clock className="w-8 h-8 text-yellow-500" />
                     <div className="ml-3">
-                      <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Pendientes</p>
+                      <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('pending')}</p>
                       <p className="text-2xl font-bold text-gray-900 dark:text-gray-50">{stats.pendingApprovals}</p>
                     </div>
                   </div>
@@ -287,7 +289,7 @@ export const AbsenceManagement: React.FC = () => {
                   <div className="flex items-center">
                     <CheckCircle className="w-8 h-8 text-green-500" />
                     <div className="ml-3">
-                      <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Días de Vacaciones Restantes</p>
+                      <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('remainingVacationDays')}</p>
                       <p className="text-2xl font-bold text-gray-900 dark:text-gray-50">
                         {currentEmployee?.vacationDaysPerYear ? 
                           Math.max(0, currentEmployee.vacationDaysPerYear - stats.absencesByType.vacation) : 
@@ -303,7 +305,7 @@ export const AbsenceManagement: React.FC = () => {
               <div className="bg-gray-200 dark:bg-gray-800 p-4 rounded-lg shadow border border-gray-200 dark:border-gray-700">
                 <div className="flex flex-wrap gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tipo</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('type')}</label>
                     <select
                       value={selectedType}
                       onChange={(e) => setSelectedType(e.target.value as AbsenceType)}
@@ -316,7 +318,7 @@ export const AbsenceManagement: React.FC = () => {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Estado</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('status')}</label>
                     <select
                       value={selectedStatus}
                       onChange={(e) => setSelectedStatus(e.target.value as AbsenceStatus | 'all')}
@@ -331,7 +333,7 @@ export const AbsenceManagement: React.FC = () => {
                   {/* Solo encargados y encargados de distrito pueden filtrar por empleado */}
                   {(currentEmployee?.role === 'encargado' || currentEmployee?.role === 'distrito') && (
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Empleado</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('employee')}</label>
                       <select
                         value={selectedEmployee}
                         onChange={(e) => setSelectedEmployee(e.target.value)}
@@ -354,22 +356,22 @@ export const AbsenceManagement: React.FC = () => {
                     <thead className="bg-gray-50 dark:bg-gray-700">
                       <tr>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                          Empleado
+                          {t('employee')}
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                          Tipo
+                          {t('type')}
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                          Fechas
+                          {t('dates')}
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                          Días
+                          {t('days')}
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                          Estado
+                          {t('status')}
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                          Acciones
+                          {t('actions')}
                         </th>
                       </tr>
                     </thead>
@@ -455,7 +457,7 @@ export const AbsenceManagement: React.FC = () => {
                       {/* Solo mostrar selector de empleado para encargados y encargados de distrito */}
                       {(currentEmployee?.role === 'encargado' || currentEmployee?.role === 'distrito') && (
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Empleado</label>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('employee')}</label>
                           <select
                             value={newRequest.employeeId}
                             onChange={(e) => setNewRequest({...newRequest, employeeId: e.target.value})}
@@ -576,7 +578,7 @@ export const AbsenceManagement: React.FC = () => {
                           <div className="space-y-4">
                             {/* Información del empleado */}
                             <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                              <h4 className="font-medium text-gray-900 dark:text-gray-50 mb-2">Información del Empleado</h4>
+                              <h4 className="font-medium text-gray-900 dark:text-gray-50 mb-2">Información del {t('employee')}</h4>
                               <div className="grid grid-cols-2 gap-4">
                                 <div>
                                   <span className="text-sm text-gray-500 dark:text-gray-400">Nombre:</span>

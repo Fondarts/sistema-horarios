@@ -31,6 +31,10 @@ export const es = {
   username: 'Usuario',
   password: 'Contraseña',
   loginError: 'Usuario o contraseña inválidos',
+  scheduleSystem: 'Sistema de Horarios',
+  loginWithCredentials: 'Inicia sesión con tu usuario y contraseña',
+  loggingIn: 'Iniciando sesión...',
+  testInformation: 'Información de prueba',
   
   // Store
   storeSelector: 'Selector de Tiendas',
@@ -108,6 +112,7 @@ export const es = {
   view24h: 'Ver 24h',
   
   // Absences
+  absenceManagement: 'Gestión de Ausencias',
   absenceType: 'Tipo de Ausencia',
   vacation: 'Vacaciones',
   sick: 'Enfermedad',
@@ -122,6 +127,19 @@ export const es = {
   rejected: 'Rechazado',
   newRequest: 'Nueva Solicitud',
   requestSubmitted: 'Solicitud enviada exitosamente',
+  remainingVacationDays: 'Días de Vacaciones Restantes',
+  type: 'Tipo',
+  dates: 'Fechas',
+  days: 'Días',
+  actions: 'Acciones',
+  absenceTypeLabel: 'Tipo de Ausencia',
+  startDate: 'Fecha de Inicio',
+  endDate: 'Fecha de Fin',
+  employeeInfo: 'Información del Empleado',
+  requestDate: 'Fecha de Solicitud',
+  approvedBy: 'Aprobado por:',
+  rejectedBy: 'Rechazado por:',
+  rejectionReason: 'Motivo del rechazo:',
   
   // Holidays
   holidayName: 'Nombre del Feriado',
