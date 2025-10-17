@@ -3,11 +3,13 @@ import { Calendar, Download, CheckCircle, AlertCircle, RefreshCw, Plus, Calendar
 import { format, addYears, isSameDay, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useHolidays, Holiday } from '../contexts/HolidayContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import { useSchedule } from '../contexts/ScheduleContext';
 import { db } from '../firebase';
 import { collection, addDoc, deleteDoc, query, where, getDocs } from 'firebase/firestore';
 
 export function HolidayIntegration() {
+  const { t } = useLanguage();
   const { holidays: firebaseHolidays, addHolidayToCalendar, removeHolidayFromCalendar, isLoading } = useHolidays();
   const [localHolidays, setLocalHolidays] = useState<Holiday[]>([]);
   const [isLoadingLocal, setIsLoadingLocal] = useState(false);
@@ -403,8 +405,8 @@ export function HolidayIntegration() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Feriados de España</h2>
-          <p className="text-gray-600 dark:text-gray-400">Gestión automática de días festivos nacionales</p>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{t('holidays')}</h2>
+          <p className="text-gray-600 dark:text-gray-400">{t('automaticHolidayManagement')}</p>
         </div>
         <div className="flex items-center space-x-4">
           <select
@@ -426,7 +428,7 @@ export function HolidayIntegration() {
             className="btn-secondary flex items-center"
           >
             <CalendarPlus className="w-5 h-5 mr-2" />
-            Agregar Feriado
+            {t('addHoliday')}
           </button>
         </div>
       </div>
@@ -447,14 +449,14 @@ export function HolidayIntegration() {
       {showCustomHolidayForm && (
         <div className="card">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
-            {editingHoliday ? 'Editar Feriado Personalizado' : 'Agregar Feriado Personalizado'}
+            {editingHoliday ? t('editCustomHoliday') : t('addCustomHoliday')}
           </h3>
           
           <form onSubmit={handleAddCustomHoliday} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Nombre del Feriado
+                  {t('holidayName')}
                 </label>
                 <input
                   type="text"
@@ -509,7 +511,7 @@ export function HolidayIntegration() {
 
             <div className="flex gap-3">
               <button type="submit" className="btn-primary">
-                {editingHoliday ? 'Actualizar Feriado' : 'Agregar Feriado'}
+                {editingHoliday ? t('updateHoliday') : t('addHoliday')}
               </button>
               <button
                 type="button"
@@ -520,7 +522,7 @@ export function HolidayIntegration() {
                 }}
                 className="btn-secondary"
               >
-                Cancelar
+                {t('cancel')}
               </button>
             </div>
           </form>
@@ -530,13 +532,13 @@ export function HolidayIntegration() {
       {/* Holidays List */}
       <div className="card">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-6">
-          Feriados Nacionales {selectedYear}
+          {t('nationalHolidays')} {selectedYear}
         </h3>
         
         {isLoadingLocal ? (
           <div className="flex items-center justify-center py-8">
             <RefreshCw className="w-6 h-6 animate-spin text-gray-400 mr-2" />
-            <span className="text-gray-600 dark:text-gray-400">Cargando feriados...</span>
+            <span className="text-gray-600 dark:text-gray-400">{t('loadingHolidays')}</span>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

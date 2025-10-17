@@ -50,6 +50,17 @@ export const es = {
   storeCreated: 'Tienda creada exitosamente',
   storeUpdated: 'Tienda actualizada exitosamente',
   storeDeleted: 'Tienda eliminada exitosamente',
+  storeSettings: 'Configuración de Tienda',
+  weeklySchedule: 'Horario Semanal',
+  scheduleExceptions: 'Excepciones de Horario',
+  addException: 'Agregar Excepción',
+  editScheduleException: 'Editar Excepción de Horario',
+  addScheduleException: 'Agregar Excepción de Horario',
+  updateException: 'Actualizar Excepción',
+  reasonOptional: 'Motivo (opcional)',
+  openingHours: 'Horario de Apertura',
+  noExceptionsConfigured: 'No hay excepciones configuradas',
+  date: 'Fecha',
   
   // Employees
   employeeName: 'Nombre Completo',
@@ -142,10 +153,17 @@ export const es = {
   rejectionReason: 'Motivo del rechazo:',
   
   // Holidays
+  holidays: 'Feriados',
   holidayName: 'Nombre del Feriado',
   holidayDate: 'Fecha del Feriado',
   addHoliday: 'Agregar Feriado',
   editHoliday: 'Editar Feriado',
+  automaticHolidayManagement: 'Gestión automática de días festivos nacionales',
+  addCustomHoliday: 'Agregar Feriado Personalizado',
+  editCustomHoliday: 'Editar Feriado Personalizado',
+  updateHoliday: 'Actualizar Feriado',
+  nationalHolidays: 'Feriados Nacionales',
+  loadingHolidays: 'Cargando feriados...',
   deleteHoliday: 'Eliminar Feriado',
   
   // Statistics

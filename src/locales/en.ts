@@ -50,6 +50,17 @@ export const en = {
   storeCreated: 'Store created successfully',
   storeUpdated: 'Store updated successfully',
   storeDeleted: 'Store deleted successfully',
+  storeSettings: 'Store Settings',
+  weeklySchedule: 'Weekly Schedule',
+  scheduleExceptions: 'Schedule Exceptions',
+  addException: 'Add Exception',
+  editScheduleException: 'Edit Schedule Exception',
+  addScheduleException: 'Add Schedule Exception',
+  updateException: 'Update Exception',
+  reasonOptional: 'Reason (optional)',
+  openingHours: 'Opening Hours',
+  noExceptionsConfigured: 'No exceptions configured',
+  date: 'Date',
   
   // Employees
   employeeName: 'Full Name',
@@ -142,10 +153,17 @@ export const en = {
   rejectionReason: 'Rejection reason:',
   
   // Holidays
+  holidays: 'Holidays',
   holidayName: 'Holiday Name',
   holidayDate: 'Holiday Date',
   addHoliday: 'Add Holiday',
   editHoliday: 'Edit Holiday',
+  automaticHolidayManagement: 'Automatic management of national holidays',
+  addCustomHoliday: 'Add Custom Holiday',
+  editCustomHoliday: 'Edit Custom Holiday',
+  updateHoliday: 'Update Holiday',
+  nationalHolidays: 'National Holidays',
+  loadingHolidays: 'Loading holidays...',
   deleteHoliday: 'Delete Holiday',
   
   // Statistics

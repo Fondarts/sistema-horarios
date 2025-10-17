@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useSchedule } from '../contexts/ScheduleContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import { useCompactMode } from '../contexts/CompactModeContext';
 import { Settings, Clock, Calendar, Plus, Trash2, Edit, X } from 'lucide-react';
 import { StoreSchedule, StoreException, TimeRange } from '../types';
@@ -8,6 +9,7 @@ import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 
 export function StoreSettings() {
+  const { t } = useLanguage();
   const { 
     storeSchedule, 
     storeExceptions, 
@@ -165,7 +167,7 @@ export function StoreSettings() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Configuración de Tienda</h2>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{t('storeSettings')}</h2>
         <p className="text-gray-600 dark:text-gray-400">Define el horario de apertura y excepciones</p>
       </div>
 
@@ -173,7 +175,7 @@ export function StoreSettings() {
       <div className="card">
         <div className="flex items-center mb-4">
           <Clock className="w-6 h-6 text-primary-600 mr-3" />
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Horario Semanal</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{t('weeklySchedule')}</h3>
         </div>
 
         <div className="space-y-4">
@@ -310,14 +312,14 @@ export function StoreSettings() {
         <div className="flex justify-between items-center mb-4">
           <div className="flex items-center">
             <Calendar className="w-6 h-6 text-primary-600 mr-3" />
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Excepciones de Horario</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{t('scheduleExceptions')}</h3>
           </div>
           <button
             onClick={handleAddException}
             className="btn-primary flex items-center"
           >
             <Plus className="w-5 h-5 mr-2" />
-            Agregar Excepción
+            {t('addException')}
           </button>
         </div>
 
@@ -329,7 +331,7 @@ export function StoreSettings() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Fecha
+                    {t('date')}
                   </label>
                   <input
                     type="date"
@@ -341,7 +343,7 @@ export function StoreSettings() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Motivo (opcional)
+                    {t('reasonOptional')}
                   </label>
                   <input
                     type="text"
@@ -369,7 +371,7 @@ export function StoreSettings() {
                 <div className="flex items-center space-x-3">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Horario de Apertura
+                      {t('openingHours')}
                     </label>
                     <div className="flex items-center space-x-2">
                       <TimeInput
@@ -396,10 +398,10 @@ export function StoreSettings() {
                   onClick={() => setShowExceptionForm(false)}
                   className="btn-secondary"
                 >
-                  Cancelar
+                  {t('cancel')}
                 </button>
                 <button type="submit" className="btn-primary">
-                  Agregar Excepción
+                  {t('addException')}
                 </button>
               </div>
             </form>
@@ -410,7 +412,7 @@ export function StoreSettings() {
         {storeExceptions.length === 0 ? (
           <div className="text-center py-8">
             <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-600">No hay excepciones configuradas</p>
+            <p className="text-gray-600">{t('noExceptionsConfigured')}</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -465,7 +467,7 @@ export function StoreSettings() {
           <div className="bg-gray-200 dark:bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4 shadow-xl">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
-                {editingException ? 'Editar Excepción de Horario' : 'Agregar Excepción de Horario'}
+                {editingException ? t('editScheduleException') : t('addScheduleException')}
               </h3>
               <button
                 onClick={() => setShowExceptionForm(false)}
@@ -479,7 +481,7 @@ export function StoreSettings() {
               <div className="space-y-4">
                 <div>
                   <label htmlFor="exceptionDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Fecha
+                    {t('date')}
                   </label>
                   <input
                     type="date"
@@ -525,7 +527,7 @@ export function StoreSettings() {
                 )}
                 <div>
                   <label htmlFor="exceptionReason" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Motivo
+                    {t('reason')}
                   </label>
                   <textarea
                     id="exceptionReason"
@@ -544,13 +546,13 @@ export function StoreSettings() {
                   onClick={() => setShowExceptionForm(false)}
                   className="btn-secondary"
                 >
-                  Cancelar
+                  {t('cancel')}
                 </button>
                 <button
                   type="submit"
                   className="btn-primary"
                 >
-                  {editingException ? 'Actualizar Excepción' : 'Agregar Excepción'}
+                  {editingException ? t('updateException') : t('addException')}
                 </button>
               </div>
             </form>
