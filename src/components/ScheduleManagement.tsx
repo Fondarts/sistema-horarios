@@ -179,15 +179,15 @@ export default function ScheduleManagement() {
       const openHour = parseInt(todaySchedule.openTime.split(':')[0]);
       const closeHour = parseInt(todaySchedule.closeTime.split(':')[0]);
       
-      // Agregar 1 hora antes y después
-      const startHour = Math.max(0, openHour - 1);
-      const endHour = Math.min(23, closeHour + 1);
+      // Usar el rango real de la tienda para alineación precisa
+      const startHour = openHour;
+      const endHour = closeHour;
       
       return { startHour, endHour };
     }
     
     // Horario por defecto si no hay configuración
-    return { startHour: 8, endHour: 21 };
+    return { startHour: 9, endHour: 20 };
   };
 
   // Función para obtener los horarios de apertura de la tienda para un día específico
