@@ -338,7 +338,9 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
         const storeScheduleRef = collection(db, 'storeSchedule');
         const scheduleSnapshot = await getDocs(storeScheduleRef);
         
-        // Solo crear datos por defecto si no estamos en proceso de borrado
+        // COMENTADO: No crear storeSchedule automáticamente para evitar recreación durante borrado
+        // Los horarios se crearán cuando el usuario configure una tienda
+        /*
         const isClearingData = localStorage.getItem('isClearingData') === 'true';
         if (scheduleSnapshot.empty && !isClearingData) {
           // Agregar horario por defecto
@@ -348,6 +350,7 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
           });
           await Promise.all(addPromises);
         }
+        */
       } catch (error) {
         console.error('Error initializing default data:', error);
       }

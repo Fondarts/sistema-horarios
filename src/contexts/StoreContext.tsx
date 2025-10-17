@@ -57,8 +57,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           
           setStores(storesData);
           
-          // Si no hay tiendas, crear una por defecto
-          // Solo si no estamos en proceso de borrado (verificar localStorage)
+          // COMENTADO: No crear tiendas automáticamente para evitar recreación durante borrado
+          // Si no hay tiendas, el usuario debe crear una manualmente o usar el generador de datos
+          /*
           const isClearingData = localStorage.getItem('isClearingData') === 'true';
           if (storesData.length === 0 && !isClearingData) {
             const defaultStore: Omit<Store, 'id'> = {
@@ -75,12 +76,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
             
             try {
               const docRef = await addDoc(storesRef, defaultStore);
-              // No seleccionar automáticamente la tienda por defecto
-              // Permitir que los encargados de distrito vean el selector
             } catch (error) {
               console.error('Error creating default store:', error);
             }
-          } else {
+          }
+          */ else {
             // Verificar si es district manager desde localStorage
             const currentEmployee = localStorage.getItem('currentEmployee');
             let isDistrictManager = false;
