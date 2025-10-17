@@ -30,6 +30,31 @@ const formatBirthday = (birthday: string): string => {
   return birthday;
 };
 
+// Función para formatear fecha de inicio de dd/mm/yyyy a formato legible
+const formatStartDate = (startDate: string): string => {
+  if (!startDate) return '';
+  
+  // Si ya está en formato dd/mm/yyyy, devolverlo tal como está
+  if (startDate.includes('/')) {
+    return startDate;
+  }
+  
+  // Si está en formato ISO (YYYY-MM-DD), convertir a dd/mm/yyyy
+  try {
+    const date = new Date(startDate);
+    if (!isNaN(date.getTime())) {
+      const day = date.getDate().toString().padStart(2, '0');
+      const month = (date.getMonth() + 1).toString().padStart(2, '0');
+      const year = date.getFullYear();
+      return `${day}/${month}/${year}`;
+    }
+  } catch (error) {
+    console.error('Error formatting start date:', error);
+  }
+  
+  return startDate;
+};
+
 export function EmployeeManagement() {
   const { employees, addEmployee, updateEmployee, deleteEmployee, resetToMockEmployees } = useEmployees();
   const { isCompactMode, isMobile } = useCompactMode();
@@ -150,13 +175,13 @@ export function EmployeeManagement() {
       username: employee.username,
       password: employee.password,
       weeklyLimit: employee.weeklyLimit,
-      birthday: employee.birthday,
+      birthday: formatBirthday(employee.birthday || ''),
       color: employee.color,
       isActive: employee.isActive,
       role: employee.role,
       unavailableTimes: employee.unavailableTimes,
       vacationDaysPerYear: employee.vacationDaysPerYear || 20,
-      startDate: employee.startDate || ''
+      startDate: formatStartDate(employee.startDate || '')
     });
     setShowAddForm(true);
   };
@@ -325,13 +350,16 @@ export function EmployeeManagement() {
                   Fecha de Inicio
                 </label>
                 <input
-                  type="date"
+                  type="text"
                   value={formData.startDate}
                   onChange={(e) => setFormData(prev => ({ ...prev, startDate: e.target.value }))}
                   className="input-field"
+                  placeholder="dd/mm/yyyy"
+                  pattern="\d{2}/\d{2}/\d{4}"
+                  title="Formato: dd/mm/yyyy (ejemplo: 15/03/2020)"
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  Fecha de inicio en la empresa - Opcional
+                  Formato: día/mes/año (ejemplo: 15/03/2020) - Opcional
                 </p>
               </div>
 

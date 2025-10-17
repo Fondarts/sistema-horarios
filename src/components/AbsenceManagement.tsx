@@ -444,20 +444,26 @@ export const AbsenceManagement: React.FC = () => {
                         <div>
                           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Fecha Inicio</label>
                           <input
-                            type="date"
+                            type="text"
                             value={newRequest.startDate}
                             onChange={(e) => setNewRequest({...newRequest, startDate: e.target.value})}
                             className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-50"
+                            placeholder="dd/mm/yyyy"
+                            pattern="\d{2}/\d{2}/\d{4}"
+                            title="Formato: dd/mm/yyyy (ejemplo: 15/03/2024)"
                             required
                           />
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Fecha Fin</label>
                           <input
-                            type="date"
+                            type="text"
                             value={newRequest.endDate}
                             onChange={(e) => setNewRequest({...newRequest, endDate: e.target.value})}
                             className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-50"
+                            placeholder="dd/mm/yyyy"
+                            pattern="\d{2}/\d{2}/\d{4}"
+                            title="Formato: dd/mm/yyyy (ejemplo: 20/03/2024)"
                             required
                           />
                         </div>
