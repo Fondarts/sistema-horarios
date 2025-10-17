@@ -239,6 +239,9 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
             scheduleData.push({ id: doc.id, ...doc.data() } as StoreSchedule);
           });
 
+          // COMENTADO: No crear storeSchedule automáticamente para evitar recreación durante borrado
+          // Los horarios de tienda deben ser creados explícitamente por el usuario o el generador de datos
+          /*
           // Verificar si faltan horarios por defecto y agregarlos
           // Solo si hay una tienda seleccionada y hay datos de schedule
           const missingDefaultDays = defaultStoreSchedule.filter(defaultDay =>
@@ -262,6 +265,7 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
               }
             }
           }
+          */
 
           // Combinar datos existentes con defaults y migrar si es necesario
           const completeSchedule = defaultStoreSchedule.map(defaultDay => {
