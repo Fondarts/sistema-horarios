@@ -11,13 +11,15 @@ import { ThemeProvider } from './contexts/ThemeContext';
 import { CompactModeProvider } from './contexts/CompactModeContext';
 import { StoreProvider } from './contexts/StoreContext';
 import { LanguageProvider } from './contexts/LanguageContext';
+import { CountryProvider } from './contexts/CountryContext';
 import { AppRouter } from './components/AppRouter';
 import { NotificationStack } from './components/NotificationStack';
 
 function App() {
   return (
     <LanguageProvider>
-      <ThemeProvider>
+      <CountryProvider>
+        <ThemeProvider>
         <CompactModeProvider>
           <StoreProvider>
             <EmployeeProvider>
@@ -41,6 +43,7 @@ function App() {
           </StoreProvider>
         </CompactModeProvider>
       </ThemeProvider>
+      </CountryProvider>
     </LanguageProvider>
   );
 }

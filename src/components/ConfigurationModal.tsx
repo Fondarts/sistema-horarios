@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, Settings, Globe, Flag } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useCountry } from '../contexts/CountryContext';
 
 interface ConfigurationModalProps {
   isOpen: boolean;
@@ -9,7 +10,7 @@ interface ConfigurationModalProps {
 
 export function ConfigurationModal({ isOpen, onClose }: ConfigurationModalProps) {
   const { language, setLanguage, t } = useLanguage();
-  const [country, setCountry] = useState('AR');
+  const { country, setCountry } = useCountry();
 
   const languages = [
     { code: 'es', name: 'Español', flag: '🇪🇸' },
@@ -32,7 +33,7 @@ export function ConfigurationModal({ isOpen, onClose }: ConfigurationModalProps)
   ];
 
   const handleSave = () => {
-    // El idioma ya se guarda automáticamente en el contexto
+    // El idioma y país ya se guardan automáticamente en sus respectivos contextos
     console.log('Configuración guardada:', { language, country });
     onClose();
   };

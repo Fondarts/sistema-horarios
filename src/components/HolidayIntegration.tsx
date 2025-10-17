@@ -4,12 +4,15 @@ import { format, addYears, isSameDay, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useHolidays, Holiday } from '../contexts/HolidayContext';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useCountry } from '../contexts/CountryContext';
 import { useSchedule } from '../contexts/ScheduleContext';
+import { nationalHolidays } from '../data/nationalHolidays';
 import { db } from '../firebase';
 import { collection, addDoc, deleteDoc, query, where, getDocs } from 'firebase/firestore';
 
 export function HolidayIntegration() {
   const { t } = useLanguage();
+  const { country } = useCountry();
   const { holidays: firebaseHolidays, addHolidayToCalendar, removeHolidayFromCalendar, isLoading } = useHolidays();
   const [localHolidays, setLocalHolidays] = useState<Holiday[]>([]);
   const [isLoadingLocal, setIsLoadingLocal] = useState(false);
@@ -24,110 +27,29 @@ export function HolidayIntegration() {
     type: 'local' as 'national' | 'regional' | 'local'
   });
 
-  // Feriados fijos de España
+  // Obtener feriados nacionales según el país seleccionado
   const getFixedHolidays = (year: number): Holiday[] => {
-    return [
-      {
-        id: `new-year-${year}`,
-        date: `${year}-01-01`,
-        name: 'Año Nuevo',
-        type: 'national',
-        description: 'Día de Año Nuevo',
-        isRecurring: true,
-        addedToCalendar: false,
-        year: year
-      },
-      {
-        id: `epiphany-${year}`,
-        date: `${year}-01-06`,
-        name: 'Epifanía del Señor',
-        type: 'national',
-        description: 'Día de Reyes',
-        isRecurring: true,
-        addedToCalendar: false,
-        year: year
-      },
-      {
-        id: `good-friday-${year}`,
-        date: `${year}-03-29`, // Fecha aproximada, se calcularía dinámicamente
-        name: 'Viernes Santo',
-        type: 'national',
-        description: 'Viernes Santo',
-        isRecurring: true,
-        addedToCalendar: false,
-        year: year
-      },
-      {
-        id: `labour-day-${year}`,
-        date: `${year}-05-01`,
-        name: 'Día del Trabajador',
-        type: 'national',
-        description: 'Día Internacional del Trabajador',
-        isRecurring: true,
-        addedToCalendar: false,
-        year: year
-      },
-      {
-        id: `assumption-${year}`,
-        date: `${year}-08-15`,
-        name: 'Asunción de la Virgen',
-        type: 'national',
-        description: 'Asunción de la Virgen María',
-        isRecurring: true,
-        addedToCalendar: false,
-        year: year
-      },
-      {
-        id: `hispanic-day-${year}`,
-        date: `${year}-10-12`,
-        name: 'Fiesta Nacional de España',
-        type: 'national',
-        description: 'Día de la Hispanidad',
-        isRecurring: true,
-        addedToCalendar: false,
-        year: year
-      },
-      {
-        id: `all-saints-${year}`,
-        date: `${year}-11-01`,
-        name: 'Día de Todos los Santos',
-        type: 'national',
-        description: 'Día de Todos los Santos',
-        isRecurring: true,
-        addedToCalendar: false,
-        year: year
-      },
-      {
-        id: `constitution-day-${year}`,
-        date: `${year}-12-06`,
-        name: 'Día de la Constitución',
-        type: 'national',
-        description: 'Día de la Constitución Española',
-        isRecurring: true,
-        addedToCalendar: false,
-        year: year
-      },
-      {
-        id: `immaculate-${year}`,
-        date: `${year}-12-08`,
-        name: 'Inmaculada Concepción',
-        type: 'national',
-        description: 'Inmaculada Concepción',
-        isRecurring: true,
-        addedToCalendar: false,
-        year: year
-      },
-      {
-        id: `christmas-${year}`,
-        date: `${year}-12-25`,
-        name: 'Navidad',
-        type: 'national',
-        description: 'Día de Navidad',
-        isRecurring: true,
-        addedToCalendar: false,
-        year: year
-      }
-    ];
+    const countryHolidays = nationalHolidays[country];
+    if (countryHolidays) {
+      return countryHolidays(year);
+    }
+    // Fallback a España si no se encuentra el país
+    return nationalHolidays['ES'](year);
+  };
+
+  // Obtener el nombre del país para mostrar en el título
+  const getCountryName = (countryCode: string): string => {
+    const countryNames: { [key: string]: string } = {
+      'ES': 'España',
+      'AR': 'Argentina',
+      'UY': 'Uruguay',
+      'CL': 'Chile',
+      'CO': 'Colombia',
+      'PE': 'Perú',
+      'MX': 'México',
+      'US': 'Estados Unidos'
+    };
+    return countryNames[countryCode] || 'España';
   };
 
   // Función para calcular fechas variables (como Viernes Santo)
@@ -210,7 +132,7 @@ export function HolidayIntegration() {
 
   useEffect(() => {
     loadHolidays(selectedYear);
-  }, [selectedYear]);
+  }, [selectedYear, country]);
 
 
   const handleAddCustomHoliday = async (e: React.FormEvent) => {
@@ -405,7 +327,9 @@ export function HolidayIntegration() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{t('holidays')}</h2>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+            {t('holidays')} - {getCountryName(country)}
+          </h2>
           <p className="text-gray-600 dark:text-gray-400">{t('automaticHolidayManagement')}</p>
         </div>
         <div className="flex items-center space-x-4">
