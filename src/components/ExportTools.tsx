@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useSchedule } from '../contexts/ScheduleContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import { useEmployees } from '../contexts/EmployeeContext';
 import { Download, Calendar, FileText, ExternalLink, Table } from 'lucide-react';
 import { format, startOfWeek, endOfWeek, eachDayOfInterval, addDays } from 'date-fns';
@@ -9,6 +10,7 @@ import ExcelJS from 'exceljs';
 export function ExportTools() {
   const { shifts } = useSchedule();
   const { employees } = useEmployees();
+  const { t } = useLanguage();
   const [selectedFormat, setSelectedFormat] = useState<'ical' | 'csv' | 'excel' | 'google'>('ical');
   const [dateRange, setDateRange] = useState({
     start: format(startOfWeek(new Date(), { weekStartsOn: 1 }), 'yyyy-MM-dd'),
@@ -304,17 +306,17 @@ export function ExportTools() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Exportar Horarios</h2>
-        <p className="text-gray-600 dark:text-gray-400">Exporta los horarios publicados en diferentes formatos</p>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{t('exportSchedules')}</h2>
+        <p className="text-gray-600 dark:text-gray-400">{t('exportPublishedSchedulesInDifferentFormats')}</p>
       </div>
 
       {/* Date Range Selector */}
       <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow dark:border dark:border-gray-700">
-        <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Rango de Fechas</h3>
+        <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">{t('dateRange')}</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Fecha de Inicio
+              {t('startDate')}
             </label>
             <input
               type="date"
@@ -325,7 +327,7 @@ export function ExportTools() {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Fecha de Fin
+              {t('endDate')}
             </label>
             <input
               type="date"
@@ -339,7 +341,7 @@ export function ExportTools() {
 
       {/* Format Selection */}
       <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow dark:border dark:border-gray-700">
-        <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Formato de Exportación</h3>
+        <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">{t('exportFormat')}</h3>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <label className="flex items-center space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
             <input
@@ -351,7 +353,7 @@ export function ExportTools() {
               className="w-4 h-4 text-blue-600"
             />
             <Table className="w-6 h-6 text-green-600" />
-            <span className="font-medium">Excel</span>
+            <span className="font-medium">{t('excel')}</span>
           </label>
           <label className="flex items-center space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
             <input
@@ -363,7 +365,7 @@ export function ExportTools() {
               className="w-4 h-4 text-blue-600"
             />
             <FileText className="w-6 h-6 text-blue-600" />
-            <span className="font-medium">CSV</span>
+            <span className="font-medium">{t('csv')}</span>
           </label>
           <label className="flex items-center space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
             <input
@@ -375,7 +377,7 @@ export function ExportTools() {
               className="w-4 h-4 text-blue-600"
             />
             <Calendar className="w-6 h-6 text-purple-600" />
-            <span className="font-medium">iCal</span>
+            <span className="font-medium">{t('ical')}</span>
           </label>
           <label className="flex items-center space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
             <input
@@ -387,7 +389,7 @@ export function ExportTools() {
               className="w-4 h-4 text-blue-600"
             />
             <ExternalLink className="w-6 h-6 text-red-600" />
-            <span className="font-medium">Google</span>
+            <span className="font-medium">{t('google')}</span>
           </label>
         </div>
       </div>
@@ -400,11 +402,11 @@ export function ExportTools() {
           className="w-full flex items-center justify-center space-x-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
         >
           <Download className="w-5 h-5" />
-          <span>Exportar Horarios</span>
+          <span>{t('exportSchedules')}</span>
         </button>
         {publishedShifts.length === 0 && (
           <p className="text-sm text-gray-500 mt-2 text-center">
-            No hay horarios publicados para exportar
+            {t('noPublishedSchedulesToExport')}
           </p>
         )}
       </div>

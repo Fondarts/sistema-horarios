@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useSchedule } from '../contexts/ScheduleContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import { useEmployees } from '../contexts/EmployeeContext';
 import { useCompactMode } from '../contexts/CompactModeContext';
 import { BarChart3, TrendingUp, Users, ChevronLeft, ChevronRight, AlertTriangle } from 'lucide-react';
@@ -39,6 +40,7 @@ export function Statistics() {
   const { shifts, storeSchedule } = useSchedule();
   const { employees } = useEmployees();
   const { isMobile } = useCompactMode();
+  const { t } = useLanguage();
   
   const [selectedWeek, setSelectedWeek] = useState(new Date());
 
@@ -185,8 +187,8 @@ export function Statistics() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Estadísticas</h2>
-        <p className="text-gray-600 dark:text-gray-400">Métricas de cobertura y carga de trabajo</p>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{t('statistics')}</h2>
+        <p className="text-gray-600 dark:text-gray-400">{t('coverageAndWorkloadMetrics')}</p>
       </div>
 
       {/* Week Navigation */}
@@ -204,19 +206,19 @@ export function Statistics() {
             onClick={() => navigateWeek('prev')}
             className="px-3 py-1 bg-gray-200 hover:bg-gray-300 text-gray-800 text-sm rounded transition-colors dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200"
           >
-            ← Anterior
+            ← {t('previous')}
           </button>
           <button
             onClick={() => navigateWeek('next')}
             className="px-3 py-1 bg-gray-200 hover:bg-gray-300 text-gray-800 text-sm rounded transition-colors dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200"
           >
-            Siguiente →
+            {t('next')} →
           </button>
           <button
             onClick={() => setSelectedWeek(new Date())}
             className="px-3 py-1 bg-gray-200 hover:bg-gray-300 text-gray-800 text-sm rounded transition-colors dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200"
           >
-            Esta Semana
+            {t('thisWeek')}
           </button>
         </div>
       </div>
@@ -227,7 +229,7 @@ export function Statistics() {
           <div className="flex items-center">
             <Users className="w-8 h-8 text-primary-600 mr-3" />
             <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Empleados Activos</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">{t('activeEmployees')}</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{employees.length}</p>
             </div>
           </div>
@@ -237,7 +239,7 @@ export function Statistics() {
           <div className="flex items-center">
             <BarChart3 className="w-8 h-8 text-green-600 mr-3" />
             <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Turnos Esta Semana</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">{t('shiftsThisWeek')}</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{weeklyShifts.length}</p>
             </div>
           </div>
@@ -247,7 +249,7 @@ export function Statistics() {
           <div className="flex items-center">
             <TrendingUp className="w-8 h-8 text-blue-600 mr-3" />
             <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Horas Totales</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">{t('totalHours')}</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                 {formatHours(weeklyShifts.reduce((total, shift) => total + shift.hours, 0))}
               </p>
@@ -258,29 +260,29 @@ export function Statistics() {
 
       {/* Employee Statistics */}
       <div className="card">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-6">Estadísticas por Empleado</h3>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-6">{t('statisticsByEmployee')}</h3>
         
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50 dark:bg-gray-700">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Empleado
+                  {t('employee')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Horas Asignadas
+                  {t('assignedHours')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Tope Semanal
+                  {t('weeklyCap')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  % Utilización
+                  {t('utilization')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Día Más Ocupado
+                  {t('busiestDay')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Días Sin Fin de Semana
+                  {t('daysWithoutWeekend')}
                 </th>
               </tr>
             </thead>
