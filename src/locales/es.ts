@@ -208,13 +208,9 @@ export const es = {
   vacationRequests: 'Solicitudes de Vacaciones',
   
   // Absence Types
-  vacation: 'Vacaciones',
   sickness: 'Enfermedad',
-  personal: 'Permiso Personal',
   unjustified: 'Ausencia No Justificada',
   special: 'Licencia Especial',
-  approved: 'Aprobado',
-  rejected: 'Rechazado',
   
   // Holidays
   holidayName: 'Nombre del Feriado',
