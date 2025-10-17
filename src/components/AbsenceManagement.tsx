@@ -18,6 +18,25 @@ import {
   Trash2,
   X
 } from 'lucide-react';
+
+// Función para formatear automáticamente la fecha mientras se escribe
+const formatDateInput = (value: string): string => {
+  // Remover todos los caracteres que no sean números
+  const numbers = value.replace(/\D/g, '');
+  
+  // Limitar a 8 dígitos máximo
+  const limitedNumbers = numbers.slice(0, 8);
+  
+  // Aplicar formato automático
+  if (limitedNumbers.length <= 2) {
+    return limitedNumbers;
+  } else if (limitedNumbers.length <= 4) {
+    return `${limitedNumbers.slice(0, 2)}/${limitedNumbers.slice(2)}`;
+  } else {
+    return `${limitedNumbers.slice(0, 2)}/${limitedNumbers.slice(2, 4)}/${limitedNumbers.slice(4)}`;
+  }
+};
+
 import { 
   AbsenceType, 
   AbsenceStatus, 
@@ -446,7 +465,7 @@ export const AbsenceManagement: React.FC = () => {
                           <input
                             type="text"
                             value={newRequest.startDate}
-                            onChange={(e) => setNewRequest({...newRequest, startDate: e.target.value})}
+                            onChange={(e) => setNewRequest({...newRequest, startDate: formatDateInput(e.target.value)})}
                             className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-50"
                             placeholder="dd/mm/yyyy"
                             pattern="\d{2}/\d{2}/\d{4}"
@@ -459,7 +478,7 @@ export const AbsenceManagement: React.FC = () => {
                           <input
                             type="text"
                             value={newRequest.endDate}
-                            onChange={(e) => setNewRequest({...newRequest, endDate: e.target.value})}
+                            onChange={(e) => setNewRequest({...newRequest, endDate: formatDateInput(e.target.value)})}
                             className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-50"
                             placeholder="dd/mm/yyyy"
                             pattern="\d{2}/\d{2}/\d{4}"

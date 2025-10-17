@@ -55,6 +55,24 @@ const formatStartDate = (startDate: string): string => {
   return startDate;
 };
 
+// Función para formatear automáticamente la fecha mientras se escribe
+const formatDateInput = (value: string): string => {
+  // Remover todos los caracteres que no sean números
+  const numbers = value.replace(/\D/g, '');
+  
+  // Limitar a 8 dígitos máximo
+  const limitedNumbers = numbers.slice(0, 8);
+  
+  // Aplicar formato automático
+  if (limitedNumbers.length <= 2) {
+    return limitedNumbers;
+  } else if (limitedNumbers.length <= 4) {
+    return `${limitedNumbers.slice(0, 2)}/${limitedNumbers.slice(2)}`;
+  } else {
+    return `${limitedNumbers.slice(0, 2)}/${limitedNumbers.slice(2, 4)}/${limitedNumbers.slice(4)}`;
+  }
+};
+
 export function EmployeeManagement() {
   const { employees, addEmployee, updateEmployee, deleteEmployee, resetToMockEmployees } = useEmployees();
   const { isCompactMode, isMobile } = useCompactMode();
@@ -334,7 +352,7 @@ export function EmployeeManagement() {
                 <input
                   type="text"
                   value={formData.birthday}
-                  onChange={(e) => setFormData(prev => ({ ...prev, birthday: e.target.value }))}
+                  onChange={(e) => setFormData(prev => ({ ...prev, birthday: formatDateInput(e.target.value) }))}
                   className="input-field"
                   placeholder="dd/mm/yyyy"
                   pattern="\d{2}/\d{2}/\d{4}"
@@ -352,7 +370,7 @@ export function EmployeeManagement() {
                 <input
                   type="text"
                   value={formData.startDate}
-                  onChange={(e) => setFormData(prev => ({ ...prev, startDate: e.target.value }))}
+                  onChange={(e) => setFormData(prev => ({ ...prev, startDate: formatDateInput(e.target.value) }))}
                   className="input-field"
                   placeholder="dd/mm/yyyy"
                   pattern="\d{2}/\d{2}/\d{4}"
