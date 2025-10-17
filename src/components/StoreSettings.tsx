@@ -30,7 +30,7 @@ export function StoreSettings() {
   });
 
   const daysOfWeek = [
-    'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo', 'Feriados'
+    'Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Feriados'
   ];
 
   // Función para obtener el nombre del día, manejando el caso especial de "Feriados"
