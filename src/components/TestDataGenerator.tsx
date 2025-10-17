@@ -453,9 +453,9 @@ export function TestDataGenerator() {
           address: "Av. Principal 123, Centro",
           phone: "+54 11 1234-5678",
           employees: [
-            { name: "Ana Martínez", role: "encargado", weeklyLimit: 40, color: "#3B82F6", unavailableTimes: [] },
-            { name: "Luis Fernández", role: "empleado", weeklyLimit: 35, color: "#10B981", unavailableTimes: [{ dayOfWeek: 0, startTime: "00:00", endTime: "23:59" }] },
-            { name: "Sofia López", role: "empleado", weeklyLimit: 30, color: "#F59E0B", unavailableTimes: [{ dayOfWeek: 6, startTime: "00:00", endTime: "23:59" }] }
+            { name: "Ana Martínez", role: "encargado" as const, weeklyLimit: 40, color: "#3B82F6", unavailableTimes: [] },
+            { name: "Luis Fernández", role: "empleado" as const, weeklyLimit: 35, color: "#10B981", unavailableTimes: [{ dayOfWeek: 0, startTime: "00:00", endTime: "23:59" }] },
+            { name: "Sofia López", role: "empleado" as const, weeklyLimit: 30, color: "#F59E0B", unavailableTimes: [{ dayOfWeek: 6, startTime: "00:00", endTime: "23:59" }] }
           ],
           schedule: {
             // Horario partido, no abre domingo
@@ -473,11 +473,11 @@ export function TestDataGenerator() {
           address: "Av. Norte 456, Zona Norte",
           phone: "+54 11 2345-6789",
           employees: [
-            { name: "Carlos Rodríguez", role: "encargado", weeklyLimit: 40, color: "#EF4444", unavailableTimes: [] },
-            { name: "María González", role: "empleado", weeklyLimit: 35, color: "#8B5CF6", unavailableTimes: [{ dayOfWeek: 1, startTime: "00:00", endTime: "08:00" }] },
-            { name: "Pedro Sánchez", role: "empleado", weeklyLimit: 30, color: "#06B6D4", unavailableTimes: [{ dayOfWeek: 3, startTime: "18:00", endTime: "23:59" }] },
-            { name: "Laura Torres", role: "empleado", weeklyLimit: 25, color: "#84CC16", unavailableTimes: [{ dayOfWeek: 5, startTime: "00:00", endTime: "23:59" }] },
-            { name: "Diego Morales", role: "empleado", weeklyLimit: 30, color: "#F97316", unavailableTimes: [{ dayOfWeek: 2, startTime: "12:00", endTime: "14:00" }] }
+            { name: "Carlos Rodríguez", role: "encargado" as const, weeklyLimit: 40, color: "#EF4444", unavailableTimes: [] },
+            { name: "María González", role: "empleado" as const, weeklyLimit: 35, color: "#8B5CF6", unavailableTimes: [{ dayOfWeek: 1, startTime: "00:00", endTime: "08:00" }] },
+            { name: "Pedro Sánchez", role: "empleado" as const, weeklyLimit: 30, color: "#06B6D4", unavailableTimes: [{ dayOfWeek: 3, startTime: "18:00", endTime: "23:59" }] },
+            { name: "Laura Torres", role: "empleado" as const, weeklyLimit: 25, color: "#84CC16", unavailableTimes: [{ dayOfWeek: 5, startTime: "00:00", endTime: "23:59" }] },
+            { name: "Diego Morales", role: "empleado" as const, weeklyLimit: 30, color: "#F97316", unavailableTimes: [{ dayOfWeek: 2, startTime: "12:00", endTime: "14:00" }] }
           ],
           schedule: {
             // Horario normal, abre todos los días
@@ -495,10 +495,10 @@ export function TestDataGenerator() {
           address: "Av. Sur 789, Zona Sur",
           phone: "+54 11 3456-7890",
           employees: [
-            { name: "Elena Ruiz", role: "encargado", weeklyLimit: 40, color: "#EC4899", unavailableTimes: [] },
-            { name: "Roberto Vega", role: "empleado", weeklyLimit: 35, color: "#6366F1", unavailableTimes: [{ dayOfWeek: 0, startTime: "00:00", endTime: "23:59" }] },
-            { name: "Carmen Díaz", role: "empleado", weeklyLimit: 30, color: "#F59E0B", unavailableTimes: [{ dayOfWeek: 4, startTime: "00:00", endTime: "23:59" }] },
-            { name: "Javier Herrera", role: "empleado", weeklyLimit: 25, color: "#10B981", unavailableTimes: [{ dayOfWeek: 6, startTime: "14:00", endTime: "23:59" }] }
+            { name: "Elena Ruiz", role: "encargado" as const, weeklyLimit: 40, color: "#EC4899", unavailableTimes: [] },
+            { name: "Roberto Vega", role: "empleado" as const, weeklyLimit: 35, color: "#6366F1", unavailableTimes: [{ dayOfWeek: 0, startTime: "00:00", endTime: "23:59" }] },
+            { name: "Carmen Díaz", role: "empleado" as const, weeklyLimit: 30, color: "#F59E0B", unavailableTimes: [{ dayOfWeek: 4, startTime: "00:00", endTime: "23:59" }] },
+            { name: "Javier Herrera", role: "empleado" as const, weeklyLimit: 25, color: "#10B981", unavailableTimes: [{ dayOfWeek: 6, startTime: "14:00", endTime: "23:59" }] }
           ],
           schedule: {
             // Horario normal, abre todos los días
