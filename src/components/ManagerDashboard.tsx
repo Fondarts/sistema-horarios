@@ -12,7 +12,6 @@ import { Statistics } from './Statistics';
 import { ExportTools } from './ExportTools';
 import { AbsenceManagement } from './AbsenceManagement';
 import { HolidayIntegration } from './HolidayIntegration';
-import { TestDataGenerator } from './TestDataGenerator';
 import { ThemeToggle } from './ThemeToggle';
 import { BirthdayNotification } from './BirthdayNotification';
 import { NotificationCenter } from './NotificationCenter';
@@ -20,7 +19,7 @@ import { KeyboardShortcuts } from './KeyboardShortcuts';
 import { Logo } from './Logo';
 import { HamburgerMenu } from './HamburgerMenu';
 
-type TabType = 'schedule' | 'employees' | 'settings' | 'statistics' | 'export' | 'absences' | 'holidays' | 'testdata';
+type TabType = 'schedule' | 'employees' | 'settings' | 'statistics' | 'export' | 'absences' | 'holidays';
 
 export function ManagerDashboard() {
   const { currentEmployee, logout, isDistrictManager } = useAuth();
@@ -39,7 +38,6 @@ export function ManagerDashboard() {
     { id: 'settings' as TabType, label: 'Tienda', icon: Home },
     { id: 'statistics' as TabType, label: 'Estadísticas', icon: BarChart3 },
     { id: 'export' as TabType, label: 'Exportar', icon: FileText },
-    { id: 'testdata' as TabType, label: 'Datos Prueba', icon: Building2 },
   ];
 
   // Función para volver al selector de tiendas (solo para encargados de distrito)
@@ -118,8 +116,6 @@ export function ManagerDashboard() {
         return <Statistics />;
       case 'export':
         return <ExportTools />;
-      case 'testdata':
-        return <TestDataGenerator />;
       default:
         return <ScheduleManagement />;
     }

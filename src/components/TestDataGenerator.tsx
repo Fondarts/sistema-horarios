@@ -338,6 +338,22 @@ export function TestDataGenerator() {
         deletedCount++;
       }
 
+      // Borrar feriados
+      setProgress('Borrando feriados...');
+      const holidaysSnapshot = await getDocs(collection(db, 'holidays'));
+      for (const holidayDoc of holidaysSnapshot.docs) {
+        await deleteDoc(doc(db, 'holidays', holidayDoc.id));
+        deletedCount++;
+      }
+
+      // Borrar notificaciones
+      setProgress('Borrando notificaciones...');
+      const notificationsSnapshot = await getDocs(collection(db, 'notifications'));
+      for (const notificationDoc of notificationsSnapshot.docs) {
+        await deleteDoc(doc(db, 'notifications', notificationDoc.id));
+        deletedCount++;
+      }
+
       setProgress(`Datos borrados exitosamente. ${deletedCount} documentos eliminados.`);
       setResults({
         cleared: true,

@@ -9,6 +9,7 @@ import { ThemeToggle } from './ThemeToggle';
 import { KeyboardShortcuts } from './KeyboardShortcuts';
 import { NotificationCenter } from './NotificationCenter';
 import { Logo } from './Logo';
+import { TestDataGenerator } from './TestDataGenerator';
 
 interface StoreSelectorProps {
   onStoreSelect: (storeId: string) => void;
@@ -23,6 +24,7 @@ export function StoreSelector({ onStoreSelect }: StoreSelectorProps) {
   
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingStore, setEditingStore] = useState<string | null>(null);
+  const [showTestDataGenerator, setShowTestDataGenerator] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     address: '',
@@ -235,13 +237,22 @@ export function StoreSelector({ onStoreSelect }: StoreSelectorProps) {
               <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
                 Tiendas Disponibles
               </h2>
-              <button
-                onClick={() => setShowCreateForm(true)}
-                className="btn-primary flex items-center"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Nueva Tienda
-              </button>
+              <div className="flex space-x-3">
+                <button
+                  onClick={() => setShowTestDataGenerator(true)}
+                  className="btn-secondary flex items-center"
+                >
+                  <Building2 className="w-4 h-4 mr-2" />
+                  Datos de Prueba
+                </button>
+                <button
+                  onClick={() => setShowCreateForm(true)}
+                  className="btn-primary flex items-center"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Nueva Tienda
+                </button>
+              </div>
             </div>
           </div>
 
@@ -414,6 +425,28 @@ export function StoreSelector({ onStoreSelect }: StoreSelectorProps) {
                   {editingStore ? 'Guardar Cambios' : 'Crear Tienda'}
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal Generador de Datos de Prueba */}
+        {showTestDataGenerator && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-gray-200 dark:bg-gray-800 p-6 rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                  Generador de Datos de Prueba
+                </h3>
+                <button
+                  onClick={() => setShowTestDataGenerator(false)}
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <TestDataGenerator />
             </div>
           </div>
         )}
