@@ -159,7 +159,6 @@ export const en = {
   requestDetails: 'Request Details',
   name: 'Name',
   absenceInformation: 'Absence Information',
-  duration: 'Duration',
   scheduleRestrictions: 'Schedule restrictions',
   
   // Holidays
