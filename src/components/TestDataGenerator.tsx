@@ -3,17 +3,24 @@ import { useStore } from '../contexts/StoreContext';
 import { useEmployees } from '../contexts/EmployeeContext';
 import { useSchedule } from '../contexts/ScheduleContext';
 import { v4 as uuidv4 } from 'uuid';
-import { Download, Users, Calendar, Database } from 'lucide-react';
+import { Download, Users, Calendar, Database, Trash2 } from 'lucide-react';
 import { db } from '../firebase';
-import { collection, addDoc } from 'firebase/firestore';
+import { collection, addDoc, getDocs, deleteDoc, doc } from 'firebase/firestore';
 
 export function TestDataGenerator() {
   const { stores, getAllStores } = useStore();
   const { addEmployee } = useEmployees();
   const { addShift } = useSchedule();
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isClearing, setIsClearing] = useState(false);
   const [progress, setProgress] = useState('');
   const [results, setResults] = useState<any>(null);
+
+  // Función para convertir tiempo a minutos
+  const timeToMinutes = (time: string): number => {
+    const [hours, minutes] = time.split(':').map(Number);
+    return hours * 60 + minutes;
+  };
 
   // Datos de empleados de prueba
   const testEmployees = [
@@ -255,61 +262,346 @@ export function TestDataGenerator() {
     return colors.find(color => !usedColors.includes(color)) || colors[0];
   };
 
+  const clearAllData = async () => {
+    if (!confirm('¿Estás seguro de que quieres borrar TODOS los datos? Esta acción eliminará todas las tiendas, empleados y turnos. Esta acción no se puede deshacer.')) {
+      return;
+    }
+
+    setIsClearing(true);
+    setProgress('');
+    setResults(null);
+
+    try {
+      let deletedCount = 0;
+
+      // Borrar todos los turnos
+      setProgress('Borrando turnos...');
+      const shiftsSnapshot = await getDocs(collection(db, 'shifts'));
+      for (const shiftDoc of shiftsSnapshot.docs) {
+        await deleteDoc(doc(db, 'shifts', shiftDoc.id));
+        deletedCount++;
+      }
+
+      // Borrar todos los empleados
+      setProgress('Borrando empleados...');
+      const employeesSnapshot = await getDocs(collection(db, 'employees'));
+      for (const employeeDoc of employeesSnapshot.docs) {
+        await deleteDoc(doc(db, 'employees', employeeDoc.id));
+        deletedCount++;
+      }
+
+      // Borrar todas las tiendas
+      setProgress('Borrando tiendas...');
+      const storesSnapshot = await getDocs(collection(db, 'stores'));
+      for (const storeDoc of storesSnapshot.docs) {
+        await deleteDoc(doc(db, 'stores', storeDoc.id));
+        deletedCount++;
+      }
+
+      // Borrar horarios de tienda
+      setProgress('Borrando horarios de tienda...');
+      const storeScheduleSnapshot = await getDocs(collection(db, 'storeSchedule'));
+      for (const scheduleDoc of storeScheduleSnapshot.docs) {
+        await deleteDoc(doc(db, 'storeSchedule', scheduleDoc.id));
+        deletedCount++;
+      }
+
+      // Borrar excepciones de tienda
+      setProgress('Borrando excepciones de tienda...');
+      const storeExceptionsSnapshot = await getDocs(collection(db, 'storeExceptions'));
+      for (const exceptionDoc of storeExceptionsSnapshot.docs) {
+        await deleteDoc(doc(db, 'storeExceptions', exceptionDoc.id));
+        deletedCount++;
+      }
+
+      // Borrar plantillas
+      setProgress('Borrando plantillas...');
+      const templatesSnapshot = await getDocs(collection(db, 'templates'));
+      for (const templateDoc of templatesSnapshot.docs) {
+        await deleteDoc(doc(db, 'templates', templateDoc.id));
+        deletedCount++;
+      }
+
+      // Borrar solicitudes de vacaciones
+      setProgress('Borrando solicitudes de vacaciones...');
+      const vacationRequestsSnapshot = await getDocs(collection(db, 'vacationRequests'));
+      for (const vacationDoc of vacationRequestsSnapshot.docs) {
+        await deleteDoc(doc(db, 'vacationRequests', vacationDoc.id));
+        deletedCount++;
+      }
+
+      // Borrar solicitudes de ausencia
+      setProgress('Borrando solicitudes de ausencia...');
+      const absenceRequestsSnapshot = await getDocs(collection(db, 'absenceRequests'));
+      for (const absenceDoc of absenceRequestsSnapshot.docs) {
+        await deleteDoc(doc(db, 'absenceRequests', absenceDoc.id));
+        deletedCount++;
+      }
+
+      setProgress(`Datos borrados exitosamente. ${deletedCount} documentos eliminados.`);
+      setResults({
+        cleared: true,
+        deletedCount
+      });
+
+    } catch (error) {
+      console.error('Error borrando datos:', error);
+      setProgress(`Error borrando datos: ${error instanceof Error ? error.message : String(error)}`);
+    } finally {
+      setIsClearing(false);
+    }
+  };
+
+  const generateShiftsForFourMonths = (employees: any[], storeId: string, storeSchedule: any) => {
+    const shifts = [];
+    const today = new Date();
+    
+    // Generar turnos para los últimos 3 meses
+    const threeMonthsAgo = new Date(today);
+    threeMonthsAgo.setMonth(today.getMonth() - 3);
+    
+    // Generar turnos para el próximo mes
+    const nextMonth = new Date(today);
+    nextMonth.setMonth(today.getMonth() + 1);
+    
+    // Horarios típicos de tienda
+    const shiftPatterns = [
+      { startTime: "09:00", endTime: "14:00", hours: 5 }, // Mañana
+      { startTime: "14:00", endTime: "20:00", hours: 6 }, // Tarde
+      { startTime: "10:00", endTime: "18:00", hours: 8 }, // Día completo
+      { startTime: "16:00", endTime: "21:00", hours: 5 }, // Tarde-noche
+    ];
+
+    // Generar turnos para cada día en el rango
+    const currentDate = new Date(threeMonthsAgo);
+    while (currentDate <= nextMonth) {
+      const dayOfWeek = currentDate.getDay();
+      const dayName = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][dayOfWeek];
+      const daySchedule = storeSchedule[dayName];
+      
+      if (daySchedule && daySchedule.isOpen && daySchedule.timeRanges.length > 0) {
+        // Seleccionar empleados aleatorios para este día (1-3 empleados)
+        const numEmployees = Math.floor(Math.random() * 3) + 1;
+        const shuffledEmployees = [...employees].sort(() => 0.5 - Math.random());
+        const selectedEmployees = shuffledEmployees.slice(0, numEmployees);
+        
+        for (const employee of selectedEmployees) {
+          // Verificar si el empleado está disponible este día
+          const isUnavailable = employee.unavailableTimes.some((ut: any) => 
+            ut.dayOfWeek === dayOfWeek
+          );
+          
+          if (!isUnavailable) {
+            // Seleccionar un patrón de turno aleatorio
+            const pattern = shiftPatterns[Math.floor(Math.random() * shiftPatterns.length)];
+            
+            // Verificar que el turno esté dentro del horario de la tienda
+            const shiftStart = timeToMinutes(pattern.startTime);
+            const shiftEnd = timeToMinutes(pattern.endTime);
+            
+            let validShift = false;
+            for (const timeRange of daySchedule.timeRanges) {
+              const storeOpen = timeToMinutes(timeRange.openTime);
+              const storeClose = timeToMinutes(timeRange.closeTime);
+              
+              if (shiftStart >= storeOpen && shiftEnd <= storeClose) {
+                validShift = true;
+                break;
+              }
+            }
+            
+            if (validShift) {
+              shifts.push({
+                employeeId: employee.id,
+                storeId: storeId,
+                date: currentDate.toISOString().split('T')[0],
+                startTime: pattern.startTime,
+                endTime: pattern.endTime,
+                hours: pattern.hours,
+                isPublished: Math.random() > 0.3, // 70% de turnos publicados
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+              });
+            }
+          }
+        }
+      }
+      
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    return shifts;
+  };
+
   const generateTestData = async () => {
     setIsGenerating(true);
     setProgress('');
     setResults(null);
 
     try {
-      // Obtener todas las tiendas
-      const allStores = await getAllStores();
-      setProgress(`Encontradas ${allStores.length} tiendas`);
-
       const results = {
-        stores: allStores.length,
+        stores: 0,
         employeesCreated: 0,
         shiftsCreated: 0,
         errors: [] as string[]
       };
 
-      // Generar empleados para cada tienda
-      for (let i = 0; i < allStores.length; i++) {
-        const store = allStores[i];
-        setProgress(`Procesando tienda: ${store.name} (${i + 1}/${allStores.length})`);
-
-        // Crear 5 empleados para esta tienda
-        const storeEmployees = testEmployees.slice(i * 5, (i + 1) * 5);
-        const createdEmployees = [];
-
-        for (const employeeData of storeEmployees) {
-          try {
-            const createdEmployee = await addEmployeeToStore(employeeData, store.id);
-            createdEmployees.push(createdEmployee);
-            results.employeesCreated++;
-          } catch (error) {
-            results.errors.push(`Error creando empleado ${employeeData.name}: ${error instanceof Error ? error.message : String(error)}`);
+      // Definir las 3 tiendas específicas
+      const storesToCreate = [
+        {
+          name: "Tienda Centro",
+          address: "Av. Principal 123, Centro",
+          phone: "+54 11 1234-5678",
+          employees: [
+            { name: "Ana Martínez", role: "encargado", weeklyLimit: 40, color: "#3B82F6", unavailableTimes: [] },
+            { name: "Luis Fernández", role: "empleado", weeklyLimit: 35, color: "#10B981", unavailableTimes: [{ dayOfWeek: 0, startTime: "00:00", endTime: "23:59" }] },
+            { name: "Sofia López", role: "empleado", weeklyLimit: 30, color: "#F59E0B", unavailableTimes: [{ dayOfWeek: 6, startTime: "00:00", endTime: "23:59" }] }
+          ],
+          schedule: {
+            // Horario partido, no abre domingo
+            monday: { isOpen: true, timeRanges: [{ openTime: "09:00", closeTime: "14:00" }, { openTime: "16:00", closeTime: "21:00" }] },
+            tuesday: { isOpen: true, timeRanges: [{ openTime: "09:00", closeTime: "14:00" }, { openTime: "16:00", closeTime: "21:00" }] },
+            wednesday: { isOpen: true, timeRanges: [{ openTime: "09:00", closeTime: "14:00" }, { openTime: "16:00", closeTime: "21:00" }] },
+            thursday: { isOpen: true, timeRanges: [{ openTime: "09:00", closeTime: "14:00" }, { openTime: "16:00", closeTime: "21:00" }] },
+            friday: { isOpen: true, timeRanges: [{ openTime: "09:00", closeTime: "14:00" }, { openTime: "16:00", closeTime: "21:00" }] },
+            saturday: { isOpen: true, timeRanges: [{ openTime: "09:00", closeTime: "20:00" }] },
+            sunday: { isOpen: false, timeRanges: [] }
+          }
+        },
+        {
+          name: "Tienda Norte",
+          address: "Av. Norte 456, Zona Norte",
+          phone: "+54 11 2345-6789",
+          employees: [
+            { name: "Carlos Rodríguez", role: "encargado", weeklyLimit: 40, color: "#EF4444", unavailableTimes: [] },
+            { name: "María González", role: "empleado", weeklyLimit: 35, color: "#8B5CF6", unavailableTimes: [{ dayOfWeek: 1, startTime: "00:00", endTime: "08:00" }] },
+            { name: "Pedro Sánchez", role: "empleado", weeklyLimit: 30, color: "#06B6D4", unavailableTimes: [{ dayOfWeek: 3, startTime: "18:00", endTime: "23:59" }] },
+            { name: "Laura Torres", role: "empleado", weeklyLimit: 25, color: "#84CC16", unavailableTimes: [{ dayOfWeek: 5, startTime: "00:00", endTime: "23:59" }] },
+            { name: "Diego Morales", role: "empleado", weeklyLimit: 30, color: "#F97316", unavailableTimes: [{ dayOfWeek: 2, startTime: "12:00", endTime: "14:00" }] }
+          ],
+          schedule: {
+            // Horario normal, abre todos los días
+            monday: { isOpen: true, timeRanges: [{ openTime: "09:00", closeTime: "20:00" }] },
+            tuesday: { isOpen: true, timeRanges: [{ openTime: "09:00", closeTime: "20:00" }] },
+            wednesday: { isOpen: true, timeRanges: [{ openTime: "09:00", closeTime: "20:00" }] },
+            thursday: { isOpen: true, timeRanges: [{ openTime: "09:00", closeTime: "20:00" }] },
+            friday: { isOpen: true, timeRanges: [{ openTime: "09:00", closeTime: "20:00" }] },
+            saturday: { isOpen: true, timeRanges: [{ openTime: "09:00", closeTime: "20:00" }] },
+            sunday: { isOpen: true, timeRanges: [{ openTime: "10:00", closeTime: "18:00" }] }
+          }
+        },
+        {
+          name: "Tienda Sur",
+          address: "Av. Sur 789, Zona Sur",
+          phone: "+54 11 3456-7890",
+          employees: [
+            { name: "Elena Ruiz", role: "encargado", weeklyLimit: 40, color: "#EC4899", unavailableTimes: [] },
+            { name: "Roberto Vega", role: "empleado", weeklyLimit: 35, color: "#6366F1", unavailableTimes: [{ dayOfWeek: 0, startTime: "00:00", endTime: "23:59" }] },
+            { name: "Carmen Díaz", role: "empleado", weeklyLimit: 30, color: "#F59E0B", unavailableTimes: [{ dayOfWeek: 4, startTime: "00:00", endTime: "23:59" }] },
+            { name: "Javier Herrera", role: "empleado", weeklyLimit: 25, color: "#10B981", unavailableTimes: [{ dayOfWeek: 6, startTime: "14:00", endTime: "23:59" }] }
+          ],
+          schedule: {
+            // Horario normal, abre todos los días
+            monday: { isOpen: true, timeRanges: [{ openTime: "09:00", closeTime: "20:00" }] },
+            tuesday: { isOpen: true, timeRanges: [{ openTime: "09:00", closeTime: "20:00" }] },
+            wednesday: { isOpen: true, timeRanges: [{ openTime: "09:00", closeTime: "20:00" }] },
+            thursday: { isOpen: true, timeRanges: [{ openTime: "09:00", closeTime: "20:00" }] },
+            friday: { isOpen: true, timeRanges: [{ openTime: "09:00", closeTime: "20:00" }] },
+            saturday: { isOpen: true, timeRanges: [{ openTime: "09:00", closeTime: "20:00" }] },
+            sunday: { isOpen: true, timeRanges: [{ openTime: "10:00", closeTime: "18:00" }] }
           }
         }
+      ];
 
-        // Generar horarios para estos empleados
-        setProgress(`Generando horarios para ${store.name}...`);
-        const shifts = generateShiftsForTwoMonths(createdEmployees, store.id);
+      // Crear las tiendas
+      for (const storeData of storesToCreate) {
+        setProgress(`Creando tienda: ${storeData.name}`);
         
-        for (const shiftData of shifts) {
-          try {
-            await addShiftToStore(shiftData);
-            results.shiftsCreated++;
-          } catch (error) {
-            results.errors.push(`Error creando turno: ${error instanceof Error ? error.message : String(error)}`);
+        try {
+          const store = await addDoc(collection(db, 'stores'), {
+            name: storeData.name,
+            address: storeData.address,
+            phone: storeData.phone,
+            isActive: true,
+            employees: [],
+            shifts: [],
+            storeSchedule: [],
+            settings: {}
+          });
+          
+          results.stores++;
+
+          // Crear empleados para esta tienda
+          const createdEmployees = [];
+          for (const employeeData of storeData.employees) {
+            try {
+              const employee = await addEmployee({
+                name: employeeData.name,
+                username: employeeData.name.toLowerCase().replace(/\s+/g, '.'),
+                password: "123456",
+                weeklyLimit: employeeData.weeklyLimit,
+                monthlyHoursLimit: employeeData.weeklyLimit * 4,
+                birthday: "1990-01-01",
+                isActive: true,
+                color: employeeData.color,
+                role: employeeData.role,
+                storeId: store.id,
+                unavailableTimes: employeeData.unavailableTimes.map(ut => ({
+                  id: uuidv4(),
+                  ...ut
+                }))
+              });
+              createdEmployees.push(employee);
+              results.employeesCreated++;
+            } catch (error) {
+              results.errors.push(`Error creando empleado ${employeeData.name}: ${error instanceof Error ? error.message : String(error)}`);
+            }
           }
+
+          // Crear horarios de tienda
+          setProgress(`Configurando horarios para ${storeData.name}`);
+          const dayMapping = { monday: 1, tuesday: 2, wednesday: 3, thursday: 4, friday: 5, saturday: 6, sunday: 0 };
+          
+          for (const [dayName, schedule] of Object.entries(storeData.schedule)) {
+            const dayOfWeek = dayMapping[dayName as keyof typeof dayMapping];
+            const timeRanges = schedule.timeRanges.map((range, index) => ({
+              id: `range_${dayOfWeek}_${index}`,
+              openTime: range.openTime,
+              closeTime: range.closeTime
+            }));
+
+            await addDoc(collection(db, 'storeSchedule'), {
+              dayOfWeek,
+              isOpen: schedule.isOpen,
+              timeRanges,
+              storeId: store.id
+            });
+          }
+
+          // Generar turnos para los últimos 3 meses y próximo mes
+          setProgress(`Generando turnos para ${storeData.name}...`);
+          const shifts = generateShiftsForFourMonths(createdEmployees, store.id, storeData.schedule);
+          
+          for (const shiftData of shifts) {
+            try {
+              await addShiftToStore(shiftData);
+              results.shiftsCreated++;
+            } catch (error) {
+              results.errors.push(`Error creando turno: ${error instanceof Error ? error.message : String(error)}`);
+            }
+          }
+
+        } catch (error) {
+          results.errors.push(`Error creando tienda ${storeData.name}: ${error instanceof Error ? error.message : String(error)}`);
         }
       }
 
+      setProgress('Datos generados exitosamente');
       setResults(results);
-      setProgress('¡Datos de prueba generados exitosamente!');
+
     } catch (error) {
-      setResults({ error: error instanceof Error ? error.message : String(error) });
-      setProgress('Error generando datos de prueba');
+      console.error('Error generando datos:', error);
+      setProgress(`Error generando datos: ${error instanceof Error ? error.message : String(error)}`);
     } finally {
       setIsGenerating(false);
     }
@@ -345,23 +637,43 @@ export function TestDataGenerator() {
           </ul>
         </div>
 
-        <button
-          onClick={generateTestData}
-          disabled={isGenerating}
-          className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-medium py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
-        >
-          {isGenerating ? (
-            <>
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-              Generando...
-            </>
-          ) : (
-            <>
-              <Database className="w-4 h-4" />
-              Generar Datos de Prueba
-            </>
-          )}
-        </button>
+        <div className="space-y-3">
+          <button
+            onClick={clearAllData}
+            disabled={isClearing || isGenerating}
+            className="w-full bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white font-medium py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
+          >
+            {isClearing ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                Borrando...
+              </>
+            ) : (
+              <>
+                <Trash2 className="w-4 h-4" />
+                Borrar Todos los Datos
+              </>
+            )}
+          </button>
+
+          <button
+            onClick={generateTestData}
+            disabled={isGenerating || isClearing}
+            className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-medium py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
+          >
+            {isGenerating ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                Generando...
+              </>
+            ) : (
+              <>
+                <Database className="w-4 h-4" />
+                Generar Datos de Prueba
+              </>
+            )}
+          </button>
+        </div>
 
         {progress && (
           <div className="text-sm text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 p-3 rounded-lg">

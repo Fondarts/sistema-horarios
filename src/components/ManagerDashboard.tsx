@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useEmployees } from '../contexts/EmployeeContext';
 import { useStore } from '../contexts/StoreContext';
-import { LogOut, Calendar, Users, Home, BarChart3, FileText, CalendarDays, Maximize2, Minimize2, Building2, UserX, FolderOpen } from 'lucide-react';
+import { LogOut, Calendar, Users, Home, BarChart3, FileText, CalendarDays, Maximize2, Minimize2, Building2, UserX } from 'lucide-react';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { useCompactMode } from '../contexts/CompactModeContext';
 import { EmployeeManagement } from './EmployeeManagement';
@@ -11,7 +11,6 @@ import { StoreSettings } from './StoreSettings';
 import { Statistics } from './Statistics';
 import { ExportTools } from './ExportTools';
 import { AbsenceManagement } from './AbsenceManagement';
-import { FileManager } from './FileManager';
 import { HolidayIntegration } from './HolidayIntegration';
 import { TestDataGenerator } from './TestDataGenerator';
 import { ThemeToggle } from './ThemeToggle';
@@ -21,7 +20,7 @@ import { KeyboardShortcuts } from './KeyboardShortcuts';
 import { Logo } from './Logo';
 import { HamburgerMenu } from './HamburgerMenu';
 
-type TabType = 'schedule' | 'employees' | 'settings' | 'statistics' | 'export' | 'absences' | 'holidays' | 'testdata' | 'files';
+type TabType = 'schedule' | 'employees' | 'settings' | 'statistics' | 'export' | 'absences' | 'holidays' | 'testdata';
 
 export function ManagerDashboard() {
   const { currentEmployee, logout, isDistrictManager } = useAuth();
@@ -40,7 +39,6 @@ export function ManagerDashboard() {
     { id: 'settings' as TabType, label: 'Tienda', icon: Home },
     { id: 'statistics' as TabType, label: 'Estadísticas', icon: BarChart3 },
     { id: 'export' as TabType, label: 'Exportar', icon: FileText },
-    { id: 'files' as TabType, label: 'Archivos', icon: FolderOpen },
     { id: 'testdata' as TabType, label: 'Datos Prueba', icon: Building2 },
   ];
 
@@ -122,8 +120,6 @@ export function ManagerDashboard() {
         return <ExportTools />;
       case 'testdata':
         return <TestDataGenerator />;
-      case 'files':
-        return <FileManager />;
       default:
         return <ScheduleManagement />;
     }
