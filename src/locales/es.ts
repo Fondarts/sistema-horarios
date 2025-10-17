@@ -1,0 +1,180 @@
+export const es = {
+  // Navigation
+  schedule: 'Horarios',
+  employees: 'Empleados',
+  vacations: 'Vacaciones y Ausencias',
+  holidays: 'Feriados',
+  store: 'Tienda',
+  statistics: 'Estadísticas',
+  export: 'Exportar',
+  mySchedule: 'Mis Horarios',
+  
+  // Common actions
+  save: 'Guardar',
+  cancel: 'Cancelar',
+  delete: 'Eliminar',
+  edit: 'Editar',
+  add: 'Agregar',
+  close: 'Cerrar',
+  back: 'Volver',
+  next: 'Siguiente',
+  previous: 'Anterior',
+  search: 'Buscar',
+  filter: 'Filtrar',
+  clear: 'Limpiar',
+  confirm: 'Confirmar',
+  loading: 'Cargando...',
+  
+  // Authentication
+  login: 'Iniciar Sesión',
+  logout: 'Cerrar Sesión',
+  username: 'Usuario',
+  password: 'Contraseña',
+  loginError: 'Usuario o contraseña inválidos',
+  
+  // Store
+  storeSelector: 'Selector de Tiendas',
+  selectStore: 'Selecciona una tienda',
+  newStore: 'Nueva Tienda',
+  storeName: 'Nombre de la Tienda',
+  address: 'Dirección',
+  phone: 'Teléfono',
+  email: 'Email',
+  createStore: 'Crear Tienda',
+  editStore: 'Editar Tienda',
+  deleteStore: 'Eliminar Tienda',
+  storeCreated: 'Tienda creada exitosamente',
+  storeUpdated: 'Tienda actualizada exitosamente',
+  storeDeleted: 'Tienda eliminada exitosamente',
+  
+  // Employees
+  employeeName: 'Nombre del Empleado',
+  weeklyLimit: 'Límite de Horas Semanales',
+  color: 'Color',
+  role: 'Rol',
+  manager: 'Encargado',
+  employee: 'Empleado',
+  districtManager: 'Encargado de Distrito',
+  startDate: 'Fecha de Inicio',
+  birthday: 'Fecha de Nacimiento',
+  vacationDays: 'Días de Vacaciones por Año',
+  unavailableTimes: 'Horarios No Disponibles',
+  addEmployee: 'Agregar Empleado',
+  editEmployee: 'Editar Empleado',
+  deleteEmployee: 'Eliminar Empleado',
+  employeeCreated: 'Empleado creado exitosamente',
+  employeeUpdated: 'Empleado actualizado exitosamente',
+  employeeDeleted: 'Empleado eliminado exitosamente',
+  
+  // Schedule
+  week: 'Semana',
+  month: 'Mes',
+  day: 'Día',
+  monday: 'Lunes',
+  tuesday: 'Martes',
+  wednesday: 'Miércoles',
+  thursday: 'Jueves',
+  friday: 'Viernes',
+  saturday: 'Sábado',
+  sunday: 'Domingo',
+  startTime: 'Hora de Inicio',
+  endTime: 'Hora de Fin',
+  hours: 'Horas',
+  duration: 'Duración',
+  published: 'Publicado',
+  draft: 'Borrador',
+  addShift: 'Agregar Turno',
+  editShift: 'Editar Turno',
+  deleteShift: 'Eliminar Turno',
+  copyWeek: 'Copiar Semana',
+  repeatWeek: 'Repetir',
+  deleteWeek: 'Borrar Semana',
+  compactMode: 'Modo Compacto',
+  normalMode: 'Modo Normal',
+  
+  // Absences
+  absenceType: 'Tipo de Ausencia',
+  vacation: 'Vacaciones',
+  sick: 'Enfermedad',
+  personal: 'Personal',
+  other: 'Otro',
+  startDate: 'Fecha de Inicio',
+  endDate: 'Fecha de Fin',
+  reason: 'Motivo',
+  status: 'Estado',
+  pending: 'Pendiente',
+  approved: 'Aprobado',
+  rejected: 'Rechazado',
+  newRequest: 'Nueva Solicitud',
+  requestSubmitted: 'Solicitud enviada exitosamente',
+  
+  // Holidays
+  holidayName: 'Nombre del Feriado',
+  holidayDate: 'Fecha del Feriado',
+  addHoliday: 'Agregar Feriado',
+  editHoliday: 'Editar Feriado',
+  deleteHoliday: 'Eliminar Feriado',
+  
+  // Statistics
+  totalEmployees: 'Total de Empleados',
+  totalShifts: 'Total de Turnos',
+  averageHours: 'Promedio de Horas',
+  coverageProblems: 'Problemas de Cobertura',
+  noProblems: 'No se detectaron problemas de cobertura',
+  gap: 'Hueco',
+  conflict: 'Conflicto',
+  overtime: 'Jornada excesiva',
+  emptyDay: 'Sin turnos',
+  weeklyOvertime: 'Horas semanales excesivas',
+  storeClosed: 'Tienda cerrada',
+  
+  // Export
+  exportData: 'Exportar Datos',
+  selectDateRange: 'Seleccionar Rango de Fechas',
+  from: 'Desde',
+  to: 'Hasta',
+  exportFormat: 'Formato de Exportación',
+  excel: 'Excel',
+  csv: 'CSV',
+  exportSuccess: 'Datos exportados exitosamente',
+  
+  // Configuration
+  configuration: 'Configuración',
+  language: 'Idioma de la aplicación',
+  country: 'País (para feriados)',
+  
+  // Notifications
+  notifications: 'Notificaciones',
+  noNotifications: 'No hay notificaciones',
+  birthdayToday: 'Cumpleaños hoy',
+  
+  // Errors
+  error: 'Error',
+  success: 'Éxito',
+  warning: 'Advertencia',
+  info: 'Información',
+  required: 'Este campo es obligatorio',
+  invalidDate: 'Fecha inválida',
+  invalidTime: 'Hora inválida',
+  networkError: 'Error de red. Por favor intenta de nuevo.',
+  
+  // Confirmations
+  confirmDelete: '¿Estás seguro de que quieres eliminar este elemento?',
+  confirmDeleteWeek: '¿Estás seguro de que quieres borrar todos los turnos de esta semana? Esta acción no se puede deshacer.',
+  confirmDeleteAll: '¿Estás seguro de que quieres borrar TODOS los datos? Esta acción eliminará todas las tiendas, empleados y turnos. Esta acción no se puede deshacer.',
+  
+  // Time formats
+  timeFormat: 'HH:MM',
+  dateFormat: 'DD/MM/YYYY',
+  
+  // Days of week
+  daysOfWeek: {
+    monday: 'Lunes',
+    tuesday: 'Martes',
+    wednesday: 'Miércoles',
+    thursday: 'Jueves',
+    friday: 'Viernes',
+    saturday: 'Sábado',
+    sunday: 'Domingo'
+  }
+};

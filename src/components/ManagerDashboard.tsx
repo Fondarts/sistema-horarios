@@ -19,6 +19,7 @@ import { KeyboardShortcuts } from './KeyboardShortcuts';
 import { Logo } from './Logo';
 import { HamburgerMenu } from './HamburgerMenu';
 import { ConfigurationModal } from './ConfigurationModal';
+import { useLanguage } from '../contexts/LanguageContext';
 
 type TabType = 'schedule' | 'employees' | 'settings' | 'statistics' | 'export' | 'absences' | 'holidays';
 
@@ -27,19 +28,20 @@ export function ManagerDashboard() {
   const { employees } = useEmployees();
   const { currentStore, setCurrentStore } = useStore();
   const { isCompactMode, toggleCompactMode, isMobile } = useCompactMode();
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState<TabType>('schedule');
   const [showBirthdayNotification, setShowBirthdayNotification] = useState(true);
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
   const [showConfig, setShowConfig] = useState(false);
 
   const tabs = [
-    { id: 'schedule' as TabType, label: 'Horarios', icon: Calendar },
-    { id: 'employees' as TabType, label: 'Empleados', icon: Users },
-    { id: 'absences' as TabType, label: 'Vacaciones y Ausencias', icon: UserX },
-    { id: 'holidays' as TabType, label: 'Feriados', icon: CalendarDays },
-    { id: 'settings' as TabType, label: 'Tienda', icon: Home },
-    { id: 'statistics' as TabType, label: 'Estadísticas', icon: BarChart3 },
-    { id: 'export' as TabType, label: 'Exportar', icon: FileText },
+    { id: 'schedule' as TabType, label: t('schedule'), icon: Calendar },
+    { id: 'employees' as TabType, label: t('employees'), icon: Users },
+    { id: 'absences' as TabType, label: t('vacations'), icon: UserX },
+    { id: 'holidays' as TabType, label: t('holidays'), icon: CalendarDays },
+    { id: 'settings' as TabType, label: t('store'), icon: Home },
+    { id: 'statistics' as TabType, label: t('statistics'), icon: BarChart3 },
+    { id: 'export' as TabType, label: t('export'), icon: FileText },
   ];
 
   // Función para volver al selector de tiendas (solo para encargados de distrito)
@@ -179,7 +181,7 @@ export function ManagerDashboard() {
                   <button
                     onClick={() => setShowConfig(true)}
                     className="flex items-center text-gray-600 hover:text-gray-900 transition-colors dark:text-gray-400 dark:hover:text-gray-100"
-                    title="Configuración"
+                    title={t('configuration')}
                   >
                     <Settings className="w-5 h-5" />
                   </button>
@@ -192,10 +194,10 @@ export function ManagerDashboard() {
                 <button
                   onClick={handleBackToStoreSelector}
                   className="flex items-center px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-md transition-colors dark:text-blue-400 dark:hover:text-blue-300 dark:hover:bg-blue-900/20"
-                  title="Volver al selector de tiendas"
+                  title={t('back')}
                 >
                   <Building2 className="w-4 h-4 mr-2" />
-                  Tiendas
+                  {t('store')}
                 </button>
               )}
               
@@ -206,7 +208,7 @@ export function ManagerDashboard() {
                   className="flex items-center text-gray-600 hover:text-gray-900 transition-colors dark:text-gray-400 dark:hover:text-gray-100"
                 >
                   <LogOut className="w-5 h-5 mr-2" />
-                  Cerrar Sesión
+                  {t('logout')}
                 </button>
               )}
               

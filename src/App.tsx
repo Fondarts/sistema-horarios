@@ -10,35 +10,38 @@ import { HolidayProvider } from './contexts/HolidayContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { CompactModeProvider } from './contexts/CompactModeContext';
 import { StoreProvider } from './contexts/StoreContext';
+import { LanguageProvider } from './contexts/LanguageContext';
 import { AppRouter } from './components/AppRouter';
 import { NotificationStack } from './components/NotificationStack';
 
 function App() {
   return (
-    <ThemeProvider>
-      <CompactModeProvider>
-        <StoreProvider>
-          <EmployeeProvider>
-            <AuthProvider>
-              <HolidayProvider>
-                <NotificationProvider>
-                  <NotificationStackProvider>
-                    <ScheduleProvider>
-                      <VacationProvider>
-                        <AbsenceProvider>
-                          <AppRouter />
-                          <NotificationStack />
-                        </AbsenceProvider>
-                      </VacationProvider>
-                    </ScheduleProvider>
-                  </NotificationStackProvider>
-                </NotificationProvider>
-              </HolidayProvider>
-            </AuthProvider>
-          </EmployeeProvider>
-        </StoreProvider>
-      </CompactModeProvider>
-    </ThemeProvider>
+    <LanguageProvider>
+      <ThemeProvider>
+        <CompactModeProvider>
+          <StoreProvider>
+            <EmployeeProvider>
+              <AuthProvider>
+                <HolidayProvider>
+                  <NotificationProvider>
+                    <NotificationStackProvider>
+                      <ScheduleProvider>
+                        <VacationProvider>
+                          <AbsenceProvider>
+                            <AppRouter />
+                            <NotificationStack />
+                          </AbsenceProvider>
+                        </VacationProvider>
+                      </ScheduleProvider>
+                    </NotificationStackProvider>
+                  </NotificationProvider>
+                </HolidayProvider>
+              </AuthProvider>
+            </EmployeeProvider>
+          </StoreProvider>
+        </CompactModeProvider>
+      </ThemeProvider>
+    </LanguageProvider>
   );
 }
 

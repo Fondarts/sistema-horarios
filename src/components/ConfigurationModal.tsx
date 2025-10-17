@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X, Settings, Globe, Flag } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface ConfigurationModalProps {
   isOpen: boolean;
@@ -7,7 +8,7 @@ interface ConfigurationModalProps {
 }
 
 export function ConfigurationModal({ isOpen, onClose }: ConfigurationModalProps) {
-  const [language, setLanguage] = useState('es');
+  const { language, setLanguage, t } = useLanguage();
   const [country, setCountry] = useState('AR');
 
   const languages = [
@@ -31,7 +32,7 @@ export function ConfigurationModal({ isOpen, onClose }: ConfigurationModalProps)
   ];
 
   const handleSave = () => {
-    // Aquí se guardarían las configuraciones
+    // El idioma ya se guarda automáticamente en el contexto
     console.log('Configuración guardada:', { language, country });
     onClose();
   };
@@ -46,7 +47,7 @@ export function ConfigurationModal({ isOpen, onClose }: ConfigurationModalProps)
           <div className="flex items-center space-x-3">
             <Settings className="w-6 h-6 text-blue-600 dark:text-blue-400" />
             <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-              Configuración
+              {t('configuration')}
             </h2>
           </div>
           <button
@@ -63,7 +64,7 @@ export function ConfigurationModal({ isOpen, onClose }: ConfigurationModalProps)
           <div>
             <label className="flex items-center space-x-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
               <Globe className="w-4 h-4" />
-              <span>Idioma de la aplicación</span>
+              <span>{t('language')}</span>
             </label>
             <select
               value={language}
@@ -82,7 +83,7 @@ export function ConfigurationModal({ isOpen, onClose }: ConfigurationModalProps)
           <div>
             <label className="flex items-center space-x-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
               <Flag className="w-4 h-4" />
-              <span>País (para feriados)</span>
+              <span>{t('country')}</span>
             </label>
             <select
               value={country}
@@ -104,13 +105,13 @@ export function ConfigurationModal({ isOpen, onClose }: ConfigurationModalProps)
             onClick={onClose}
             className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
           >
-            Cancelar
+            {t('cancel')}
           </button>
           <button
             onClick={handleSave}
             className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
           >
-            Guardar
+            {t('save')}
           </button>
         </div>
       </div>
