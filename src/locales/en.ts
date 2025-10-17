@@ -175,7 +175,6 @@ export const en = {
   nationalHolidaysSyncAutomatically: 'National holidays are automatically synchronized each year. These days are automatically considered non-working days in schedule planning.',
   
   // Statistics
-  statistics: 'Statistics',
   coverageAndWorkloadMetrics: 'Coverage and workload metrics',
   activeEmployees: 'Active Employees',
   shiftsThisWeek: 'Shifts This Week',
@@ -190,10 +189,6 @@ export const en = {
   // Export
   exportSchedules: 'Export Schedules',
   exportPublishedSchedulesInDifferentFormats: 'Export published schedules in different formats',
-  dateRange: 'Date Range',
-  exportFormat: 'Export Format',
-  excel: 'Excel',
-  csv: 'CSV',
   ical: 'iCal',
   google: 'Google',
   noPublishedSchedulesToExport: 'No published schedules to export',

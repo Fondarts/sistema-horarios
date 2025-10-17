@@ -175,7 +175,6 @@ export const es = {
   nationalHolidaysSyncAutomatically: 'Los feriados nacionales se sincronizan automáticamente cada año. Estos días se consideran automáticamente como no laborables en la planificación de horarios.',
   
   // Statistics
-  statistics: 'Estadísticas',
   coverageAndWorkloadMetrics: 'Métricas de cobertura y carga de trabajo',
   activeEmployees: 'Empleados Activos',
   shiftsThisWeek: 'Turnos Esta Semana',
@@ -190,10 +189,6 @@ export const es = {
   // Export
   exportSchedules: 'Exportar Horarios',
   exportPublishedSchedulesInDifferentFormats: 'Exporta los horarios publicados en diferentes formatos',
-  dateRange: 'Rango de Fechas',
-  exportFormat: 'Formato de Exportación',
-  excel: 'Excel',
-  csv: 'CSV',
   ical: 'iCal',
   google: 'Google',
   noPublishedSchedulesToExport: 'No hay horarios publicados para exportar',
