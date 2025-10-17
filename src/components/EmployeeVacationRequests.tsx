@@ -58,7 +58,7 @@ export function EmployeeVacationRequests() {
     switch (status) {
       case 'approved': return 'Aprobado';
       case 'rejected': return 'Rechazado';
-      case 'pending': return 'Pendiente';
+      case 'pending': return t('pending');
       default: return 'Desconocido';
     }
   };
@@ -83,7 +83,7 @@ export function EmployeeVacationRequests() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Vacaciones y Ausencias</h2>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{t('vacationsAndAbsences')}</h2>
           <p className="text-gray-600 dark:text-gray-400">Solicita y gestiona tus días de vacaciones</p>
         </div>
         <button
@@ -91,7 +91,7 @@ export function EmployeeVacationRequests() {
           className="btn-primary flex items-center"
         >
           <Plus className="w-5 h-5 mr-2" />
-          Solicitar Vacaciones
+          {t('requestVacation')}
         </button>
       </div>
 
@@ -99,7 +99,7 @@ export function EmployeeVacationRequests() {
       {showAddForm && (
         <div className="card">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
-            Nueva Solicitud de Vacaciones
+            {t('newVacationRequest')}
           </h3>
           
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -146,7 +146,7 @@ export function EmployeeVacationRequests() {
 
             <div className="flex gap-3">
               <button type="submit" className="btn-primary">
-                Enviar Solicitud
+                {t('submitRequest')}
               </button>
               <button
                 type="button"
@@ -166,7 +166,7 @@ export function EmployeeVacationRequests() {
       {/* My Requests */}
       <div className="card">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-6">
-          Mis Solicitudes de Vacaciones
+          {t('myVacationRequests')}
         </h3>
         
         {isLoading ? (

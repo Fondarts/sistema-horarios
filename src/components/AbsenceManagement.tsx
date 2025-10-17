@@ -452,7 +452,7 @@ export const AbsenceManagement: React.FC = () => {
               {showNewRequestForm && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                   <div className="bg-gray-200 dark:bg-gray-800 rounded-lg p-6 w-full max-w-md border border-gray-200 dark:border-gray-700">
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-gray-50 mb-4">Nueva Solicitud de Ausencia</h3>
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-gray-50 mb-4">{t('newAbsenceRequest')}</h3>
                     <form onSubmit={handleSubmitRequest} className="space-y-4">
                       {/* Solo mostrar selector de empleado para encargados y encargados de distrito */}
                       {(currentEmployee?.role === 'encargado' || currentEmployee?.role === 'distrito') && (
@@ -464,7 +464,7 @@ export const AbsenceManagement: React.FC = () => {
                             className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-50"
                             required
                           >
-                            <option value="">Seleccionar empleado</option>
+                            <option value="">{t('selectEmployee')}</option>
                             {employees.map(employee => (
                               <option key={employee.id} value={employee.id}>{employee.name}</option>
                             ))}
@@ -485,7 +485,7 @@ export const AbsenceManagement: React.FC = () => {
                       </div>
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Fecha Inicio</label>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('startDate')}</label>
                           <input
                             type="text"
                             value={newRequest.startDate}
@@ -498,7 +498,7 @@ export const AbsenceManagement: React.FC = () => {
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Fecha Fin</label>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('endDate')}</label>
                           <input
                             type="text"
                             value={newRequest.endDate}
@@ -518,7 +518,7 @@ export const AbsenceManagement: React.FC = () => {
                           onChange={(e) => setNewRequest({...newRequest, reason: e.target.value})}
                           className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-50"
                           rows={3}
-                          placeholder="Describe el motivo de la ausencia..."
+                          placeholder={t('describeAbsenceReason')}
                         />
                       </div>
                       {(newRequest.type === 'sickness' || newRequest.type === 'special') && (
@@ -545,7 +545,7 @@ export const AbsenceManagement: React.FC = () => {
                           disabled={isSubmitting}
                           className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50"
                         >
-                          {isSubmitting ? 'Enviando...' : 'Enviar Solicitud'}
+                          {isSubmitting ? t('submitting') : t('submitRequest')}
                         </button>
                       </div>
                     </form>

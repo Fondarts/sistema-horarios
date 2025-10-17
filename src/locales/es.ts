@@ -193,6 +193,17 @@ export const es = {
   google: 'Google',
   noPublishedSchedulesToExport: 'No hay horarios publicados para exportar',
   
+  // Additional UI elements
+  newAbsenceRequest: 'Nueva Solicitud de Ausencia',
+  selectEmployee: 'Seleccionar empleado',
+  describeAbsenceReason: 'Describe el motivo de la ausencia...',
+  submitting: 'Enviando...',
+  submitRequest: 'Enviar Solicitud',
+  vacationsAndAbsences: 'Vacaciones y Ausencias',
+  requestVacation: 'Solicitar Vacaciones',
+  newVacationRequest: 'Nueva Solicitud de Vacaciones',
+  myVacationRequests: 'Mis Solicitudes de Vacaciones',
+  
   // Holidays
   holidayName: 'Nombre del Feriado',
   holidayDate: 'Fecha del Feriado',

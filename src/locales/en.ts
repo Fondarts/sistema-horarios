@@ -193,6 +193,17 @@ export const en = {
   google: 'Google',
   noPublishedSchedulesToExport: 'No published schedules to export',
   
+  // Additional UI elements
+  newAbsenceRequest: 'New Absence Request',
+  selectEmployee: 'Select employee',
+  describeAbsenceReason: 'Describe the reason for the absence...',
+  submitting: 'Submitting...',
+  submitRequest: 'Submit Request',
+  vacationsAndAbsences: 'Vacations and Absences',
+  requestVacation: 'Request Vacation',
+  newVacationRequest: 'New Vacation Request',
+  myVacationRequests: 'My Vacation Requests',
+  
   // Holidays
   holidayName: 'Holiday Name',
   holidayDate: 'Holiday Date',
