@@ -283,6 +283,23 @@ export const en = {
   exportStatistics: 'Export statistics',
   refreshSchedules: 'Refresh schedules',
   pressCtrlSlashToShowHideHelp: 'Press Ctrl + / to show/hide this help',
+
+  // Keyboard Shortcut Categories
+  general: 'General',
+  navigation: 'Navigation',
+  schedules: 'Schedules',
+  employees: 'Employees',
+  statistics: 'Statistics',
+
+  // Coverage Problems
+  gap: 'Gap',
+  gapWithoutCoverage: 'Gap without coverage of',
+  conflict: 'Conflict',
+  excessiveWorkday: 'Excessive workday',
+  noShifts: 'No shifts',
+  excessiveWeeklyHours: 'Excessive weekly hours',
+  storeClosed: 'Store closed',
+  problem: 'Problem',
   
   // Notifications
   notifications: 'Notifications',

@@ -24,22 +24,22 @@ export function KeyboardShortcuts({ currentTab, isManager = false }: KeyboardSho
     {
       key: 'Ctrl + /',
       description: t('showHideShortcutsHelp'),
-      category: 'General'
+      category: t('general')
     },
     {
       key: 'Ctrl + D',
       description: t('toggleDarkMode'),
-      category: 'General'
+      category: t('general')
     },
     {
       key: 'Escape',
       description: t('closeModalsAndPanels'),
-      category: 'General'
+      category: t('general')
     },
     {
       key: 'Ctrl + B',
       description: t('openNotificationCenter'),
-      category: 'General'
+      category: t('general')
     },
   ];
 
@@ -50,27 +50,27 @@ export function KeyboardShortcuts({ currentTab, isManager = false }: KeyboardSho
       {
         key: 'Ctrl + 1',
         description: t('goToScheduleTab'),
-        category: 'Navegación'
+        category: t('navigation')
       },
       {
         key: 'Ctrl + 2',
         description: t('goToEmployeesTab'),
-        category: 'Navegación'
+        category: t('navigation')
       },
       {
         key: 'Ctrl + 3',
         description: t('goToConfigurationTab'),
-        category: 'Navegación'
+        category: t('navigation')
       },
       {
         key: 'Ctrl + 4',
         description: t('goToStatisticsTab'),
-        category: 'Navegación'
+        category: t('navigation')
       },
       {
         key: 'Ctrl + 5',
         description: t('goToExportTab'),
-        category: 'Navegación'
+        category: t('navigation')
       }
     );
 
@@ -80,32 +80,32 @@ export function KeyboardShortcuts({ currentTab, isManager = false }: KeyboardSho
         {
           key: 'Ctrl + N',
           description: t('createNewShift'),
-          category: 'Horarios'
+          category: t('schedules')
         },
         {
           key: 'Ctrl + S',
           description: t('saveSchedules'),
-          category: 'Horarios'
+          category: t('schedules')
         },
         {
           key: 'Ctrl + P',
           description: t('publishSchedules'),
-          category: 'Horarios'
+          category: t('schedules')
         },
         {
           key: '← / →',
           description: t('navigateBetweenWeeks'),
-          category: 'Horarios'
+          category: t('schedules')
         },
         {
           key: '+ / -',
           description: t('zoomInOut'),
-          category: 'Horarios'
+          category: t('schedules')
         },
         {
           key: 'R',
           description: t('resetZoom'),
-          category: 'Horarios'
+          category: t('schedules')
         }
       );
     }
@@ -116,22 +116,22 @@ export function KeyboardShortcuts({ currentTab, isManager = false }: KeyboardSho
         {
           key: 'Ctrl + N',
           description: t('addNewEmployee'),
-          category: 'Empleados'
+          category: t('employees')
         },
         {
           key: 'Ctrl + F',
           description: t('searchEmployees'),
-          category: 'Empleados'
+          category: t('employees')
         },
         {
           key: 'Enter',
           description: t('saveEmployee'),
-          category: 'Empleados'
+          category: t('employees')
         },
         {
           key: 'Escape',
           description: t('cancelEdit'),
-          category: 'Empleados'
+          category: t('employees')
         }
       );
     }
@@ -142,12 +142,12 @@ export function KeyboardShortcuts({ currentTab, isManager = false }: KeyboardSho
         {
           key: 'Ctrl + R',
           description: t('refreshStatistics'),
-          category: 'Estadísticas'
+          category: t('statistics')
         },
         {
           key: 'Ctrl + E',
           description: t('exportStatistics'),
-          category: 'Estadísticas'
+          category: t('statistics')
         }
       );
     }

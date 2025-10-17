@@ -283,6 +283,23 @@ export const es = {
   exportStatistics: 'Exportar estadísticas',
   refreshSchedules: 'Refrescar horarios',
   pressCtrlSlashToShowHideHelp: 'Presiona Ctrl + / para mostrar/ocultar esta ayuda',
+
+  // Keyboard Shortcut Categories
+  general: 'General',
+  navigation: 'Navegación',
+  schedules: 'Horarios',
+  employees: 'Empleados',
+  statistics: 'Estadísticas',
+
+  // Coverage Problems
+  gap: 'Hueco',
+  gapWithoutCoverage: 'Hueco sin cobertura de',
+  conflict: 'Conflicto',
+  excessiveWorkday: 'Jornada excesiva',
+  noShifts: 'Sin turnos',
+  excessiveWeeklyHours: 'Horas semanales excesivas',
+  storeClosed: 'Tienda cerrada',
+  problem: 'Problema',
   
   // Notifications
   notifications: 'Notificaciones',

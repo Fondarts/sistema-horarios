@@ -930,9 +930,9 @@ export default function ScheduleManagement() {
             if (gapDuration >= 5) { // Reportar huecos de 5+ minutos
               problems.push({
                 type: 'gap',
-                day: new Date(date).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric' }),
+                day: new Date(date).toLocaleDateString(language === 'es' ? 'es-ES' : 'en-US', { weekday: 'long', day: 'numeric' }),
                 time: `${minutesToTime(lastEndTime)} - ${minutesToTime(shiftStart)}`,
-                description: `Hueco sin cobertura de ${Math.floor(gapDuration / 60)}h ${gapDuration % 60}m`
+                description: `${t('gapWithoutCoverage')} ${Math.floor(gapDuration / 60)}h ${gapDuration % 60}m`
               });
             }
           }
@@ -948,7 +948,7 @@ export default function ScheduleManagement() {
               type: 'gap',
               day: new Date(date).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric' }),
               time: `${minutesToTime(lastEndTime)} - ${minutesToTime(storeClose)}`,
-              description: `Hueco sin cobertura de ${Math.floor(gapDuration / 60)}h ${gapDuration % 60}m`
+              description: `${t('gapWithoutCoverage')} ${Math.floor(gapDuration / 60)}h ${gapDuration % 60}m`
             });
           }
         }
@@ -977,7 +977,7 @@ export default function ScheduleManagement() {
 
               problems.push({
                 type: 'unavailable',
-                day: new Date(date).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric' }),
+                day: new Date(date).toLocaleDateString(language === 'es' ? 'es-ES' : 'en-US', { weekday: 'long', day: 'numeric' }),
                 time: `${minutesToTime(overlapStart)} - ${minutesToTime(overlapEnd)}`,
                 description: `${employee.name} asignado durante horario no disponible (${unavailable.startTime}-${unavailable.endTime})`
               });
@@ -2027,19 +2027,19 @@ export default function ScheduleManagement() {
                   const getProblemTitle = () => {
                     switch (problem.type) {
                       case 'gap':
-                        return 'Hueco';
+                        return t('gap');
                       case 'unavailable':
-                        return 'Conflicto';
+                        return t('conflict');
                       case 'overtime':
-                        return 'Jornada excesiva';
+                        return t('excessiveWorkday');
                       case 'empty_day':
-                        return 'Sin turnos';
+                        return t('noShifts');
                       case 'weekly_overtime':
-                        return 'Horas semanales excesivas';
+                        return t('excessiveWeeklyHours');
                       case 'store_closed':
-                        return 'Tienda cerrada';
+                        return t('storeClosed');
                       default:
-                        return 'Problema';
+                        return t('problem');
                     }
                   };
 
