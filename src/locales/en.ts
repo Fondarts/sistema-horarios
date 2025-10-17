@@ -81,9 +81,9 @@ export const en = {
   endTime: 'End Time',
   hours: 'Hours',
   duration: 'Duration',
-  published: 'Published',
+  published: 'Publish',
   draft: 'Draft',
-  addShift: 'Add Shift',
+  addShift: 'Create Shifts',
   editShift: 'Edit Shift',
   deleteShift: 'Delete Shift',
   copyWeek: 'Copy Week',
@@ -91,6 +91,10 @@ export const en = {
   deleteWeek: 'Delete Week',
   compactMode: 'Compact Mode',
   normalMode: 'Normal Mode',
+  thisWeek: 'This Week',
+  copying: 'Copying...',
+  clickEmployeeToCreateShift: 'Click on an employee to create a shift manually',
+  view24h: 'View 24h',
   
   // Absences
   absenceType: 'Absence Type',

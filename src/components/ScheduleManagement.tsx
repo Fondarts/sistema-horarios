@@ -7,6 +7,7 @@ import { useEmployees } from '../contexts/EmployeeContext';
 import { useVacation } from '../contexts/VacationContext';
 import { useHolidays } from '../contexts/HolidayContext';
 import { useCompactMode } from '../contexts/CompactModeContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import { useNotifications } from '../contexts/NotificationContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { Shift, Employee } from '../types';
@@ -19,6 +20,7 @@ export default function ScheduleManagement() {
   const { vacationRequests } = useVacation();
   const { isHoliday, getHolidayForDate } = useHolidays();
   const { isCompactMode, isMobile } = useCompactMode();
+  const { t } = useLanguage();
   const { addNotification } = useNotifications();
   const { theme } = useTheme();
   
@@ -1314,7 +1316,7 @@ export default function ScheduleManagement() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Gestión de Horarios</h2>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{t('schedule')}</h2>
         </div>
         <div className="flex items-center space-x-3">
           <button
@@ -1327,16 +1329,16 @@ export default function ScheduleManagement() {
             disabled={weekShifts.filter(s => !s.isPublished).length === 0}
           >
             <Save className="w-4 h-4 mr-2" />
-            Publicar
+            {t('published')}
           </button>
         </div>
       </div>
 
       {/* Employee Selection */}
       <div className="card">
-        <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-2">Crear Turnos</h4>
+        <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-2">{t('addShift')}</h4>
         <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-          Haz clic en un empleado para crear un turno manualmente
+          {t('clickEmployeeToCreateShift')}
         </p>
         <div className="flex flex-wrap gap-2">
           {employees.map((employee) => (
@@ -1384,19 +1386,19 @@ export default function ScheduleManagement() {
             onClick={() => navigateWeek('prev')}
             className="px-4 py-2 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 text-sm font-medium rounded-lg transition-colors"
           >
-            ← Anterior
+            ← {t('previous')}
           </button>
             <button
               onClick={() => setCurrentWeek(new Date())}
               className="px-4 py-2 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 text-sm font-medium rounded-lg transition-colors"
             >
-              Esta Semana
+              {t('thisWeek')}
           </button>
           <button
             onClick={() => navigateWeek('next')}
             className="px-4 py-2 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 text-sm font-medium rounded-lg transition-colors"
           >
-            Siguiente →
+            {t('next')} →
           </button>
           </div>
 
@@ -1413,7 +1415,7 @@ export default function ScheduleManagement() {
               title={isCopyingShifts ? "Copiando turnos..." : "Copiar todos los turnos de la semana anterior"}
             >
               <Copy className={`w-4 h-4 mr-2 ${isCopyingShifts ? 'animate-spin' : ''}`} />
-              <span>{isCopyingShifts ? 'Copiando...' : 'Repetir'}</span>
+              <span>{isCopyingShifts ? t('copying') : t('repeatWeek')}</span>
             </button>
             
             <button
@@ -1422,7 +1424,7 @@ export default function ScheduleManagement() {
               title="Borrar todos los turnos de la semana actual"
             >
               <Trash2 className="w-4 h-4 mr-2" />
-              <span>Borrar Semana</span>
+              <span>{t('deleteWeek')}</span>
             </button>
           </div>
 
@@ -1438,7 +1440,7 @@ export default function ScheduleManagement() {
                 className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
               />
               <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">
-                Ver 24h
+                {t('view24h')}
               </span>
             </label>
           </div>
@@ -1453,7 +1455,7 @@ export default function ScheduleManagement() {
               }`}
             >
               {showUnpublished ? <Eye className="w-4 h-4 mr-2" /> : <EyeOff className="w-4 h-4 mr-2" />}
-              Borrador
+              {t('draft')}
           </button>
           </div>
         </div>
@@ -1988,12 +1990,12 @@ export default function ScheduleManagement() {
         const coverageProblems = detectCoverageProblems(weekShifts, employees, storeSchedule);
         return (
           <div className="card">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Problemas de Cobertura</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">{t('coverageProblems')}</h3>
             
             {coverageProblems.length === 0 ? (
               <div className="text-center py-4">
                 <AlertTriangle className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                <p className="text-sm text-gray-600 dark:text-gray-400">No se detectaron problemas de cobertura</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">{t('noProblems')}</p>
               </div>
             ) : (
               <div className="space-y-1">

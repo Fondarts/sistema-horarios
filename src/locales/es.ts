@@ -81,9 +81,9 @@ export const es = {
   endTime: 'Hora de Fin',
   hours: 'Horas',
   duration: 'Duración',
-  published: 'Publicado',
+  published: 'Publicar',
   draft: 'Borrador',
-  addShift: 'Agregar Turno',
+  addShift: 'Crear Turnos',
   editShift: 'Editar Turno',
   deleteShift: 'Eliminar Turno',
   copyWeek: 'Copiar Semana',
@@ -91,6 +91,10 @@ export const es = {
   deleteWeek: 'Borrar Semana',
   compactMode: 'Modo Compacto',
   normalMode: 'Modo Normal',
+  thisWeek: 'Esta Semana',
+  copying: 'Copiando...',
+  clickEmployeeToCreateShift: 'Haz clic en un empleado para crear un turno manualmente',
+  view24h: 'Ver 24h',
   
   // Absences
   absenceType: 'Tipo de Ausencia',
