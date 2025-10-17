@@ -256,7 +256,6 @@ export const es = {
   // Header
   scheduleAdministrationPanel: 'Panel de Administración de Horarios',
   welcome: 'Bienvenido',
-  districtManager: 'Encargado de Distrito',
   
   // Notifications
   notifications: 'Notificaciones',

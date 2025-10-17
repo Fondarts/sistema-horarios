@@ -256,7 +256,6 @@ export const en = {
   // Header
   scheduleAdministrationPanel: 'Schedule Administration Panel',
   welcome: 'Welcome',
-  districtManager: 'District Manager',
   
   // Notifications
   notifications: 'Notifications',
