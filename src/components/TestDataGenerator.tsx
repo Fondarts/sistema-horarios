@@ -414,14 +414,6 @@ export function TestDataGenerator() {
     // Generar turnos para el próximo mes
     const nextMonth = new Date(today);
     nextMonth.setMonth(today.getMonth() + 1);
-    
-    // Horarios típicos de tienda
-    const shiftPatterns = [
-      { startTime: "09:00", endTime: "14:00", hours: 5 }, // Mañana
-      { startTime: "14:00", endTime: "20:00", hours: 6 }, // Tarde
-      { startTime: "10:00", endTime: "18:00", hours: 8 }, // Día completo
-      { startTime: "16:00", endTime: "21:00", hours: 5 }, // Tarde-noche
-    ];
 
     // Generar turnos para cada día en el rango
     const currentDate = new Date(threeMonthsAgo);
@@ -431,49 +423,131 @@ export function TestDataGenerator() {
       const daySchedule = storeSchedule[dayName];
       
       if (daySchedule && daySchedule.isOpen && daySchedule.timeRanges.length > 0) {
-        // Seleccionar empleados aleatorios para este día (1-3 empleados)
-        const numEmployees = Math.floor(Math.random() * 3) + 1;
-        const shuffledEmployees = [...employees].sort(() => 0.5 - Math.random());
-        const selectedEmployees = shuffledEmployees.slice(0, numEmployees);
-        
-        for (const employee of selectedEmployees) {
-          // Verificar si el empleado está disponible este día
-          const isUnavailable = employee.unavailableTimes.some((ut: any) => 
-            ut.dayOfWeek === dayOfWeek
-          );
+        // Generar turnos para cada rango de horario de la tienda
+        for (const timeRange of daySchedule.timeRanges) {
+          const storeOpen = timeToMinutes(timeRange.openTime);
+          const storeClose = timeToMinutes(timeRange.closeTime);
           
-          if (!isUnavailable) {
-            // Seleccionar un patrón de turno aleatorio
-            const pattern = shiftPatterns[Math.floor(Math.random() * shiftPatterns.length)];
+          // Calcular la duración total del horario de apertura
+          const totalMinutes = storeClose - storeOpen;
+          
+          // Determinar cuántos empleados necesitamos para cubrir el día
+          // Mínimo 1 empleado, máximo 3, basado en la duración
+          let numEmployees = 1;
+          if (totalMinutes >= 480) { // 8+ horas
+            numEmployees = Math.floor(Math.random() * 2) + 2; // 2-3 empleados
+          } else if (totalMinutes >= 300) { // 5+ horas
+            numEmployees = Math.floor(Math.random() * 2) + 1; // 1-2 empleados
+          }
+          
+          // Filtrar empleados disponibles para este día
+          const availableEmployees = employees.filter(employee => {
+            const isUnavailable = employee.unavailableTimes.some((ut: any) => 
+              ut.dayOfWeek === dayOfWeek
+            );
+            return !isUnavailable;
+          });
+          
+          // Seleccionar empleados para este día
+          const selectedEmployees = availableEmployees
+            .sort(() => 0.5 - Math.random())
+            .slice(0, Math.min(numEmployees, availableEmployees.length));
+          
+          if (selectedEmployees.length === 0) {
+            continue; // No hay empleados disponibles
+          }
+          
+          // Generar turnos para cubrir todo el horario sin huecos
+          if (selectedEmployees.length === 1) {
+            // Un solo empleado: turno completo
+            const employee = selectedEmployees[0];
+            shifts.push({
+              employeeId: employee.id,
+              storeId: storeId,
+              date: currentDate.toISOString().split('T')[0],
+              startTime: timeRange.openTime,
+              endTime: timeRange.closeTime,
+              hours: totalMinutes / 60,
+              isPublished: Math.random() > 0.2, // 80% publicados
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString()
+            });
+          } else if (selectedEmployees.length === 2) {
+            // Dos empleados: dividir el día en dos turnos
+            const midTime = Math.floor((storeOpen + storeClose) / 2);
+            const midTimeStr = minutesToTime(midTime);
             
-            // Verificar que el turno esté dentro del horario de la tienda
-            const shiftStart = timeToMinutes(pattern.startTime);
-            const shiftEnd = timeToMinutes(pattern.endTime);
+            // Primer turno
+            shifts.push({
+              employeeId: selectedEmployees[0].id,
+              storeId: storeId,
+              date: currentDate.toISOString().split('T')[0],
+              startTime: timeRange.openTime,
+              endTime: midTimeStr,
+              hours: (midTime - storeOpen) / 60,
+              isPublished: Math.random() > 0.2,
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString()
+            });
             
-            let validShift = false;
-            for (const timeRange of daySchedule.timeRanges) {
-              const storeOpen = timeToMinutes(timeRange.openTime);
-              const storeClose = timeToMinutes(timeRange.closeTime);
-              
-              if (shiftStart >= storeOpen && shiftEnd <= storeClose) {
-                validShift = true;
-                break;
-              }
-            }
+            // Segundo turno
+            shifts.push({
+              employeeId: selectedEmployees[1].id,
+              storeId: storeId,
+              date: currentDate.toISOString().split('T')[0],
+              startTime: midTimeStr,
+              endTime: timeRange.closeTime,
+              hours: (storeClose - midTime) / 60,
+              isPublished: Math.random() > 0.2,
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString()
+            });
+          } else {
+            // Tres empleados: turnos de mañana, tarde y noche
+            const third1 = storeOpen + Math.floor(totalMinutes / 3);
+            const third2 = storeOpen + Math.floor((totalMinutes * 2) / 3);
             
-            if (validShift) {
-              shifts.push({
-                employeeId: employee.id,
-                storeId: storeId,
-                date: currentDate.toISOString().split('T')[0],
-                startTime: pattern.startTime,
-                endTime: pattern.endTime,
-                hours: pattern.hours,
-                isPublished: Math.random() > 0.3, // 70% de turnos publicados
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString()
-              });
-            }
+            const time1 = minutesToTime(third1);
+            const time2 = minutesToTime(third2);
+            
+            // Turno mañana
+            shifts.push({
+              employeeId: selectedEmployees[0].id,
+              storeId: storeId,
+              date: currentDate.toISOString().split('T')[0],
+              startTime: timeRange.openTime,
+              endTime: time1,
+              hours: (third1 - storeOpen) / 60,
+              isPublished: Math.random() > 0.2,
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString()
+            });
+            
+            // Turno tarde
+            shifts.push({
+              employeeId: selectedEmployees[1].id,
+              storeId: storeId,
+              date: currentDate.toISOString().split('T')[0],
+              startTime: time1,
+              endTime: time2,
+              hours: (third2 - third1) / 60,
+              isPublished: Math.random() > 0.2,
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString()
+            });
+            
+            // Turno noche
+            shifts.push({
+              employeeId: selectedEmployees[2].id,
+              storeId: storeId,
+              date: currentDate.toISOString().split('T')[0],
+              startTime: time2,
+              endTime: timeRange.closeTime,
+              hours: (storeClose - third2) / 60,
+              isPublished: Math.random() > 0.2,
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString()
+            });
           }
         }
       }
@@ -482,6 +556,13 @@ export function TestDataGenerator() {
     }
 
     return shifts;
+  };
+
+  // Función auxiliar para convertir minutos a tiempo
+  const minutesToTime = (minutes: number): string => {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
   };
 
   const generateTestData = async () => {
