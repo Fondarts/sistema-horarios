@@ -180,7 +180,10 @@ export function Statistics() {
     };
   });
 
-  const daysOfWeek = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+  const daysOfWeek = [
+    t('sunday'), t('monday'), t('tuesday'), t('wednesday'), 
+    t('thursday'), t('friday'), t('saturday')
+  ];
 
 
   return (
@@ -331,7 +334,7 @@ export function Statistics() {
                       {daysOfWeek[stat.busiestDayOfWeek]}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                      {stat.daysSinceLastWeekendOff} días
+                      {stat.daysSinceLastWeekendOff} {t('days')}
                     </td>
                   </tr>
                 );

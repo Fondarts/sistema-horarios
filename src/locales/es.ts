@@ -256,6 +256,7 @@ export const es = {
   // Header
   scheduleAdministrationPanel: 'Panel de Administración de Horarios',
   welcome: 'Bienvenido',
+  invalidDay: 'Día inválido',
   
   // Notifications
   notifications: 'Notificaciones',

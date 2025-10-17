@@ -101,8 +101,11 @@ export function EmployeeManagement() {
 
   // Función para obtener el nombre del día
   const getDayName = (dayOfWeek: number): string => {
-    const dayNames = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-    return dayNames[dayOfWeek] || 'Día inválido';
+    const dayNames = [
+      t('sunday'), t('monday'), t('tuesday'), t('wednesday'), 
+      t('thursday'), t('friday'), t('saturday')
+    ];
+    return dayNames[dayOfWeek] || t('invalidDay');
   };
 
 

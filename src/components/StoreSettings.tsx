@@ -254,7 +254,7 @@ export function StoreSettings() {
                           <>
                             <div>
                               <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">
-                                {index === 0 ? 'Abre' : `Rango ${index + 1} - Abre`}
+                                {index === 0 ? t('opens') : `${t('range')} ${index + 1} - ${t('opens')}`}
                               </label>
                               <TimeInput
                                 value={timeRange.openTime}
@@ -266,7 +266,7 @@ export function StoreSettings() {
                             <span className="text-gray-500 dark:text-gray-400">-</span>
                             <div>
                               <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">
-                                {index === 0 ? 'Cierra' : `Rango ${index + 1} - Cierra`}
+                                {index === 0 ? t('closes') : `${t('range')} ${index + 1} - ${t('closes')}`}
                               </label>
                               <TimeInput
                                 value={timeRange.closeTime}
@@ -507,7 +507,7 @@ export function StoreSettings() {
                   <div className="flex space-x-4">
                     <div className="flex-1">
                       <label htmlFor="exceptionOpenTime" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Abre
+                        {t('opens')}
                       </label>
                       <TimeInput
                         value={exceptionForm.openTime}
@@ -516,7 +516,7 @@ export function StoreSettings() {
                     </div>
                     <div className="flex-1">
                       <label htmlFor="exceptionCloseTime" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Cierra
+                        {t('closes')}
                       </label>
                       <TimeInput
                         value={exceptionForm.closeTime}

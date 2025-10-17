@@ -256,6 +256,7 @@ export const en = {
   // Header
   scheduleAdministrationPanel: 'Schedule Administration Panel',
   welcome: 'Welcome',
+  invalidDay: 'Invalid day',
   
   // Notifications
   notifications: 'Notifications',
