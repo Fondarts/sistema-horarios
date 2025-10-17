@@ -731,11 +731,10 @@ export default function ScheduleManagement() {
   // Función para detectar problemas de cobertura
   const detectCoverageProblems = (shifts: Shift[], employees: Employee[], storeSchedule: any) => {
     const problems: Array<{
-      type: 'gap' | 'conflict' | 'unavailable';
+      type: 'gap' | 'conflict' | 'unavailable' | 'overtime' | 'empty_day';
       day: string;
       time: string;
       description: string;
-      severity: 'low' | 'medium' | 'high';
     }> = [];
 
     // Validar que tenemos datos necesarios
@@ -761,20 +760,60 @@ export default function ScheduleManagement() {
       const daySchedule = storeSchedule.find((s: any) => s && s.dayOfWeek === dayOfWeek);
       if (!daySchedule || !daySchedule.timeRanges || daySchedule.timeRanges.length === 0) return;
 
+      // Filtrar turnos válidos
+      const validShifts = (dayShifts as Shift[]).filter(shift => 
+        shift && shift.startTime && shift.endTime && 
+        typeof shift.startTime === 'string' && typeof shift.endTime === 'string'
+      );
+
+      // Verificar si el día está completamente vacío
+      if (validShifts.length === 0) {
+        problems.push({
+          type: 'empty_day',
+          day: new Date(date).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric' }),
+          time: 'Todo el día',
+          description: 'Día sin turnos asignados'
+        });
+        return; // No verificar más problemas si no hay turnos
+      }
+
+      // Verificar jornadas excesivas (más de 8 horas por día)
+      const employeeDailyHours = validShifts.reduce((acc: any, shift) => {
+        if (!acc[shift.employeeId]) {
+          acc[shift.employeeId] = 0;
+        }
+        acc[shift.employeeId] += shift.hours;
+        return acc;
+      }, {});
+
+      Object.entries(employeeDailyHours).forEach(([employeeId, totalHours]) => {
+        const hours = totalHours as number;
+        if (hours > 8) {
+          const employee = employees.find(emp => emp && emp.id === employeeId);
+          problems.push({
+            type: 'overtime',
+            day: new Date(date).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric' }),
+            time: 'Todo el día',
+            description: `${employee?.name || 'Empleado'} trabaja ${Math.floor(hours)}h ${Math.round((hours - Math.floor(hours)) * 60)}m (máximo 8h)`
+          });
+        }
+      });
+
       // Para horarios partidos, verificar cada rango
       daySchedule.timeRanges.forEach((timeRange: any) => {
         const storeOpen = timeToMinutes(timeRange.openTime);
         const storeClose = timeToMinutes(timeRange.closeTime);
 
-        // Filtrar turnos válidos y ordenar por hora de inicio
-        const validShifts = (dayShifts as Shift[]).filter(shift => 
-          shift && shift.startTime && shift.endTime && 
-          typeof shift.startTime === 'string' && typeof shift.endTime === 'string'
-        );
+        // Filtrar turnos que se solapan con este rango de horario
+        const shiftsInRange = validShifts.filter(shift => {
+          const shiftStart = timeToMinutes(shift.startTime);
+          const shiftEnd = timeToMinutes(shift.endTime);
+          return shiftStart < storeClose && shiftEnd > storeOpen;
+        });
         
-        const sortedShifts = validShifts.sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime));
+        const sortedShifts = shiftsInRange.sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime));
 
-        // Verificar huecos en la cobertura
+        // Verificar huecos en la cobertura (ahora desde 5 minutos)
         let lastEndTime = storeOpen;
         sortedShifts.forEach((shift) => {
           const shiftStart = timeToMinutes(shift.startTime);
@@ -783,13 +822,12 @@ export default function ScheduleManagement() {
           // Verificar si hay un hueco antes de este turno
           if (shiftStart > lastEndTime) {
             const gapDuration = shiftStart - lastEndTime;
-            if (gapDuration >= 30) { // Solo reportar huecos de 30+ minutos
+            if (gapDuration >= 5) { // Reportar huecos de 5+ minutos
               problems.push({
                 type: 'gap',
                 day: new Date(date).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric' }),
                 time: `${minutesToTime(lastEndTime)} - ${minutesToTime(shiftStart)}`,
-                description: `Hueco sin cobertura de ${Math.floor(gapDuration / 60)}h ${gapDuration % 60}m`,
-                severity: gapDuration >= 120 ? 'high' : gapDuration >= 60 ? 'medium' : 'low'
+                description: `Hueco sin cobertura de ${Math.floor(gapDuration / 60)}h ${gapDuration % 60}m`
               });
             }
           }
@@ -800,13 +838,12 @@ export default function ScheduleManagement() {
         // Verificar si hay hueco al final del día
         if (lastEndTime < storeClose) {
           const gapDuration = storeClose - lastEndTime;
-          if (gapDuration >= 30) {
+          if (gapDuration >= 5) { // Reportar huecos de 5+ minutos
             problems.push({
               type: 'gap',
               day: new Date(date).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric' }),
               time: `${minutesToTime(lastEndTime)} - ${minutesToTime(storeClose)}`,
-              description: `Hueco sin cobertura de ${Math.floor(gapDuration / 60)}h ${gapDuration % 60}m`,
-              severity: gapDuration >= 120 ? 'high' : gapDuration >= 60 ? 'medium' : 'low'
+              description: `Hueco sin cobertura de ${Math.floor(gapDuration / 60)}h ${gapDuration % 60}m`
             });
           }
         }
@@ -837,8 +874,7 @@ export default function ScheduleManagement() {
                 type: 'unavailable',
                 day: new Date(date).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric' }),
                 time: `${minutesToTime(overlapStart)} - ${minutesToTime(overlapEnd)}`,
-                description: `${employee.name} asignado durante horario no disponible (${unavailable.startTime}-${unavailable.endTime})`,
-                severity: overlapDuration >= 120 ? 'high' : overlapDuration >= 60 ? 'medium' : 'low'
+                description: `${employee.name} asignado durante horario no disponible (${unavailable.startTime}-${unavailable.endTime})`
               });
             }
           });
@@ -1834,67 +1870,63 @@ export default function ScheduleManagement() {
               </div>
             ) : (
               <div className="space-y-3">
-                {coverageProblems.map((problem, index) => (
-                  <div 
-                    key={index}
-                    className={`p-4 rounded-lg border-l-4 ${
-                      problem.severity === 'high' ? 'bg-red-50 border-red-500 dark:bg-red-900/20 dark:border-red-400' :
-                      problem.severity === 'medium' ? 'bg-yellow-50 border-yellow-500 dark:bg-yellow-900/20 dark:border-yellow-400' :
-                      'bg-blue-50 border-blue-500 dark:bg-blue-900/20 dark:border-blue-400'
-                    }`}
-                  >
-                    <div className="flex items-start">
-                      <div className="flex-shrink-0">
-                        {problem.type === 'gap' ? (
-                          <Clock className={`w-5 h-5 ${
-                            problem.severity === 'high' ? 'text-red-500' :
-                            problem.severity === 'medium' ? 'text-yellow-500' :
-                            'text-blue-500'
-                          }`} />
-                        ) : (
-                          <X className={`w-5 h-5 ${
-                            problem.severity === 'high' ? 'text-red-500' :
-                            problem.severity === 'medium' ? 'text-yellow-500' :
-                            'text-blue-500'
-                          }`} />
-                        )}
-                      </div>
-                      <div className="ml-3 flex-1">
-                        <div className="flex items-center justify-between">
-                          <h4 className={`text-sm font-medium ${
-                            problem.severity === 'high' ? 'text-red-800 dark:text-red-200' :
-                            problem.severity === 'medium' ? 'text-yellow-800 dark:text-yellow-200' :
-                            'text-blue-800 dark:text-blue-200'
-                          }`}>
-                            {problem.type === 'gap' ? 'Hueco sin cobertura' : 'Conflicto de horario'}
-                          </h4>
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                            problem.severity === 'high' ? 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100' :
-                            problem.severity === 'medium' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100' :
-                            'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100'
-                          }`}>
-                            {problem.severity === 'high' ? 'Alta' :
-                             problem.severity === 'medium' ? 'Media' : 'Baja'}
-                          </span>
+                {coverageProblems.map((problem, index) => {
+                  const getProblemIcon = () => {
+                    switch (problem.type) {
+                      case 'gap':
+                        return <Clock className="w-5 h-5 text-red-500" />;
+                      case 'unavailable':
+                        return <X className="w-5 h-5 text-red-500" />;
+                      case 'overtime':
+                        return <AlertTriangle className="w-5 h-5 text-orange-500" />;
+                      case 'empty_day':
+                        return <AlertTriangle className="w-5 h-5 text-red-500" />;
+                      default:
+                        return <AlertTriangle className="w-5 h-5 text-red-500" />;
+                    }
+                  };
+
+                  const getProblemTitle = () => {
+                    switch (problem.type) {
+                      case 'gap':
+                        return 'Hueco sin cobertura';
+                      case 'unavailable':
+                        return 'Conflicto de horario';
+                      case 'overtime':
+                        return 'Jornada excesiva';
+                      case 'empty_day':
+                        return 'Día sin turnos';
+                      default:
+                        return 'Problema de cobertura';
+                    }
+                  };
+
+                  return (
+                    <div 
+                      key={index}
+                      className="p-4 rounded-lg border-l-4 bg-red-50 border-red-500 dark:bg-red-900/20 dark:border-red-400"
+                    >
+                      <div className="flex items-start">
+                        <div className="flex-shrink-0">
+                          {getProblemIcon()}
                         </div>
-                        <p className={`text-sm mt-1 ${
-                          problem.severity === 'high' ? 'text-red-700 dark:text-red-300' :
-                          problem.severity === 'medium' ? 'text-yellow-700 dark:text-yellow-300' :
-                          'text-blue-700 dark:text-blue-300'
-                        }`}>
-                          <strong>{problem.day}</strong> - {problem.time}
-                        </p>
-                        <p className={`text-sm ${
-                          problem.severity === 'high' ? 'text-red-600 dark:text-red-400' :
-                          problem.severity === 'medium' ? 'text-yellow-600 dark:text-yellow-400' :
-                          'text-blue-600 dark:text-blue-400'
-                        }`}>
-                          {problem.description}
-                        </p>
+                        <div className="ml-3 flex-1">
+                          <div className="flex items-center justify-between">
+                            <h4 className="text-sm font-medium text-red-800 dark:text-red-200">
+                              {getProblemTitle()}
+                            </h4>
+                          </div>
+                          <p className="text-sm mt-1 text-red-700 dark:text-red-300">
+                            <strong>{problem.day}</strong> - {problem.time}
+                          </p>
+                          <p className="text-sm text-red-600 dark:text-red-400">
+                            {problem.description}
+                          </p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
