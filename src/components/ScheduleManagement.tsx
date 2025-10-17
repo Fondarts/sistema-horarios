@@ -806,10 +806,10 @@ export default function ScheduleManagement() {
       
       draggedElement.style.left = newLeft + 'px';
       
-      // Calcular tiempos en tiempo real - usar la misma función que al guardar
+      // Calcular tiempos en tiempo real - usar horarios redondeados para consistencia
       const { startHour, endHour } = getStoreHoursRange();
-      const newStartTime = positionToTimeExact(newLeft, startHour, endHour);
-      const newEndTime = positionToTimeExact(newLeft + draggedElement.offsetWidth, startHour, endHour);
+      const newStartTime = positionToTime(newLeft, startHour, endHour);
+      const newEndTime = positionToTime(newLeft + draggedElement.offsetWidth, startHour, endHour);
       const newHours = calculateExactDuration(newStartTime, newEndTime);
       
       setTempStartTime(newStartTime);
@@ -826,8 +826,8 @@ export default function ScheduleManagement() {
           const currentShift = shifts.find(s => s.id === shiftId);
           if (currentShift) {
             const { startHour, endHour } = getStoreHoursRange();
-            const newStartTime = positionToTimeExact(draggedElement.offsetLeft, startHour, endHour);
-            const newEndTime = positionToTimeExact(draggedElement.offsetLeft + draggedElement.offsetWidth, startHour, endHour);
+            const newStartTime = positionToTime(draggedElement.offsetLeft, startHour, endHour);
+            const newEndTime = positionToTime(draggedElement.offsetLeft + draggedElement.offsetWidth, startHour, endHour);
             const newHours = calculateExactDuration(newStartTime, newEndTime);
 
             updateShift(shiftId, {
@@ -871,10 +871,10 @@ export default function ScheduleManagement() {
           resizingElement.style.left = newLeft + 'px';
           resizingElement.style.width = newWidth + 'px';
           
-          // Calcular tiempos en tiempo real - usar la misma función que al guardar
+          // Calcular tiempos en tiempo real - usar horarios redondeados para consistencia
           const { startHour, endHour } = getStoreHoursRange();
-          const newStartTime = positionToTimeExact(newLeft, startHour, endHour);
-          const newEndTime = positionToTimeExact(newLeft + newWidth, startHour, endHour);
+          const newStartTime = positionToTime(newLeft, startHour, endHour);
+          const newEndTime = positionToTime(newLeft + newWidth, startHour, endHour);
           const newHours = calculateExactDuration(newStartTime, newEndTime);
           
           setTempStartTime(newStartTime);
@@ -895,10 +895,10 @@ export default function ScheduleManagement() {
         
         resizingElement.style.width = newWidth + 'px';
         
-        // Calcular tiempos en tiempo real - usar la misma función que al guardar
+        // Calcular tiempos en tiempo real - usar horarios redondeados para consistencia
         const { startHour, endHour } = getStoreHoursRange();
-        const newStartTime = positionToTimeExact(resizingElement.offsetLeft, startHour, endHour);
-        const newEndTime = positionToTimeExact(resizingElement.offsetLeft + newWidth, startHour, endHour);
+        const newStartTime = positionToTime(resizingElement.offsetLeft, startHour, endHour);
+        const newEndTime = positionToTime(resizingElement.offsetLeft + newWidth, startHour, endHour);
         const newHours = calculateExactDuration(newStartTime, newEndTime);
         
         setTempStartTime(newStartTime);
@@ -916,8 +916,8 @@ export default function ScheduleManagement() {
           const currentShift = shifts.find(s => s.id === shiftId);
           if (currentShift) {
             const { startHour, endHour } = getStoreHoursRange();
-            const newStartTime = positionToTimeExact(resizingElement.offsetLeft, startHour, endHour);
-            const newEndTime = positionToTimeExact(resizingElement.offsetLeft + resizingElement.offsetWidth, startHour, endHour);
+            const newStartTime = positionToTime(resizingElement.offsetLeft, startHour, endHour);
+            const newEndTime = positionToTime(resizingElement.offsetLeft + resizingElement.offsetWidth, startHour, endHour);
             const newHours = calculateExactDuration(newStartTime, newEndTime);
 
             updateShift(shiftId, {
