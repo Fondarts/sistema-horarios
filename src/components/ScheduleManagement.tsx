@@ -302,7 +302,7 @@ export default function ScheduleManagement() {
   const roundTimeForDisplay = (timeString: string): string => {
     const [hours, minutes] = timeString.split(':');
     const totalMinutes = parseInt(hours) * 60 + parseFloat(minutes);
-    const roundedMinutes = roundToIncrement(totalMinutes, 5);
+    const roundedMinutes = roundToIncrement(totalMinutes, 1); // Usar 1 minuto para mayor precisión
     return minutesToTime(roundedMinutes);
   };
 
@@ -403,9 +403,9 @@ export default function ScheduleManagement() {
     const totalHours = endHour - startHour + 1;
     const timeInHours = startHour + (relativePosition * totalHours);
     
-    // Redondear a incrementos de 5 minutos
+    // Redondear a incrementos de 1 minuto para mayor precisión visual
     const timeInMinutes = timeInHours * 60;
-    const roundedMinutes = roundToIncrement(timeInMinutes, 5);
+    const roundedMinutes = roundToIncrement(timeInMinutes, 1);
     
     return minutesToTime(roundedMinutes);
   };
