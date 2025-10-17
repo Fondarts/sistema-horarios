@@ -38,12 +38,20 @@ export interface UnavailableTime {
   endTime: string; // formato HH:MM
 }
 
+export interface TimeRange {
+  id: string;
+  openTime: string; // formato HH:MM
+  closeTime: string; // formato HH:MM
+}
+
 export interface StoreSchedule {
   id: string;
   dayOfWeek: number; // 0 = Domingo, 1 = Lunes, etc.
   isOpen: boolean;
-  openTime?: string; // formato HH:MM
-  closeTime?: string; // formato HH:MM
+  timeRanges: TimeRange[]; // Array de rangos de horarios
+  // Mantener compatibilidad con versión anterior
+  openTime?: string; // formato HH:MM (DEPRECATED)
+  closeTime?: string; // formato HH:MM (DEPRECATED)
 }
 
 export interface StoreException {

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useSchedule } from '../contexts/ScheduleContext';
 import { useCompactMode } from '../contexts/CompactModeContext';
 import { Settings, Clock, Calendar, Plus, Trash2, Edit, X } from 'lucide-react';
-import { StoreSchedule, StoreException } from '../types';
+import { StoreSchedule, StoreException, TimeRange } from '../types';
 import TimeInput from './TimeInput';
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -41,6 +41,53 @@ export function StoreSettings() {
 
   const handleScheduleChange = (id: string, updates: Partial<StoreSchedule>) => {
     updateStoreSchedule(id, updates);
+  };
+
+  // Función para agregar un nuevo rango de tiempo
+  const addTimeRange = (scheduleId: string) => {
+    const schedule = storeSchedule.find(s => s.id === scheduleId);
+    if (!schedule) return;
+
+    const newTimeRange: TimeRange = {
+      id: `range_${Date.now()}`,
+      openTime: '09:00',
+      closeTime: '17:00'
+    };
+
+    const updatedSchedule = {
+      ...schedule,
+      timeRanges: [...(schedule.timeRanges || []), newTimeRange]
+    };
+
+    updateStoreSchedule(scheduleId, updatedSchedule);
+  };
+
+  // Función para eliminar un rango de tiempo
+  const removeTimeRange = (scheduleId: string, rangeId: string) => {
+    const schedule = storeSchedule.find(s => s.id === scheduleId);
+    if (!schedule) return;
+
+    const updatedSchedule = {
+      ...schedule,
+      timeRanges: schedule.timeRanges?.filter(range => range.id !== rangeId) || []
+    };
+
+    updateStoreSchedule(scheduleId, updatedSchedule);
+  };
+
+  // Función para actualizar un rango de tiempo
+  const updateTimeRange = (scheduleId: string, rangeId: string, updates: Partial<TimeRange>) => {
+    const schedule = storeSchedule.find(s => s.id === scheduleId);
+    if (!schedule) return;
+
+    const updatedSchedule = {
+      ...schedule,
+      timeRanges: schedule.timeRanges?.map(range => 
+        range.id === rangeId ? { ...range, ...updates } : range
+      ) || []
+    };
+
+    updateStoreSchedule(scheduleId, updatedSchedule);
   };
 
   const handleAddException = () => {
@@ -131,53 +178,93 @@ export function StoreSettings() {
 
               {/* Horarios */}
               {schedule.isOpen && (
-                <div className={`${isMobile ? 'space-y-3' : 'flex items-center space-x-3'}`}>
-                  {isMobile ? (
-                    // Layout móvil: vertical
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Abre:</label>
-                        <TimeInput
-                          value={schedule.openTime || '09:00'}
-                          onChange={(value) => handleScheduleChange(schedule.id, { openTime: value })}
-                          className="input-field text-sm w-20"
-                          placeholder="HH:MM"
-                        />
+                <div className="flex-1">
+                  <div className="space-y-3">
+                    {/* Rangos de horarios existentes */}
+                    {(schedule.timeRanges || []).map((timeRange, index) => (
+                      <div key={timeRange.id} className={`${isMobile ? 'space-y-2' : 'flex items-center space-x-3'}`}>
+                        {isMobile ? (
+                          // Layout móvil: vertical
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Rango {index + 1} - Abre:
+                              </label>
+                              <TimeInput
+                                value={timeRange.openTime}
+                                onChange={(value) => updateTimeRange(schedule.id, timeRange.id, { openTime: value })}
+                                className="input-field text-sm w-20"
+                                placeholder="HH:MM"
+                              />
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Rango {index + 1} - Cierra:
+                              </label>
+                              <div className="flex items-center space-x-2">
+                                <TimeInput
+                                  value={timeRange.closeTime}
+                                  onChange={(value) => updateTimeRange(schedule.id, timeRange.id, { closeTime: value })}
+                                  className="input-field text-sm w-20"
+                                  placeholder="HH:MM"
+                                />
+                                <button
+                                  onClick={() => removeTimeRange(schedule.id, timeRange.id)}
+                                  className="p-1 text-red-600 hover:text-red-800 transition-colors"
+                                  title="Eliminar rango"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          // Layout desktop: horizontal
+                          <>
+                            <div>
+                              <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">
+                                Rango {index + 1} - Abre
+                              </label>
+                              <TimeInput
+                                value={timeRange.openTime}
+                                onChange={(value) => updateTimeRange(schedule.id, timeRange.id, { openTime: value })}
+                                className="input-field text-sm"
+                                placeholder="HH:MM"
+                              />
+                            </div>
+                            <span className="text-gray-500 dark:text-gray-400">-</span>
+                            <div>
+                              <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">
+                                Rango {index + 1} - Cierra
+                              </label>
+                              <TimeInput
+                                value={timeRange.closeTime}
+                                onChange={(value) => updateTimeRange(schedule.id, timeRange.id, { closeTime: value })}
+                                className="input-field text-sm"
+                                placeholder="HH:MM"
+                              />
+                            </div>
+                            <button
+                              onClick={() => removeTimeRange(schedule.id, timeRange.id)}
+                              className="p-1 text-red-600 hover:text-red-800 transition-colors"
+                              title="Eliminar rango"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </>
+                        )}
                       </div>
-                      <div className="flex items-center justify-between">
-                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Cierra:</label>
-                        <TimeInput
-                          value={schedule.closeTime || '20:00'}
-                          onChange={(value) => handleScheduleChange(schedule.id, { closeTime: value })}
-                          className="input-field text-sm w-20"
-                          placeholder="HH:MM"
-                        />
-                      </div>
-                    </div>
-                  ) : (
-                    // Layout desktop: horizontal
-                    <>
-                      <div>
-                        <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Abre</label>
-                        <TimeInput
-                          value={schedule.openTime || '09:00'}
-                          onChange={(value) => handleScheduleChange(schedule.id, { openTime: value })}
-                          className="input-field text-sm"
-                          placeholder="HH:MM"
-                        />
-                      </div>
-                      <span className="text-gray-500 dark:text-gray-400">-</span>
-                      <div>
-                        <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Cierra</label>
-                        <TimeInput
-                          value={schedule.closeTime || '20:00'}
-                          onChange={(value) => handleScheduleChange(schedule.id, { closeTime: value })}
-                          className="input-field text-sm"
-                          placeholder="HH:MM"
-                        />
-                      </div>
-                    </>
-                  )}
+                    ))}
+                    
+                    {/* Botón para agregar nuevo rango */}
+                    <button
+                      onClick={() => addTimeRange(schedule.id)}
+                      className="flex items-center px-3 py-2 text-sm text-primary-600 hover:text-primary-800 transition-colors border border-primary-300 rounded-lg hover:bg-primary-50 dark:border-primary-600 dark:hover:bg-primary-900/20"
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Agregar rango de horario
+                    </button>
+                  </div>
                 </div>
               )}
             </div>

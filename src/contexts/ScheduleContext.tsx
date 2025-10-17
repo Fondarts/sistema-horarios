@@ -43,15 +43,93 @@ const ScheduleContext = createContext<ScheduleContextType | undefined>(undefined
 
 // Horario de tienda por defecto (Lunes a Domingo + Feriados)
 const defaultStoreSchedule: StoreSchedule[] = [
-  { id: '1', dayOfWeek: 1, isOpen: true, openTime: '09:00', closeTime: '20:00' }, // Lunes
-  { id: '2', dayOfWeek: 2, isOpen: true, openTime: '09:00', closeTime: '20:00' }, // Martes
-  { id: '3', dayOfWeek: 3, isOpen: true, openTime: '09:00', closeTime: '20:00' }, // Miércoles
-  { id: '4', dayOfWeek: 4, isOpen: true, openTime: '09:00', closeTime: '20:00' }, // Jueves
-  { id: '5', dayOfWeek: 5, isOpen: true, openTime: '09:00', closeTime: '20:00' }, // Viernes
-  { id: '6', dayOfWeek: 6, isOpen: true, openTime: '09:00', closeTime: '20:00' }, // Sábado
-  { id: '7', dayOfWeek: 0, isOpen: false }, // Domingo cerrado
-  { id: '8', dayOfWeek: 7, isOpen: false }, // Feriados cerrado por defecto
+  { 
+    id: '1', 
+    dayOfWeek: 1, 
+    isOpen: true, 
+    timeRanges: [{ id: 'range_1', openTime: '09:00', closeTime: '20:00' }],
+    openTime: '09:00', 
+    closeTime: '20:00' 
+  }, // Lunes
+  { 
+    id: '2', 
+    dayOfWeek: 2, 
+    isOpen: true, 
+    timeRanges: [{ id: 'range_2', openTime: '09:00', closeTime: '20:00' }],
+    openTime: '09:00', 
+    closeTime: '20:00' 
+  }, // Martes
+  { 
+    id: '3', 
+    dayOfWeek: 3, 
+    isOpen: true, 
+    timeRanges: [{ id: 'range_3', openTime: '09:00', closeTime: '20:00' }],
+    openTime: '09:00', 
+    closeTime: '20:00' 
+  }, // Miércoles
+  { 
+    id: '4', 
+    dayOfWeek: 4, 
+    isOpen: true, 
+    timeRanges: [{ id: 'range_4', openTime: '09:00', closeTime: '20:00' }],
+    openTime: '09:00', 
+    closeTime: '20:00' 
+  }, // Jueves
+  { 
+    id: '5', 
+    dayOfWeek: 5, 
+    isOpen: true, 
+    timeRanges: [{ id: 'range_5', openTime: '09:00', closeTime: '20:00' }],
+    openTime: '09:00', 
+    closeTime: '20:00' 
+  }, // Viernes
+  { 
+    id: '6', 
+    dayOfWeek: 6, 
+    isOpen: true, 
+    timeRanges: [{ id: 'range_6', openTime: '09:00', closeTime: '20:00' }],
+    openTime: '09:00', 
+    closeTime: '20:00' 
+  }, // Sábado
+  { 
+    id: '7', 
+    dayOfWeek: 0, 
+    isOpen: false, 
+    timeRanges: [] 
+  }, // Domingo cerrado
+  { 
+    id: '8', 
+    dayOfWeek: 7, 
+    isOpen: false, 
+    timeRanges: [] 
+  }, // Feriados cerrado por defecto
 ];
+
+// Función para migrar horarios antiguos a la nueva estructura
+const migrateStoreSchedule = (schedule: StoreSchedule): StoreSchedule => {
+  // Si ya tiene timeRanges, no hacer nada
+  if (schedule.timeRanges && schedule.timeRanges.length > 0) {
+    return schedule;
+  }
+  
+  // Si tiene openTime y closeTime, migrar a timeRanges
+  if (schedule.openTime && schedule.closeTime) {
+    return {
+      ...schedule,
+      timeRanges: [{
+        id: `range_${schedule.id}_${Date.now()}`,
+        openTime: schedule.openTime,
+        closeTime: schedule.closeTime
+      }]
+    };
+  }
+  
+  // Si no tiene horarios, usar array vacío
+  return {
+    ...schedule,
+    timeRanges: []
+  };
+};
 
 // Función para calcular horas entre dos tiempos
 const calculateHours = (startTime: string, endTime: string): number => {
@@ -146,10 +224,13 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
             }
           }
 
-          // Combinar datos existentes con defaults
+          // Combinar datos existentes con defaults y migrar si es necesario
           const completeSchedule = defaultStoreSchedule.map(defaultDay => {
             const existing = scheduleData.find(s => s.dayOfWeek === defaultDay.dayOfWeek);
-            return existing || defaultDay;
+            if (existing) {
+              return migrateStoreSchedule(existing);
+            }
+            return defaultDay;
           });
 
           // Ordenar: Lunes -> Domingo -> Feriados
