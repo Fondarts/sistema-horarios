@@ -62,6 +62,28 @@ export function StoreSettings() {
     updateStoreSchedule(scheduleId, updatedSchedule);
   };
 
+  // Función para inicializar el primer rango cuando se marca como abierto
+  const initializeFirstTimeRange = (scheduleId: string) => {
+    const schedule = storeSchedule.find(s => s.id === scheduleId);
+    if (!schedule) return;
+
+    // Si no tiene timeRanges o está vacío, crear el primer rango
+    if (!schedule.timeRanges || schedule.timeRanges.length === 0) {
+      const firstTimeRange: TimeRange = {
+        id: `range_${scheduleId}_${Date.now()}`,
+        openTime: '09:00',
+        closeTime: '20:00'
+      };
+
+      const updatedSchedule = {
+        ...schedule,
+        timeRanges: [firstTimeRange]
+      };
+
+      updateStoreSchedule(scheduleId, updatedSchedule);
+    }
+  };
+
   // Función para eliminar un rango de tiempo
   const removeTimeRange = (scheduleId: string, rangeId: string) => {
     const schedule = storeSchedule.find(s => s.id === scheduleId);
@@ -167,7 +189,12 @@ export function StoreSettings() {
                   <input
                     type="checkbox"
                     checked={schedule.isOpen}
-                    onChange={(e) => handleScheduleChange(schedule.id, { isOpen: e.target.checked })}
+                    onChange={(e) => {
+                      handleScheduleChange(schedule.id, { isOpen: e.target.checked });
+                      if (e.target.checked) {
+                        initializeFirstTimeRange(schedule.id);
+                      }
+                    }}
                     className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                   />
                   <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
@@ -179,7 +206,7 @@ export function StoreSettings() {
               {/* Horarios */}
               {schedule.isOpen && (
                 <div className="flex-1">
-                  <div className="space-y-3">
+                  <div className={`${isMobile ? 'space-y-3' : 'flex items-center space-x-4'}`}>
                     {/* Rangos de horarios existentes */}
                     {(schedule.timeRanges || []).map((timeRange, index) => (
                       <div key={timeRange.id} className={`${isMobile ? 'space-y-2' : 'flex items-center space-x-3'}`}>
@@ -188,7 +215,7 @@ export function StoreSettings() {
                           <div className="space-y-2">
                             <div className="flex items-center justify-between">
                               <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                Rango {index + 1} - Abre:
+                                {index === 0 ? 'Abre:' : `Rango ${index + 1} - Abre:`}
                               </label>
                               <TimeInput
                                 value={timeRange.openTime}
@@ -199,7 +226,7 @@ export function StoreSettings() {
                             </div>
                             <div className="flex items-center justify-between">
                               <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                Rango {index + 1} - Cierra:
+                                {index === 0 ? 'Cierra:' : `Rango ${index + 1} - Cierra:`}
                               </label>
                               <div className="flex items-center space-x-2">
                                 <TimeInput
@@ -208,13 +235,15 @@ export function StoreSettings() {
                                   className="input-field text-sm w-20"
                                   placeholder="HH:MM"
                                 />
-                                <button
-                                  onClick={() => removeTimeRange(schedule.id, timeRange.id)}
-                                  className="p-1 text-red-600 hover:text-red-800 transition-colors"
-                                  title="Eliminar rango"
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </button>
+                                {(schedule.timeRanges || []).length > 1 && (
+                                  <button
+                                    onClick={() => removeTimeRange(schedule.id, timeRange.id)}
+                                    className="p-1 text-red-600 hover:text-red-800 transition-colors"
+                                    title="Eliminar rango"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                )}
                               </div>
                             </div>
                           </div>
@@ -223,7 +252,7 @@ export function StoreSettings() {
                           <>
                             <div>
                               <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">
-                                Rango {index + 1} - Abre
+                                {index === 0 ? 'Abre' : `Rango ${index + 1} - Abre`}
                               </label>
                               <TimeInput
                                 value={timeRange.openTime}
@@ -235,7 +264,7 @@ export function StoreSettings() {
                             <span className="text-gray-500 dark:text-gray-400">-</span>
                             <div>
                               <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">
-                                Rango {index + 1} - Cierra
+                                {index === 0 ? 'Cierra' : `Rango ${index + 1} - Cierra`}
                               </label>
                               <TimeInput
                                 value={timeRange.closeTime}
@@ -244,26 +273,30 @@ export function StoreSettings() {
                                 placeholder="HH:MM"
                               />
                             </div>
-                            <button
-                              onClick={() => removeTimeRange(schedule.id, timeRange.id)}
-                              className="p-1 text-red-600 hover:text-red-800 transition-colors"
-                              title="Eliminar rango"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
+                            {(schedule.timeRanges || []).length > 1 && (
+                              <button
+                                onClick={() => removeTimeRange(schedule.id, timeRange.id)}
+                                className="p-1 text-red-600 hover:text-red-800 transition-colors"
+                                title="Eliminar rango"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            )}
                           </>
                         )}
                       </div>
                     ))}
                     
-                    {/* Botón para agregar nuevo rango */}
-                    <button
-                      onClick={() => addTimeRange(schedule.id)}
-                      className="flex items-center px-3 py-2 text-sm text-primary-600 hover:text-primary-800 transition-colors border border-primary-300 rounded-lg hover:bg-primary-50 dark:border-primary-600 dark:hover:bg-primary-900/20"
-                    >
-                      <Plus className="w-4 h-4 mr-2" />
-                      Agregar rango de horario
-                    </button>
+                    {/* Botón para agregar nuevo rango - solo si hay al menos un rango */}
+                    {(schedule.timeRanges || []).length > 0 && (
+                      <button
+                        onClick={() => addTimeRange(schedule.id)}
+                        className={`${isMobile ? 'w-full' : 'flex-shrink-0'} flex items-center px-3 py-2 text-sm text-primary-600 hover:text-primary-800 transition-colors border border-primary-300 rounded-lg hover:bg-primary-50 dark:border-primary-600 dark:hover:bg-primary-900/20`}
+                      >
+                        <Plus className="w-4 h-4 mr-2" />
+                        {isMobile ? 'Agregar otro rango' : 'Agregar rango'}
+                      </button>
+                    )}
                   </div>
                 </div>
               )}
