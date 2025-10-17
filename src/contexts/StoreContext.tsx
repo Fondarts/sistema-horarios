@@ -37,7 +37,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [unsubscribeFunction, setUnsubscribeFunction] = useState<(() => void) | null>(null);
 
   useEffect(() => {
+    console.log('StoreContext: useEffect ejecutándose, listenersPaused:', listenersPaused);
     if (listenersPaused) {
+      console.log('StoreContext: Listeners pausados, no cargando tiendas');
       return;
     }
 
@@ -54,6 +56,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           snapshot.forEach((doc) => {
             storesData.push({ id: doc.id, ...doc.data() } as Store);
           });
+          
+          console.log('StoreContext: Cargando tiendas desde Firebase:', storesData.length, 'tiendas encontradas');
+          console.log('StoreContext: IDs de tiendas:', storesData.map(s => s.id));
+          console.log('StoreContext: Nombres de tiendas:', storesData.map(s => s.name));
           
           setStores(storesData);
           
