@@ -288,17 +288,12 @@ export const es = {
   general: 'General',
   navigation: 'Navegación',
   schedules: 'Horarios',
-  employees: 'Empleados',
-  statistics: 'Estadísticas',
 
   // Coverage Problems
-  gap: 'Hueco',
   gapWithoutCoverage: 'Hueco sin cobertura de',
-  conflict: 'Conflicto',
   excessiveWorkday: 'Jornada excesiva',
   noShifts: 'Sin turnos',
   excessiveWeeklyHours: 'Horas semanales excesivas',
-  storeClosed: 'Tienda cerrada',
   problem: 'Problema',
   
   // Notifications
