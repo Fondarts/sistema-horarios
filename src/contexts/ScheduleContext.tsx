@@ -401,6 +401,7 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
       
       const updateData = {
         ...updates,
+        isPublished: false, // Marcar como no publicado cuando se modifica
         updatedAt: new Date()
       };
       
