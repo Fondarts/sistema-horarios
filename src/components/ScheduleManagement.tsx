@@ -1639,7 +1639,7 @@ export default function ScheduleManagement() {
                         // Usar las funciones timeToPosition para mantener consistencia
                         left = timeToPosition(shiftStartTimeInHours, startHour, endHour) + 2;
                         const rightPosition = timeToPosition(shiftEndTimeInHours, startHour, endHour);
-                        width = rightPosition - left - 4;
+                        width = rightPosition - left - 2; // Reducir margen para conectar barras perfectamente
                         
                         // Calcular availableWidth para validaciones
                         const containerWidth = scrollContainerRef.current?.offsetWidth || 800;
