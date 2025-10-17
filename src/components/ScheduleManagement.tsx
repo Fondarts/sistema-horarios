@@ -210,13 +210,16 @@ export default function ScheduleManagement() {
   const groupedShifts = days.reduce((acc, day) => {
     const dayString = format(day, 'yyyy-MM-dd');
     acc[dayString] = employees.reduce((empAcc, employee) => {
-      empAcc[employee.id] = weekShifts.filter(shift => 
-        shift.employeeId === employee.id && format(new Date(shift.date), 'yyyy-MM-dd') === dayString
-      ).sort((a, b) => {
+      const employeeShifts = weekShifts.filter(shift => {
+        // Usar comparación directa de strings para evitar problemas de zona horaria
+        return shift.employeeId === employee.id && shift.date === dayString;
+      }).sort((a, b) => {
         const timeA = parseInt(a.startTime.replace(':', ''));
         const timeB = parseInt(b.startTime.replace(':', ''));
         return timeA - timeB;
       });
+      
+      empAcc[employee.id] = employeeShifts;
       return empAcc;
     }, {} as Record<string, Shift[]>);
     return acc;
@@ -258,9 +261,35 @@ export default function ScheduleManagement() {
     return Math.round(minutes / increment) * increment;
   };
 
+  // Función centralizada para obtener el ancho de la columna del día
+  const getDayColumnWidth = (): number => {
+    return isMobile ? 60 : (isCompactMode ? 100 : 120);
+  };
+
+  // Función para obtener el espaciado entre barras según el modo
+  const getBarSpacing = (): number => {
+    if (isCompactMode) {
+      return 2; // Espaciado mínimo en modo compacto
+    }
+    return 35; // Espaciado normal en modo normal
+  };
+
+  // Función para determinar si un día está en modo compacto
+  const isDayInCompactMode = (dayString: string): boolean => {
+    // Si el modo compacto global está activo, todos los días están en modo compacto
+    if (isCompactMode) {
+      return true;
+    }
+    // Si el día está colapsado individualmente, también está en modo compacto
+    if (collapsedDays.has(dayString)) {
+      return true;
+    }
+    return false;
+  };
+
   // Funciones de conversión para texto en tiempo real
   const positionToTime = (position: number, startHour: number, endHour: number): string => {
-    const dayColumnWidth = isMobile ? 60 : (isCompactMode ? 100 : 120);
+    const dayColumnWidth = getDayColumnWidth();
     const containerWidth = scrollContainerRef.current?.offsetWidth || 800;
     const availableWidth = containerWidth - dayColumnWidth;
     
@@ -280,7 +309,7 @@ export default function ScheduleManagement() {
 
   // Versión sin redondeo para mantener posiciones exactas al guardar
   const positionToTimeExact = (position: number, startHour: number, endHour: number): string => {
-    const dayColumnWidth = isMobile ? 60 : (isCompactMode ? 100 : 120);
+    const dayColumnWidth = getDayColumnWidth();
     const containerWidth = scrollContainerRef.current?.offsetWidth || 800;
     const availableWidth = containerWidth - dayColumnWidth;
     
@@ -298,7 +327,7 @@ export default function ScheduleManagement() {
   };
 
   const timeToPosition = (timeInHours: number, startHour: number, endHour: number): number => {
-    const dayColumnWidth = isMobile ? 60 : (isCompactMode ? 100 : 120);
+    const dayColumnWidth = getDayColumnWidth();
     const containerWidth = scrollContainerRef.current?.offsetWidth || 800;
     const availableWidth = containerWidth - dayColumnWidth;
     
@@ -307,7 +336,11 @@ export default function ScheduleManagement() {
     const totalHours = endHour - startHour + 1;
     const relativePosition = (timeInHours - startHour) / totalHours;
     
-    return dayColumnWidth + (relativePosition * availableWidth);
+    // Asegurar que la posición no exceda los límites del día
+    const position = dayColumnWidth + (relativePosition * availableWidth);
+    const maxPosition = dayColumnWidth + availableWidth;
+    
+    return Math.min(position, maxPosition);
   };
 
   // Función para calcular el contraste y determinar el color del texto
@@ -581,7 +614,7 @@ export default function ScheduleManagement() {
     // En desktop, calcular ancho para ocupar todo el espacio disponible
     if (scrollContainerRef.current) {
       const containerWidth = scrollContainerRef.current.offsetWidth;
-      const dayColumnWidth = isCompactMode ? 100 : 120;
+      const dayColumnWidth = getDayColumnWidth();
       const availableWidth = containerWidth - dayColumnWidth;
       const hourCount = hours.length;
       const baseWidth = Math.max(40, availableWidth / hourCount);
@@ -677,7 +710,7 @@ export default function ScheduleManagement() {
       let newLeft = startLeft + deltaX;
       
       // Limitar dentro del contenedor y respetar las horas visibles
-      const dayColumnWidth = isMobile ? 60 : (isCompactMode ? 100 : 120); // Usar el mismo valor que en las funciones de conversión
+      const dayColumnWidth = getDayColumnWidth(); // Usar la función centralizada
       const availableWidth = containerRect.width - dayColumnWidth;
       const minLeft = dayColumnWidth; // No puede ir más a la izquierda que la columna del día
       const maxLeft = dayColumnWidth + availableWidth - draggedElement.offsetWidth; // No puede salirse del área de horas
@@ -742,7 +775,7 @@ export default function ScheduleManagement() {
         let newWidth = startWidth - deltaX;
         
         // Límites - respetar las horas visibles
-        const dayColumnWidth = isMobile ? 60 : (isCompactMode ? 100 : 120); // Usar el mismo valor que en las funciones de conversión
+        const dayColumnWidth = getDayColumnWidth(); // Usar la función centralizada
         const minLeft = dayColumnWidth; // No puede ir más a la izquierda que la columna del día
         const minWidth = 20; // Ancho mínimo
         
@@ -766,7 +799,7 @@ export default function ScheduleManagement() {
         let newWidth = startWidth + deltaX;
         
         // Límites - respetar las horas visibles
-        const dayColumnWidth = isMobile ? 60 : (isCompactMode ? 100 : 120); // Usar el mismo valor que en las funciones de conversión
+        const dayColumnWidth = getDayColumnWidth(); // Usar la función centralizada
         const availableWidth = containerRect.width - dayColumnWidth;
         const maxWidth = dayColumnWidth + availableWidth - resizingElement.offsetLeft; // No puede salirse del área de horas
         const minWidth = 20; // Ancho mínimo
@@ -1217,7 +1250,7 @@ export default function ScheduleManagement() {
                     <div
                       className="absolute rounded text-xs holiday-block"
                       style={{
-                        left: isMobile ? '60px' : (isCompactMode ? '100px' : '120px'), // Start after the day column
+                        left: `${getDayColumnWidth()}px`, // Start after the day column
                         right: '0px', // Extend to the end
                         top: '15px',
                         height: '32px',
@@ -1257,7 +1290,7 @@ export default function ScheduleManagement() {
                       const durationInHours = shiftEndTimeInHours - shiftStartTimeInHours;
                       
                       // Position relative to the hour columns using dynamic pixel widths
-                      const dayColumnWidth = isMobile ? 60 : (isCompactMode ? 100 : 120);
+                      const dayColumnWidth = getDayColumnWidth();
                       const hourDivisor = isMobile ? 2 : 1;
                       
                       // En desktop con 1fr, calcular posición usando las funciones corregidas
@@ -1272,13 +1305,21 @@ export default function ScheduleManagement() {
                         const containerWidth = scrollContainerRef.current?.offsetWidth || 800;
                         const availableWidth = containerWidth - dayColumnWidth;
                         
-                        // Validar que la barra no se salga del día
-                        const maxLeft = dayColumnWidth + availableWidth - 4;
+                        // Validar que la barra no se salga del día - límites más estrictos
+                        const maxLeft = dayColumnWidth + availableWidth - 6; // Margen adicional
+                        const minLeft = dayColumnWidth + 2;
+                        
+                        // Asegurar que left esté dentro de los límites
+                        left = Math.max(minLeft, Math.min(left, maxLeft - 20)); // 20px mínimo de ancho
+                        
+                        // Asegurar que width no exceda los límites
                         if (left + width > maxLeft) {
-                          width = maxLeft - left;
+                          width = Math.max(20, maxLeft - left); // Ancho mínimo de 20px
                         }
-                        if (left < dayColumnWidth + 2) {
-                          left = dayColumnWidth + 2;
+                        
+                        // Validar ancho mínimo
+                        if (width < 20) {
+                          width = 20;
                         }
                       } else {
                         // En móvil: calcular posición exacta basada en horas reales
@@ -1300,14 +1341,22 @@ export default function ScheduleManagement() {
                         left = dayColumnWidth + (startColumnIndex * columnWidth) + startPositionInColumn + 2;
                         width = ((endColumnIndex - startColumnIndex) * columnWidth) + (endPositionInColumn - startPositionInColumn) - 4;
                         
-                        // Validar que la barra no se salga del día en móvil
+                        // Validar que la barra no se salga del día en móvil - límites más estrictos
                         const totalColumns = Math.ceil((endHour - startHour + 1) / 2);
-                        const maxLeft = dayColumnWidth + (totalColumns * columnWidth) - 4;
+                        const maxLeft = dayColumnWidth + (totalColumns * columnWidth) - 6; // Margen adicional
+                        const minLeft = dayColumnWidth + 2;
+                        
+                        // Asegurar que left esté dentro de los límites
+                        left = Math.max(minLeft, Math.min(left, maxLeft - 20)); // 20px mínimo de ancho
+                        
+                        // Asegurar que width no exceda los límites
                         if (left + width > maxLeft) {
-                          width = maxLeft - left;
+                          width = Math.max(20, maxLeft - left); // Ancho mínimo de 20px
                         }
-                        if (left < dayColumnWidth + 2) {
-                          left = dayColumnWidth + 2;
+                        
+                        // Validar ancho mínimo
+                        if (width < 20) {
+                          width = 20;
                         }
                       }
                       
@@ -1319,10 +1368,16 @@ export default function ScheduleManagement() {
                         // Sin bordes ni outlines - barras completamente limpias
                         let opacity = 1;
                       
-                      // Calcular posición vertical
-                      const baseSpacing = 35; // Espaciado base entre barras
+                      // Calcular posición vertical usando función inteligente
+                      const dayInCompactMode = isDayInCompactMode(dayString);
+                      const baseSpacing = dayInCompactMode ? 2 : 35;
                       const totalSpacing = baseSpacing;
                       const baseTop = (isHolidayDay ? 55 : 15) + (currentIndex * totalSpacing);
+                      
+                      // Debug: Log para verificar el espaciado
+                      if (currentIndex === 0) {
+                        console.log(`Day: ${dayString} - Global Compact: ${isCompactMode}, Day Collapsed: ${collapsedDays.has(dayString)}, Day In Compact: ${dayInCompactMode}, baseSpacing: ${baseSpacing}`);
+                      }
                       const top = baseTop;
                       
                       return (

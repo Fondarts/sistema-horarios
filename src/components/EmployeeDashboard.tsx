@@ -8,6 +8,7 @@ import { es } from 'date-fns/locale';
 import { ChevronLeft, ChevronRight, LogOut, Calendar, Clock, UserX, List, Grid3X3 } from 'lucide-react';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { useCompactMode } from '../contexts/CompactModeContext';
+import { Maximize2, Minimize2 } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { BirthdayNotification } from './BirthdayNotification';
 import { NotificationCenter } from './NotificationCenter';
@@ -21,7 +22,7 @@ export default function EmployeeDashboard() {
   const { shifts } = useSchedule();
   const { employees } = useEmployees();
   const { holidays, isHoliday, getHolidayForDate } = useHolidays();
-  const { isCompactMode, isMobile } = useCompactMode();
+  const { isCompactMode, toggleCompactMode, isMobile } = useCompactMode();
   const [currentWeek, setCurrentWeek] = useState(new Date());
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [showBirthdayNotification, setShowBirthdayNotification] = useState(true);
@@ -183,6 +184,16 @@ export default function EmployeeDashboard() {
                   <KeyboardShortcuts 
                     isManager={false}
                   />
+                  <button
+                    onClick={() => {
+                      console.log('Compact mode button clicked! Current state:', isCompactMode);
+                      toggleCompactMode();
+                    }}
+                    className="flex items-center text-gray-600 hover:text-gray-900 transition-colors dark:text-gray-400 dark:hover:text-gray-100"
+                    title={isCompactMode ? 'Modo normal' : 'Modo compacto'}
+                  >
+                    {isCompactMode ? <Maximize2 className="w-5 h-5" /> : <Minimize2 className="w-5 h-5" />}
+                  </button>
                   <ThemeToggle />
                 </>
               )}

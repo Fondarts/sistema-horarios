@@ -183,7 +183,10 @@ export function ManagerDashboard() {
                     isManager={true}
                   />
                   <button
-                    onClick={toggleCompactMode}
+                    onClick={() => {
+                      console.log('Compact mode button clicked! Current state:', isCompactMode);
+                      toggleCompactMode();
+                    }}
                     className="flex items-center text-gray-600 hover:text-gray-900 transition-colors dark:text-gray-400 dark:hover:text-gray-100"
                     title={isCompactMode ? 'Modo normal' : 'Modo compacto'}
                   >
