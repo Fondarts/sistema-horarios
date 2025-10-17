@@ -1292,7 +1292,7 @@ export default function ScheduleManagement() {
                       const employee = employees.find(emp => emp.id === employeeId);
                       const isOnVacation = employee ? isEmployeeOnVacation(employee.id, format(day, 'yyyy-MM-dd')) : false;
                       return employee ? (
-                        <div key={employeeId} className={`text-sm mb-1 flex items-center gap-1 ${
+                        <div key={employeeId} className={`text-xs mb-1 flex items-center gap-1 ${
                           isOnVacation 
                             ? 'text-orange-600 dark:text-orange-400 font-medium' 
                             : 'text-gray-600 dark:text-gray-300'
