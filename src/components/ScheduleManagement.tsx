@@ -20,8 +20,13 @@ export default function ScheduleManagement() {
   const { vacationRequests } = useVacation();
   const { isHoliday, getHolidayForDate } = useHolidays();
   const { isCompactMode, isMobile } = useCompactMode();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { addNotification } = useNotifications();
+  
+  // Get dynamic locale based on current language
+  const getLocale = () => {
+    return language === 'es' ? es : undefined; // undefined uses English by default
+  };
   const { theme } = useTheme();
   
   // Definir ancho fijo para columnas de horas en móvil
@@ -635,7 +640,7 @@ export default function ScheduleManagement() {
       userId: 'manager',
       type: 'schedule_change',
       title: 'Horarios Publicados',
-      message: `Se han publicado ${unpublishedShifts.length} turnos para la semana del ${format(weekStart, 'd MMM', { locale: es })} al ${format(weekEnd, 'd MMM', { locale: es })}.`,
+      message: `Se han publicado ${unpublishedShifts.length} turnos para la semana del ${format(weekStart, 'd MMM', { locale: getLocale() })} al ${format(weekEnd, 'd MMM', { locale: getLocale() })}.`,
       data: {
         publishedShifts: unpublishedShifts.length,
         weekStart: weekStart.toISOString(),
@@ -1362,7 +1367,7 @@ export default function ScheduleManagement() {
         {/* Fechas de la semana y alerta de turnos pendientes */}
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 whitespace-nowrap">
-            {format(weekStart, 'd MMM', { locale: es })} - {format(weekEnd, 'd MMM yyyy', { locale: es })}
+            {format(weekStart, 'd MMM', { locale: getLocale() })} - {format(weekEnd, 'd MMM yyyy', { locale: getLocale() })}
           </h3>
           {/* Alerta de turnos sin publicar */}
           {(() => {
@@ -1533,7 +1538,7 @@ export default function ScheduleManagement() {
                         <div className="text-center">
                           <div className="flex items-center justify-center gap-1">
                           <div className="text-xs font-semibold">
-                            {format(day, 'EEE', { locale: es })}
+                            {format(day, 'EEE', { locale: getLocale() })}
                             </div>
                             <button
                               onClick={() => toggleDayCollapse(dayString)}
@@ -1544,7 +1549,7 @@ export default function ScheduleManagement() {
                             </button>
                           </div>
                           <div className="text-sm font-bold">
-                            {format(day, 'd', { locale: es })}
+                            {format(day, 'd', { locale: getLocale() })}
                           </div>
                           {isHolidayDay && (
                             <div className="text-xs">🎉</div>
@@ -1553,7 +1558,7 @@ export default function ScheduleManagement() {
                       ) : (
                         <div className="flex items-center gap-2">
                           <span>
-                          {format(day, 'EEE d', { locale: es })}
+                          {format(day, 'EEE d', { locale: getLocale() })}
                           {isHolidayDay && (
                             <span className="ml-2 text-xs">🎉</span>
                           )}
