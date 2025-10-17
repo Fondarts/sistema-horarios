@@ -59,7 +59,7 @@ export const FILE_UPLOAD_CONFIG: FileUploadConfig = {
   allowedExtensions: ['.pdf', '.jpg', '.jpeg', '.png']
 };
 
-// Labels para UI
+// Labels para UI (ahora se obtienen dinámicamente desde las traducciones)
 export const ABSENCE_TYPE_LABELS: Record<AbsenceType, string> = {
   vacation: 'Vacaciones',
   sickness: 'Enfermedad',

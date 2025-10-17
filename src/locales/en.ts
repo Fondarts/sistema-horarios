@@ -207,6 +207,15 @@ export const en = {
   vacationManagement: 'Vacation Management',
   vacationRequests: 'Vacation Requests',
   
+  // Absence Types
+  vacation: 'Vacation',
+  sickness: 'Sick Leave',
+  personal: 'Personal Leave',
+  unjustified: 'Unjustified Absence',
+  special: 'Special Leave',
+  approved: 'Approved',
+  rejected: 'Rejected',
+  
   // Holidays
   holidayName: 'Holiday Name',
   holidayDate: 'Holiday Date',

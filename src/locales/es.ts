@@ -207,6 +207,15 @@ export const es = {
   vacationManagement: 'Gestión de Vacaciones',
   vacationRequests: 'Solicitudes de Vacaciones',
   
+  // Absence Types
+  vacation: 'Vacaciones',
+  sickness: 'Enfermedad',
+  personal: 'Permiso Personal',
+  unjustified: 'Ausencia No Justificada',
+  special: 'Licencia Especial',
+  approved: 'Aprobado',
+  rejected: 'Rechazado',
+  
   // Holidays
   holidayName: 'Nombre del Feriado',
   holidayDate: 'Fecha del Feriado',

@@ -313,7 +313,7 @@ export const AbsenceManagement: React.FC = () => {
                     >
                       <option value="all">{t('allTypes')}</option>
                       {Object.entries(ABSENCE_TYPE_LABELS).map(([value, label]) => (
-                        <option key={value} value={value}>{label}</option>
+                        <option key={value} value={value}>{t(value as AbsenceType)}</option>
                       ))}
                     </select>
                   </div>
@@ -326,7 +326,7 @@ export const AbsenceManagement: React.FC = () => {
                     >
                       <option value="all">{t('allStatuses')}</option>
                       {Object.entries(ABSENCE_STATUS_LABELS).map(([value, label]) => (
-                        <option key={value} value={value}>{label}</option>
+                        <option key={value} value={value}>{t(value as AbsenceStatus)}</option>
                       ))}
                     </select>
                   </div>
