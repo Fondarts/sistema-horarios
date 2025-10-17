@@ -780,7 +780,7 @@ export default function ScheduleManagement() {
   // Función para detectar problemas de cobertura
   const detectCoverageProblems = (shifts: Shift[], employees: Employee[], storeSchedule: any) => {
     const problems: Array<{
-      type: 'gap' | 'conflict' | 'unavailable' | 'overtime' | 'empty_day';
+      type: 'gap' | 'conflict' | 'unavailable' | 'overtime' | 'empty_day' | 'weekly_overtime';
       day: string;
       time: string;
       description: string;
@@ -929,6 +929,30 @@ export default function ScheduleManagement() {
           });
         });
       });
+    });
+
+    // Verificar horas semanales máximas por empleado
+    const employeeWeeklyHours = shifts.reduce((acc: any, shift) => {
+      if (!shift || !shift.employeeId || !shift.hours) return acc;
+      if (!acc[shift.employeeId]) {
+        acc[shift.employeeId] = 0;
+      }
+      acc[shift.employeeId] += shift.hours;
+      return acc;
+    }, {});
+
+    Object.entries(employeeWeeklyHours).forEach(([employeeId, totalHours]) => {
+      const hours = totalHours as number;
+      const employee = employees.find(emp => emp && emp.id === employeeId);
+      
+      if (employee && employee.weeklyLimit && hours > employee.weeklyLimit) {
+        problems.push({
+          type: 'weekly_overtime',
+          day: 'Semana actual',
+          time: 'Todo el período',
+          description: `${employee.name} trabaja ${Math.floor(hours)}h ${Math.round((hours - Math.floor(hours)) * 60)}m (máximo ${employee.weeklyLimit}h semanales)`
+        });
+      }
     });
 
     return problems;
@@ -1935,6 +1959,8 @@ export default function ScheduleManagement() {
                         return <AlertTriangle className="w-4 h-4 text-orange-500" />;
                       case 'empty_day':
                         return <AlertTriangle className="w-4 h-4 text-red-500" />;
+                      case 'weekly_overtime':
+                        return <AlertTriangle className="w-4 h-4 text-orange-500" />;
                       default:
                         return <AlertTriangle className="w-4 h-4 text-red-500" />;
                     }
@@ -1950,6 +1976,8 @@ export default function ScheduleManagement() {
                         return 'Jornada excesiva';
                       case 'empty_day':
                         return 'Sin turnos';
+                      case 'weekly_overtime':
+                        return 'Horas semanales excesivas';
                       default:
                         return 'Problema';
                     }
