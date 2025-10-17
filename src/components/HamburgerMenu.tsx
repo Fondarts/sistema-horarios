@@ -3,6 +3,7 @@ import { Menu, X, Calendar, Users, UserX, CalendarDays, Home, BarChart3, FileTex
 import { useCompactMode } from '../contexts/CompactModeContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import { Logo } from './Logo';
 
 interface HamburgerMenuProps {
@@ -19,6 +20,7 @@ export function HamburgerMenu({ activeTab, onTabChange, isManager = false, onSho
   const { isMobile } = useCompactMode();
   const { theme, toggleTheme } = useTheme();
   const { isDistrictManager } = useAuth();
+  const { t } = useLanguage();
 
   const managerTabs = [
     { id: 'schedule', label: 'Horarios', icon: Calendar },
@@ -121,7 +123,7 @@ export function HamburgerMenu({ activeTab, onTabChange, isManager = false, onSho
           {/* Título */}
           <div className="text-left">
             <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              Panel de Administración de Horarios
+              {t('scheduleAdministrationPanel')}
             </h3>
           </div>
         </div>

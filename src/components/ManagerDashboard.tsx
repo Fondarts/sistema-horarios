@@ -138,10 +138,10 @@ export function ManagerDashboard() {
                   <Logo />
                   <div className="ml-4">
                     <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                      Panel de Administración de Horarios
+                      {t('scheduleAdministrationPanel')}
                     </h1>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
-                      Bienvenido, {currentEmployee?.name}
+                      {t('welcome')}, {currentEmployee?.name}
                       {isDistrictManager && currentStore && (
                         <span className="ml-2 text-blue-600 dark:text-blue-400">
                           • {currentStore.name}
@@ -154,7 +154,7 @@ export function ManagerDashboard() {
                 /* En móvil solo mostrar saludo */
                 <div>
                   <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                    Bienvenido, {currentEmployee?.name}
+                    {t('welcome')}, {currentEmployee?.name}
                   </h1>
                   {isDistrictManager && currentStore && (
                     <p className="text-sm text-blue-600 dark:text-blue-400">

@@ -252,6 +252,11 @@ export const es = {
   configuration: 'Configuración',
   language: 'Idioma de la aplicación',
   country: 'País (para feriados)',
+
+  // Header
+  scheduleAdministrationPanel: 'Panel de Administración de Horarios',
+  welcome: 'Bienvenido',
+  districtManager: 'Encargado de Distrito',
   
   // Notifications
   notifications: 'Notificaciones',

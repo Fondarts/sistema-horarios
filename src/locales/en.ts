@@ -252,6 +252,11 @@ export const en = {
   configuration: 'Configuration',
   language: 'Application Language',
   country: 'Country (for holidays)',
+
+  // Header
+  scheduleAdministrationPanel: 'Schedule Administration Panel',
+  welcome: 'Welcome',
+  districtManager: 'District Manager',
   
   // Notifications
   notifications: 'Notifications',
