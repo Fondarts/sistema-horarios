@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import { Calendar, Plus, Clock, User, Plane } from 'lucide-react';
 import { useVacation, VacationRequest } from '../contexts/VacationContext';
 import { useAuth } from '../contexts/AuthContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import { format, differenceInDays } from 'date-fns';
 import { es } from 'date-fns/locale';
 
 export function EmployeeVacationRequests() {
   const { currentEmployee } = useAuth();
   const { vacationRequests, addVacationRequest, isLoading } = useVacation();
+  const { t } = useLanguage();
   
   const [showAddForm, setShowAddForm] = useState(false);
   const [formData, setFormData] = useState({
