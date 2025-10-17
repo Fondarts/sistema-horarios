@@ -48,10 +48,10 @@ export const es = {
   storeDeleted: 'Tienda eliminada exitosamente',
   
   // Employees
-  employeeName: 'Nombre del Empleado',
-  weeklyLimit: 'Límite de Horas Semanales',
-  color: 'Color',
-  role: 'Rol',
+  employeeName: 'Nombre Completo',
+  weeklyLimit: 'Tope Semanal (horas)',
+  color: 'Color del Empleado',
+  role: 'Rol del Empleado',
   manager: 'Encargado',
   employee: 'Empleado',
   districtManager: 'Encargado de Distrito',
@@ -65,6 +65,17 @@ export const es = {
   employeeCreated: 'Empleado creado exitosamente',
   employeeUpdated: 'Empleado actualizado exitosamente',
   employeeDeleted: 'Empleado eliminado exitosamente',
+  newEmployee: 'Nuevo Empleado',
+  regularEmployee: 'Empleado Regular',
+  mainManager: 'Encargado Principal',
+  uniqueUsernameForLogin: 'Usuario único para el login del empleado',
+  passwordForLogin: 'Contraseña para el login del empleado',
+  employeeList: 'Lista de Empleados',
+  active: 'Activo',
+  inactive: 'Inactivo',
+  create: 'Crear',
+  update: 'Actualizar',
+  manageEmployeeInfo: 'Administra la información de tus empleados',
   
   // Schedule
   week: 'Semana',

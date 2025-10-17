@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useEmployees } from '../contexts/EmployeeContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import { useCompactMode } from '../contexts/CompactModeContext';
 import { Plus, Edit, Trash2, User, Clock, Calendar } from 'lucide-react';
 import { Employee, UnavailableTime } from '../types';
@@ -76,6 +77,7 @@ const formatDateInput = (value: string): string => {
 export function EmployeeManagement() {
   const { employees, addEmployee, updateEmployee, deleteEmployee, resetToMockEmployees } = useEmployees();
   const { isCompactMode, isMobile } = useCompactMode();
+  const { t } = useLanguage();
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
   const [formData, setFormData] = useState({
@@ -239,8 +241,8 @@ export function EmployeeManagement() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Gestión de Empleados</h2>
-          <p className="text-gray-600 dark:text-gray-400">Administra la información de tus empleados</p>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{t('employees')}</h2>
+          <p className="text-gray-600 dark:text-gray-400">{t('manageEmployeeInfo')}</p>
         </div>
         <div className="flex gap-3">
           <button
@@ -248,7 +250,7 @@ export function EmployeeManagement() {
             className="btn-primary flex items-center"
           >
             <Plus className="w-5 h-5 mr-2" />
-            Agregar Empleado
+            {t('addEmployee')}
           </button>
         </div>
       </div>
@@ -257,14 +259,14 @@ export function EmployeeManagement() {
       {showAddForm && (
         <div className="card">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
-            {editingEmployee ? 'Editar Empleado' : 'Nuevo Empleado'}
+            {editingEmployee ? t('editEmployee') : t('newEmployee')}
           </h3>
           
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Nombre Completo
+                  {t('employeeName')}
                 </label>
                 <input
                   type="text"
@@ -277,7 +279,7 @@ export function EmployeeManagement() {
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Usuario
+                  {t('username')}
                 </label>
                 <input
                   type="text"
@@ -288,13 +290,13 @@ export function EmployeeManagement() {
                   required
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  Usuario único para el login del empleado
+                  {t('uniqueUsernameForLogin')}
                 </p>
               </div>
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Contraseña
+                  {t('password')}
                 </label>
                 <input
                   type="password"
@@ -305,13 +307,13 @@ export function EmployeeManagement() {
                   required
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  Contraseña para el login del empleado
+                  {t('passwordForLogin')}
                 </p>
               </div>
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Rol del Empleado
+                  {t('role')}
                 </label>
                 <select
                   value={formData.role}
@@ -319,8 +321,8 @@ export function EmployeeManagement() {
                   className="input-field"
                   required
                 >
-                  <option value="empleado">Empleado Regular</option>
-                  <option value="encargado">Encargado Principal</option>
+                  <option value="empleado">{t('regularEmployee')}</option>
+                  <option value="encargado">{t('mainManager')}</option>
                 </select>
                 <p className="text-xs text-gray-500 mt-1">
                   {formData.role === 'encargado' 
@@ -332,7 +334,7 @@ export function EmployeeManagement() {
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Tope Semanal (horas)
+                  {t('weeklyLimit')}
                 </label>
                 <input
                   type="number"
@@ -347,7 +349,7 @@ export function EmployeeManagement() {
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Fecha de Nacimiento
+                  {t('birthday')}
                 </label>
                 <input
                   type="text"
@@ -365,7 +367,7 @@ export function EmployeeManagement() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Fecha de Inicio
+                  {t('employeeStartDate')}
                 </label>
                 <input
                   type="text"
@@ -383,7 +385,7 @@ export function EmployeeManagement() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Días de Vacaciones por Año
+                  {t('vacationDays')}
                 </label>
                 <input
                   type="number"
@@ -401,7 +403,7 @@ export function EmployeeManagement() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Color del Empleado
+                  {t('color')}
                 </label>
                 <div className="flex items-center gap-3">
                   <input
@@ -428,7 +430,7 @@ export function EmployeeManagement() {
             <div>
               <div className="flex justify-between items-center mb-4">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Horarios No Disponibles
+                  {t('unavailableTimes')}
                 </label>
                 <button
                   type="button"
@@ -436,7 +438,7 @@ export function EmployeeManagement() {
                   className="btn-secondary text-sm"
                 >
                   <Plus className="w-4 h-4 mr-1" />
-                  Agregar
+                  {t('add')}
                 </button>
               </div>
               
@@ -509,13 +511,13 @@ export function EmployeeManagement() {
                 onClick={resetForm}
                 className="btn-secondary"
               >
-                Cancelar
+                {t('cancel')}
               </button>
               <button
                 type="submit"
                 className="btn-primary"
               >
-                {editingEmployee ? 'Actualizar' : 'Crear'} Empleado
+                {editingEmployee ? t('update') : t('create')} {t('employee')}
               </button>
             </div>
           </form>
@@ -524,7 +526,7 @@ export function EmployeeManagement() {
 
       {/* Employees List */}
       <div className="card">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Lista de Empleados</h3>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">{t('employeeList')}</h3>
         
         {employees.length === 0 ? (
           <div className="text-center py-12">
@@ -544,7 +546,7 @@ export function EmployeeManagement() {
                     <div>
                       <h4 className="font-medium text-gray-900 dark:text-gray-100">{employee.name}</h4>
                       <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {employee.isActive ? 'Activo' : 'Inactivo'}
+                        {employee.isActive ? t('active') : t('inactive')}
                       </p>
                     </div>
                   </div>
@@ -585,7 +587,7 @@ export function EmployeeManagement() {
                         ? 'bg-blue-100 text-blue-800' 
                         : 'bg-green-100 text-green-800'
                     }`}>
-                      {employee.role === 'encargado' ? 'Encargado' : 'Empleado'}
+                      {employee.role === 'encargado' ? t('manager') : t('employee')}
                     </span>
                   </div>
                   {employee.unavailableTimes.length > 0 && (
