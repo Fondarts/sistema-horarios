@@ -719,6 +719,15 @@ export default function ScheduleManagement() {
     return Math.max(0.2, minZoom); // Minimum 20% zoom
   };
 
+  // Función para calcular duración exacta entre dos tiempos
+  const calculateExactDuration = (startTime: string, endTime: string): number => {
+    const startMinutes = timeToMinutes(startTime);
+    const endMinutes = timeToMinutes(endTime);
+    const durationMinutes = endMinutes - startMinutes;
+    // Usar Math.round para evitar problemas de precisión de punto flotante
+    return Math.round(durationMinutes) / 60;
+  };
+
   // Format hours in a readable way (e.g., "7h 55m" or "5h 30m")
   const formatHours = (hours: number): string => {
     const wholeHours = Math.floor(hours);
@@ -801,7 +810,7 @@ export default function ScheduleManagement() {
       const { startHour, endHour } = getStoreHoursRange();
       const newStartTime = positionToTimeExact(newLeft, startHour, endHour);
       const newEndTime = positionToTimeExact(newLeft + draggedElement.offsetWidth, startHour, endHour);
-      const newHours = (timeToMinutes(newEndTime) - timeToMinutes(newStartTime)) / 60;
+      const newHours = calculateExactDuration(newStartTime, newEndTime);
       
       setTempStartTime(newStartTime);
       setTempEndTime(newEndTime);
@@ -819,7 +828,7 @@ export default function ScheduleManagement() {
             const { startHour, endHour } = getStoreHoursRange();
             const newStartTime = positionToTimeExact(draggedElement.offsetLeft, startHour, endHour);
             const newEndTime = positionToTimeExact(draggedElement.offsetLeft + draggedElement.offsetWidth, startHour, endHour);
-            const newHours = (timeToMinutes(newEndTime) - timeToMinutes(newStartTime)) / 60;
+            const newHours = calculateExactDuration(newStartTime, newEndTime);
 
             updateShift(shiftId, {
               ...currentShift,
@@ -866,7 +875,7 @@ export default function ScheduleManagement() {
           const { startHour, endHour } = getStoreHoursRange();
           const newStartTime = positionToTimeExact(newLeft, startHour, endHour);
           const newEndTime = positionToTimeExact(newLeft + newWidth, startHour, endHour);
-          const newHours = (timeToMinutes(newEndTime) - timeToMinutes(newStartTime)) / 60;
+          const newHours = calculateExactDuration(newStartTime, newEndTime);
           
           setTempStartTime(newStartTime);
           setTempEndTime(newEndTime);
@@ -890,7 +899,7 @@ export default function ScheduleManagement() {
         const { startHour, endHour } = getStoreHoursRange();
         const newStartTime = positionToTimeExact(resizingElement.offsetLeft, startHour, endHour);
         const newEndTime = positionToTimeExact(resizingElement.offsetLeft + newWidth, startHour, endHour);
-        const newHours = (timeToMinutes(newEndTime) - timeToMinutes(newStartTime)) / 60;
+        const newHours = calculateExactDuration(newStartTime, newEndTime);
         
         setTempStartTime(newStartTime);
         setTempEndTime(newEndTime);
@@ -909,7 +918,7 @@ export default function ScheduleManagement() {
             const { startHour, endHour } = getStoreHoursRange();
             const newStartTime = positionToTimeExact(resizingElement.offsetLeft, startHour, endHour);
             const newEndTime = positionToTimeExact(resizingElement.offsetLeft + resizingElement.offsetWidth, startHour, endHour);
-            const newHours = (timeToMinutes(newEndTime) - timeToMinutes(newStartTime)) / 60;
+            const newHours = calculateExactDuration(newStartTime, newEndTime);
 
             updateShift(shiftId, {
               ...currentShift,
