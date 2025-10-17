@@ -17,6 +17,27 @@
     @apply bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200;
   }
   
+  /* Patrón de rayas diagonales para horas fuera del horario de apertura */
+  .store-hours-diagonal {
+    background-image: repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 4px,
+      rgba(156, 163, 175, 0.3) 4px,
+      rgba(156, 163, 175, 0.3) 8px
+    );
+  }
+  
+  .dark .store-hours-diagonal {
+    background-image: repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 4px,
+      rgba(75, 85, 99, 0.4) 4px,
+      rgba(75, 85, 99, 0.4) 8px
+    );
+  }
+  
   .btn-secondary {
     @apply bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-lg transition-colors duration-200 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-50;
   }

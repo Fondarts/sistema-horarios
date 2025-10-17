@@ -190,6 +190,55 @@ export default function ScheduleManagement() {
     return { startHour: 8, endHour: 21 };
   };
 
+  // Función para obtener los horarios de apertura de la tienda para un día específico
+  const getStoreHoursForDay = (date: Date) => {
+    const dayOfWeek = date.getDay();
+    const daySchedule = storeSchedule.find(s => s.dayOfWeek === dayOfWeek);
+    
+    if (!daySchedule || !daySchedule.isOpen) {
+      return { isOpen: false, timeRanges: [] };
+    }
+    
+    // Si tiene timeRanges (nueva estructura), usarlos
+    if (daySchedule.timeRanges && daySchedule.timeRanges.length > 0) {
+      return {
+        isOpen: true,
+        timeRanges: daySchedule.timeRanges.map(range => ({
+          openTime: range.openTime,
+          closeTime: range.closeTime
+        }))
+      };
+    }
+    
+    // Si tiene openTime/closeTime (estructura antigua), convertir a timeRanges
+    if (daySchedule.openTime && daySchedule.closeTime) {
+      return {
+        isOpen: true,
+        timeRanges: [{
+          openTime: daySchedule.openTime,
+          closeTime: daySchedule.closeTime
+        }]
+      };
+    }
+    
+    return { isOpen: false, timeRanges: [] };
+  };
+
+  // Función para verificar si una hora está dentro del horario de apertura de la tienda
+  const isHourWithinStoreHours = (hour: number, date: Date): boolean => {
+    const storeHours = getStoreHoursForDay(date);
+    
+    if (!storeHours.isOpen || storeHours.timeRanges.length === 0) {
+      return false;
+    }
+    
+    return storeHours.timeRanges.some(range => {
+      const openHour = parseInt(range.openTime.split(':')[0]);
+      const closeHour = parseInt(range.closeTime.split(':')[0]);
+      return hour >= openHour && hour < closeHour;
+    });
+  };
+
   // Calcular horas visibles basado en el toggle
   const { startHour: storeStartHour, endHour: storeEndHour } = getStoreHoursRange();
   const startHour = show24Hours ? 0 : storeStartHour; // 0 si 24h, o horario de tienda si enfocado
@@ -1350,7 +1399,7 @@ export default function ScheduleManagement() {
           >
                 <div className={`${isMobile ? 'p-1' : (isCompactMode ? 'p-2' : 'p-3')} font-medium text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700 ${isMobile ? 'text-xs' : (isCompactMode ? 'text-sm' : '')} ${isMobile ? 'sticky left-0 z-20' : ''}`}>Día</div>
             {hours.map((hour) => {
-              // Check if this hour is within store hours
+              // Check if this hour is within store hours (usando el día actual como referencia)
               const isStoreHour = hour >= storeStartHour && hour <= storeEndHour;
               return (
                 <div 
@@ -1466,19 +1515,27 @@ export default function ScheduleManagement() {
                   {/* Hours for this day */}
                   {hours.map((hour) => {
                     const isStoreHour = hour >= storeStartHour && hour <= storeEndHour;
+                    const isWithinStoreHours = isHourWithinStoreHours(hour, day);
                     
                     // Determinar el color de fondo
                     let backgroundColor = '';
+                    let diagonalPattern = '';
+                    
                     if (isHolidayDay) {
                       backgroundColor = 'bg-orange-50 dark:bg-orange-900/20';
                     } else if (isStoreHour) {
                       backgroundColor = 'bg-blue-25 dark:bg-blue-900/10';
                     }
                     
+                    // Aplicar patrón de rayas diagonales si la hora está fuera del horario de apertura
+                    if (!isWithinStoreHours && !isHolidayDay) {
+                      diagonalPattern = 'store-hours-diagonal';
+                    }
+                    
                     return (
                       <div 
                         key={`${day.toISOString()}-${hour}`} 
-                        className={`relative border-r border-gray-200 dark:border-gray-600 ${backgroundColor}`} 
+                        className={`relative border-r border-gray-200 dark:border-gray-600 ${backgroundColor} ${diagonalPattern}`} 
                         style={{ 
                           minHeight: collapsedDays.has(dayString) ? '32px' : `${calculateCompactCellHeight(dayString)}px`, 
                           height: isDayInCompactMode(dayString) ? `${calculateCompactCellHeight(dayString)}px` : '100%' 
