@@ -80,32 +80,32 @@ export function StoreProvider({ children }: { children: ReactNode }) {
               console.error('Error creating default store:', error);
             }
           }
-          */ else {
-            // Verificar si es district manager desde localStorage
-            const currentEmployee = localStorage.getItem('currentEmployee');
-            let isDistrictManager = false;
-            
-            if (currentEmployee) {
-              try {
-                const employee = JSON.parse(currentEmployee);
-                isDistrictManager = employee.username === 'admin' || employee.username === 'distrito';
-              } catch (error) {
-                console.error('Error parsing currentEmployee:', error);
-              }
+          */
+          
+          // Verificar si es district manager desde localStorage
+          const currentEmployee = localStorage.getItem('currentEmployee');
+          let isDistrictManager = false;
+          
+          if (currentEmployee) {
+            try {
+              const employee = JSON.parse(currentEmployee);
+              isDistrictManager = employee.username === 'admin' || employee.username === 'distrito';
+            } catch (error) {
+              console.error('Error parsing currentEmployee:', error);
             }
-            
-            if (!isDistrictManager) {
-              // Solo para usuarios normales (empleados/encargados), usar la tienda guardada
-              const savedCurrentStoreId = localStorage.getItem('horarios_current_store_id');
-              if (savedCurrentStoreId) {
-                const foundStore = storesData.find((s: Store) => s.id === savedCurrentStoreId);
-                if (foundStore) {
-                  setCurrentStoreState(foundStore);
-                }
-              }
-            }
-            // Los district managers siempre verán el selector de tiendas
           }
+          
+          if (!isDistrictManager) {
+            // Solo para usuarios normales (empleados/encargados), usar la tienda guardada
+            const savedCurrentStoreId = localStorage.getItem('horarios_current_store_id');
+            if (savedCurrentStoreId) {
+              const foundStore = storesData.find((s: Store) => s.id === savedCurrentStoreId);
+              if (foundStore) {
+                setCurrentStoreState(foundStore);
+              }
+            }
+          }
+          // Los district managers siempre verán el selector de tiendas
           
           setIsLoading(false);
         }, (error) => {
