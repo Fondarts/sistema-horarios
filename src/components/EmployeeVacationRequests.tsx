@@ -183,7 +183,7 @@ export function EmployeeVacationRequests() {
               No tienes solicitudes de vacaciones aún
             </p>
             <p className="text-sm text-gray-500 dark:text-gray-500 mt-1">
-              Haz clic en "Solicitar Vacaciones" para crear tu primera solicitud
+              {t('clickRequestVacationToCreateFirstRequest')}
             </p>
           </div>
         ) : (

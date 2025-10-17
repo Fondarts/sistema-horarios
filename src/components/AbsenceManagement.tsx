@@ -472,7 +472,7 @@ export const AbsenceManagement: React.FC = () => {
                         </div>
                       )}
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tipo de Ausencia</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('absenceType')}</label>
                         <select
                           value={newRequest.type}
                           onChange={(e) => setNewRequest({...newRequest, type: e.target.value as AbsenceType})}

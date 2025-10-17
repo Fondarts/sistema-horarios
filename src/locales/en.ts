@@ -203,6 +203,9 @@ export const en = {
   requestVacation: 'Request Vacation',
   newVacationRequest: 'New Vacation Request',
   myVacationRequests: 'My Vacation Requests',
+  clickRequestVacationToCreateFirstRequest: 'Click "Request Vacation" to create your first request',
+  vacationManagement: 'Vacation Management',
+  vacationRequests: 'Vacation Requests',
   
   // Holidays
   holidayName: 'Holiday Name',

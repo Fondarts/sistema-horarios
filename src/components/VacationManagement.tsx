@@ -4,6 +4,7 @@ import { useEmployees } from '../contexts/EmployeeContext';
 import { useVacation, VacationRequest } from '../contexts/VacationContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useCompactMode } from '../contexts/CompactModeContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import { format, addDays, isAfter, isBefore, differenceInDays } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -11,6 +12,7 @@ export function VacationManagement() {
   const { employees } = useEmployees();
   const { currentEmployee } = useAuth();
   const { isMobile } = useCompactMode();
+  const { t } = useLanguage();
   const { 
     vacationRequests, 
     addVacationRequest, 
@@ -113,7 +115,7 @@ export function VacationManagement() {
     switch (status) {
       case 'approved': return 'Aprobado';
       case 'rejected': return 'Rechazado';
-      case 'pending': return 'Pendiente';
+      case 'pending': return t('pending');
       default: return 'Desconocido';
     }
   };
@@ -129,7 +131,7 @@ export function VacationManagement() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Gestión de Vacaciones</h2>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{t('vacationManagement')}</h2>
           <p className="text-gray-600 dark:text-gray-400">Administra las solicitudes de vacaciones y días libres</p>
         </div>
         <button
@@ -231,7 +233,7 @@ export function VacationManagement() {
 
       {/* Vacation Requests List */}
       <div className="card">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-6">Solicitudes de Vacaciones</h3>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-6">{t('vacationRequests')}</h3>
         
         {isLoading ? (
           <div className="flex items-center justify-center py-8">

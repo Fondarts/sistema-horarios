@@ -203,6 +203,9 @@ export const es = {
   requestVacation: 'Solicitar Vacaciones',
   newVacationRequest: 'Nueva Solicitud de Vacaciones',
   myVacationRequests: 'Mis Solicitudes de Vacaciones',
+  clickRequestVacationToCreateFirstRequest: 'Haz clic en "Solicitar Vacaciones" para crear tu primera solicitud',
+  vacationManagement: 'Gestión de Vacaciones',
+  vacationRequests: 'Solicitudes de Vacaciones',
   
   // Holidays
   holidayName: 'Nombre del Feriado',
