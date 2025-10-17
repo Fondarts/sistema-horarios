@@ -153,7 +153,6 @@ export const en = {
   rejectionReason: 'Rejection reason:',
   
   // Holidays
-  holidays: 'Holidays',
   holidayName: 'Holiday Name',
   holidayDate: 'Holiday Date',
   addHoliday: 'Add Holiday',

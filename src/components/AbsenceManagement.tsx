@@ -114,15 +114,15 @@ export const AbsenceManagement: React.FC = () => {
       console.log('Buscando empleado con ID:', newRequest.employeeId);
       const employee = employees.find(emp => emp.id === newRequest.employeeId);
       if (!employee) {
-        console.error('{t('employee')} no encontrado');
-        alert('{t('employee')} no encontrado');
+        console.error(`${t('employee')} no encontrado`);
+        alert(`${t('employee')} no encontrado`);
         return;
       }
 
-      console.log('{t('employee')} encontrado:', employee);
+      console.log(`${t('employee')} encontrado:`, employee);
       
       if (!employee.storeId) {
-        console.error('{t('employee')} sin storeId:', employee);
+        console.error(`${t('employee')} sin storeId:`, employee);
         alert('El empleado no tiene una tienda asignada');
         return;
       }

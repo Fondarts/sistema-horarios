@@ -153,7 +153,6 @@ export const es = {
   rejectionReason: 'Motivo del rechazo:',
   
   // Holidays
-  holidays: 'Feriados',
   holidayName: 'Nombre del Feriado',
   holidayDate: 'Fecha del Feriado',
   addHoliday: 'Agregar Feriado',
