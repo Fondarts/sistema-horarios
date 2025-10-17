@@ -1371,7 +1371,7 @@ export default function ScheduleManagement() {
               <div className="flex items-center space-x-2 text-orange-600 dark:text-orange-400">
                 <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
                 <span className="text-sm font-medium">
-                  {unpublishedCount} turno{unpublishedCount !== 1 ? 's' : ''} pendiente{unpublishedCount !== 1 ? 's' : ''} de publicación
+                  {unpublishedCount} {unpublishedCount === 1 ? t('shiftPendingPublication') : t('shiftsPendingPublication')}
                 </span>
               </div>
             ) : null;

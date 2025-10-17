@@ -439,7 +439,7 @@ export function HolidayIntegration() {
           <div className="flex items-center">
             <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
             <span className="text-sm text-green-700 dark:text-green-300">
-              Última sincronización: {format(parseISO(lastSync), 'dd/MM/yyyy HH:mm', { locale: es })}
+              {t('lastSynchronization')}: {format(parseISO(lastSync), 'dd/MM/yyyy HH:mm', { locale: es })}
             </span>
           </div>
         </div>
@@ -635,11 +635,10 @@ export function HolidayIntegration() {
           <AlertCircle className="w-5 h-5 text-blue-500 mr-2 mt-0.5" />
           <div>
             <h4 className="text-sm font-medium text-blue-800 dark:text-blue-300 mb-1">
-              Información sobre Feriados
+              {t('holidayInformation')}
             </h4>
             <p className="text-sm text-blue-700 dark:text-blue-400">
-              Los feriados nacionales se sincronizan automáticamente cada año. 
-              Estos días se consideran automáticamente como no laborables en la planificación de horarios.
+              {t('nationalHolidaysSyncAutomatically')}
             </p>
           </div>
         </div>
