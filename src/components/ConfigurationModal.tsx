@@ -13,7 +13,10 @@ export function ConfigurationModal({ isOpen, onClose }: ConfigurationModalProps)
   const languages = [
     { code: 'es', name: 'Español', flag: '🇪🇸' },
     { code: 'en', name: 'English', flag: '🇺🇸' },
-    { code: 'pt', name: 'Português', flag: '🇧🇷' }
+    { code: 'pt', name: 'Português', flag: '🇧🇷' },
+    { code: 'it', name: 'Italiano', flag: '🇮🇹' },
+    { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
+    { code: 'fr', name: 'Français', flag: '🇫🇷' }
   ];
 
   const countries = [
@@ -62,29 +65,17 @@ export function ConfigurationModal({ isOpen, onClose }: ConfigurationModalProps)
               <Globe className="w-4 h-4" />
               <span>Idioma de la aplicación</span>
             </label>
-            <div className="grid grid-cols-1 gap-2">
+            <select
+              value={language}
+              onChange={(e) => setLanguage(e.target.value)}
+              className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
               {languages.map((lang) => (
-                <label
-                  key={lang.code}
-                  className={`flex items-center space-x-3 p-3 rounded-lg border cursor-pointer transition-colors ${
-                    language === lang.code
-                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                      : 'border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="language"
-                    value={lang.code}
-                    checked={language === lang.code}
-                    onChange={(e) => setLanguage(e.target.value)}
-                    className="sr-only"
-                  />
-                  <span className="text-2xl">{lang.flag}</span>
-                  <span className="text-gray-900 dark:text-gray-100">{lang.name}</span>
-                </label>
+                <option key={lang.code} value={lang.code}>
+                  {lang.flag} {lang.name}
+                </option>
               ))}
-            </div>
+            </select>
           </div>
 
           {/* País */}
@@ -93,31 +84,17 @@ export function ConfigurationModal({ isOpen, onClose }: ConfigurationModalProps)
               <Flag className="w-4 h-4" />
               <span>País (para feriados)</span>
             </label>
-            <div className="grid grid-cols-2 gap-2">
+            <select
+              value={country}
+              onChange={(e) => setCountry(e.target.value)}
+              className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
               {countries.map((countryOption) => (
-                <label
-                  key={countryOption.code}
-                  className={`flex items-center space-x-2 p-2 rounded-lg border cursor-pointer transition-colors ${
-                    country === countryOption.code
-                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                      : 'border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="country"
-                    value={countryOption.code}
-                    checked={country === countryOption.code}
-                    onChange={(e) => setCountry(e.target.value)}
-                    className="sr-only"
-                  />
-                  <span className="text-lg">{countryOption.flag}</span>
-                  <span className="text-sm text-gray-900 dark:text-gray-100 truncate">
-                    {countryOption.name}
-                  </span>
-                </label>
+                <option key={countryOption.code} value={countryOption.code}>
+                  {countryOption.flag} {countryOption.name}
+                </option>
               ))}
-            </div>
+            </select>
           </div>
         </div>
 
