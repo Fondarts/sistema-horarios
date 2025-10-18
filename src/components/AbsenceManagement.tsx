@@ -88,6 +88,19 @@ export const AbsenceManagement: React.FC = () => {
     }
   };
 
+  // Función para obtener el patrón regex dinámico según el formato de fecha
+  const getDatePattern = () => {
+    switch (dateFormat) {
+      case 'mm/dd/yyyy':
+        return '\\d{2}/\\d{2}/\\d{4}';
+      case 'yyyy/mm/dd':
+        return '\\d{4}/\\d{2}/\\d{2}';
+      case 'dd/mm/yyyy':
+      default:
+        return '\\d{2}/\\d{2}/\\d{4}';
+    }
+  };
+
   const { 
     absenceRequests, 
     addAbsenceRequest, 
@@ -521,7 +534,7 @@ export const AbsenceManagement: React.FC = () => {
                             onChange={(e) => setNewRequest({...newRequest, startDate: formatDateInput(e.target.value)})}
                             className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-50"
                             placeholder={getDatePlaceholder()}
-                            pattern="\d{2}/\d{2}/\d{4}"
+                            pattern={getDatePattern()}
                             title={`Formato: ${getDatePlaceholder()} (ejemplo: ${getDateExample()})`}
                             required
                           />
@@ -534,7 +547,7 @@ export const AbsenceManagement: React.FC = () => {
                             onChange={(e) => setNewRequest({...newRequest, endDate: formatDateInput(e.target.value)})}
                             className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-50"
                             placeholder={getDatePlaceholder()}
-                            pattern="\d{2}/\d{2}/\d{4}"
+                            pattern={getDatePattern()}
                             title={`Formato: ${getDatePlaceholder()} (ejemplo: ${getDateExample()})`}
                             required
                           />

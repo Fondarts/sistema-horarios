@@ -107,6 +107,19 @@ export function EmployeeManagement() {
     }
   };
 
+  // Función para obtener el patrón regex dinámico según el formato de fecha
+  const getDatePattern = () => {
+    switch (dateFormat) {
+      case 'mm/dd/yyyy':
+        return '\\d{2}/\\d{2}/\\d{4}';
+      case 'yyyy/mm/dd':
+        return '\\d{4}/\\d{2}/\\d{2}';
+      case 'dd/mm/yyyy':
+      default:
+        return '\\d{2}/\\d{2}/\\d{4}';
+    }
+  };
+
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
   const [formData, setFormData] = useState({
@@ -408,7 +421,7 @@ export function EmployeeManagement() {
                   onChange={(e) => setFormData(prev => ({ ...prev, birthday: formatDateInput(e.target.value) }))}
                   className="input-field"
                   placeholder={getDatePlaceholder()}
-                  pattern="\d{2}/\d{2}/\d{4}"
+                  pattern={getDatePattern()}
                   title={`Formato: ${getDatePlaceholder()} (ejemplo: ${getDateExample()})`}
                 />
                 <p className="text-xs text-gray-500 mt-1">
@@ -426,7 +439,7 @@ export function EmployeeManagement() {
                   onChange={(e) => setFormData(prev => ({ ...prev, startDate: formatDateInput(e.target.value) }))}
                   className="input-field"
                   placeholder={getDatePlaceholder()}
-                  pattern="\d{2}/\d{2}/\d{4}"
+                  pattern={getDatePattern()}
                   title={`Formato: ${getDatePlaceholder()} (ejemplo: ${getDateExample()})`}
                 />
                 <p className="text-xs text-gray-500 mt-1">
