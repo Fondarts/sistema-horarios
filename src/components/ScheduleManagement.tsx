@@ -8,6 +8,7 @@ import { useVacation } from '../contexts/VacationContext';
 import { useHolidays } from '../contexts/HolidayContext';
 import { useCompactMode } from '../contexts/CompactModeContext';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useDateFormat } from '../contexts/DateFormatContext';
 import { useNotifications } from '../contexts/NotificationContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { Shift, Employee } from '../types';
@@ -21,6 +22,7 @@ export default function ScheduleManagement() {
   const { isHoliday, getHolidayForDate } = useHolidays();
   const { isCompactMode, isMobile } = useCompactMode();
   const { t, language } = useLanguage();
+  const { formatDate } = useDateFormat();
   const { addNotification } = useNotifications();
   
   // Get dynamic locale based on current language
@@ -857,7 +859,7 @@ export default function ScheduleManagement() {
           
           problems.push({
             type: 'store_closed',
-            day: new Date(date).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric' }),
+            day: formatDate(new Date(date)),
             time: 'Todo el día',
             description: `Tienda cerrada pero hay empleados asignados: ${assignedEmployees.join(', ')}`
           });
@@ -897,7 +899,7 @@ export default function ScheduleManagement() {
           const employee = employees.find(emp => emp && emp.id === employeeId);
           problems.push({
             type: 'overtime',
-            day: new Date(date).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric' }),
+            day: formatDate(new Date(date)),
             time: 'Todo el día',
             description: `${employee?.name || 'Empleado'} trabaja ${Math.floor(hours)}h ${Math.round((hours - Math.floor(hours)) * 60)}m (máximo 8h)`
           });
@@ -930,7 +932,7 @@ export default function ScheduleManagement() {
             if (gapDuration >= 5) { // Reportar huecos de 5+ minutos
               problems.push({
                 type: 'gap',
-                day: new Date(date).toLocaleDateString(language === 'es' ? 'es-ES' : 'en-US', { weekday: 'long', day: 'numeric' }),
+                day: formatDate(new Date(date)),
                 time: `${minutesToTime(lastEndTime)} - ${minutesToTime(shiftStart)}`,
                 description: `${t('gapWithoutCoverage')} ${Math.floor(gapDuration / 60)}h ${gapDuration % 60}m`
               });
@@ -946,7 +948,7 @@ export default function ScheduleManagement() {
           if (gapDuration >= 5) { // Reportar huecos de 5+ minutos
             problems.push({
               type: 'gap',
-              day: new Date(date).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric' }),
+              day: formatDate(new Date(date)),
               time: `${minutesToTime(lastEndTime)} - ${minutesToTime(storeClose)}`,
               description: `${t('gapWithoutCoverage')} ${Math.floor(gapDuration / 60)}h ${gapDuration % 60}m`
             });
@@ -977,7 +979,7 @@ export default function ScheduleManagement() {
 
               problems.push({
                 type: 'unavailable',
-                day: new Date(date).toLocaleDateString(language === 'es' ? 'es-ES' : 'en-US', { weekday: 'long', day: 'numeric' }),
+                day: formatDate(new Date(date)),
                 time: `${minutesToTime(overlapStart)} - ${minutesToTime(overlapEnd)}`,
                 description: `${employee.name} asignado durante horario no disponible (${unavailable.startTime}-${unavailable.endTime})`
               });

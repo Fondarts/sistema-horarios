@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAbsence } from '../contexts/AbsenceContext';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useDateFormat } from '../contexts/DateFormatContext';
 import { useEmployees } from '../contexts/EmployeeContext';
 import { useAuth } from '../contexts/AuthContext';
 import { FileUpload } from './FileUpload';
@@ -59,6 +60,7 @@ import {
 
 export const AbsenceManagement: React.FC = () => {
   const { t } = useLanguage();
+  const { formatDate, parseDate } = useDateFormat();
   const { 
     absenceRequests, 
     addAbsenceRequest, 
@@ -198,13 +200,13 @@ export const AbsenceManagement: React.FC = () => {
     }
   };
 
-  const formatDate = (dateString: string) => {
+  const formatDateLocal = (dateString: string) => {
     const isoDate = convertToISODate(dateString);
     const date = new Date(isoDate);
     if (isNaN(date.getTime())) {
       return 'Fecha inválida';
     }
-    return date.toLocaleDateString('es-ES');
+    return formatDate(date);
   };
 
   const getDaysDifference = (startDate: string, endDate: string) => {
@@ -393,8 +395,8 @@ export const AbsenceManagement: React.FC = () => {
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-50">
-                            <div>{formatDate(request.startDate)}</div>
-                            <div className="text-gray-500 dark:text-gray-400">al {formatDate(request.endDate)}</div>
+                            <div>{formatDateLocal(request.startDate)}</div>
+                            <div className="text-gray-500 dark:text-gray-400">al {formatDateLocal(request.endDate)}</div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-50">
                             {getDaysDifference(request.startDate, request.endDate)} {t('days')}
@@ -613,11 +615,11 @@ export const AbsenceManagement: React.FC = () => {
                                 </div>
                                 <div>
                                   <span className="text-sm text-gray-500 dark:text-gray-400">{t('startDate')}:</span>
-                                  <p className="text-gray-900 dark:text-gray-50">{formatDate(request.startDate)}</p>
+                                  <p className="text-gray-900 dark:text-gray-50">{formatDateLocal(request.startDate)}</p>
                                 </div>
                                 <div>
                                   <span className="text-sm text-gray-500 dark:text-gray-400">{t('endDate')}:</span>
-                                  <p className="text-gray-900 dark:text-gray-50">{formatDate(request.endDate)}</p>
+                                  <p className="text-gray-900 dark:text-gray-50">{formatDateLocal(request.endDate)}</p>
                                 </div>
                                 <div>
                                   <span className="text-sm text-gray-500 dark:text-gray-400">{t('duration')}:</span>
@@ -625,7 +627,7 @@ export const AbsenceManagement: React.FC = () => {
                                 </div>
                                 <div>
                                   <span className="text-sm text-gray-500 dark:text-gray-400">{t('requestDate')}:</span>
-                                  <p className="text-gray-900 dark:text-gray-50">{formatDate(request.createdAt)}</p>
+                                  <p className="text-gray-900 dark:text-gray-50">{formatDateLocal(request.createdAt)}</p>
                                 </div>
                               </div>
                             </div>
@@ -737,7 +739,7 @@ export const AbsenceManagement: React.FC = () => {
                                   <div>
                                     <span className="text-sm text-gray-500 dark:text-gray-400">Fecha:</span>
                                     <p className="text-gray-900 dark:text-gray-50">
-                                      {request.approvedAt ? formatDate(request.approvedAt) : 'N/A'}
+                                      {request.approvedAt ? formatDateLocal(request.approvedAt) : 'N/A'}
                                     </p>
                                   </div>
                                   {request.status === 'rejected' && request.rejectionReason && (

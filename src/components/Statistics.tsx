@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useSchedule } from '../contexts/ScheduleContext';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useDateFormat } from '../contexts/DateFormatContext';
 import { useEmployees } from '../contexts/EmployeeContext';
 import { useCompactMode } from '../contexts/CompactModeContext';
 import { BarChart3, TrendingUp, Users, ChevronLeft, ChevronRight, AlertTriangle } from 'lucide-react';
@@ -41,6 +42,7 @@ export function Statistics() {
   const { employees } = useEmployees();
   const { isMobile } = useCompactMode();
   const { t } = useLanguage();
+  const { formatDate } = useDateFormat();
   
   const [selectedWeek, setSelectedWeek] = useState(new Date());
 
@@ -79,7 +81,7 @@ export function Statistics() {
       console.log(`Hoy: ${today.toISOString().split('T')[0]}`);
       console.log(`Total turnos: ${allEmployeeShifts.length}`);
       console.log(`Fechas de turnos:`, Array.from(allEmployeeShifts.map(shift => shift.date)));
-      console.log(`Turnos recientes (últimos 10):`, allEmployeeShifts.slice(0, 10).map(shift => `${shift.date} (${new Date(shift.date).toLocaleDateString('es-ES', { weekday: 'long' })})`));
+      console.log(`Turnos recientes (últimos 10):`, allEmployeeShifts.slice(0, 10).map(shift => `${formatDate(new Date(shift.date))}`));
       
       if (allEmployeeShifts.length === 0) {
         console.log(`Sin turnos, retornando 0`);

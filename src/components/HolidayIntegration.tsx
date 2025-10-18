@@ -4,6 +4,7 @@ import { format, addYears, isSameDay, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useHolidays, Holiday } from '../contexts/HolidayContext';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useDateFormat } from '../contexts/DateFormatContext';
 import { useCountry } from '../contexts/CountryContext';
 import { useSchedule } from '../contexts/ScheduleContext';
 import { nationalHolidays } from '../data/nationalHolidays';
@@ -12,6 +13,7 @@ import { collection, addDoc, deleteDoc, query, where, getDocs } from 'firebase/f
 
 export function HolidayIntegration() {
   const { t } = useLanguage();
+  const { formatDate } = useDateFormat();
   const { country } = useCountry();
   const { holidays: firebaseHolidays, addHolidayToCalendar, removeHolidayFromCalendar, isLoading } = useHolidays();
   const [localHolidays, setLocalHolidays] = useState<Holiday[]>([]);
@@ -369,7 +371,7 @@ export function HolidayIntegration() {
           <div className="flex items-center">
             <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
             <span className="text-sm text-green-700 dark:text-green-300">
-              {t('lastSynchronization')}: {format(parseISO(lastSync), 'dd/MM/yyyy HH:mm', { locale: es })}
+              {t('lastSynchronization')}: {formatDate(new Date(lastSync))}
             </span>
           </div>
         </div>
@@ -485,7 +487,7 @@ export function HolidayIntegration() {
                   <div className="flex items-center">
                     <Calendar className="w-4 h-4 text-gray-400 mr-2" />
                     <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                      {format(parseISO(holiday.date), 'dd/MM', { locale: es })}
+                      {formatDate(new Date(holiday.date))}
                     </span>
                   </div>
                   <div className="flex items-center space-x-2">

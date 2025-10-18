@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useEmployees } from '../contexts/EmployeeContext';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useDateFormat } from '../contexts/DateFormatContext';
 import { useCompactMode } from '../contexts/CompactModeContext';
 import { Plus, Edit, Trash2, User, Clock, Calendar } from 'lucide-react';
 import { Employee, UnavailableTime } from '../types';
@@ -78,6 +79,7 @@ export function EmployeeManagement() {
   const { employees, addEmployee, updateEmployee, deleteEmployee, resetToMockEmployees } = useEmployees();
   const { isCompactMode, isMobile } = useCompactMode();
   const { t } = useLanguage();
+  const { formatDate } = useDateFormat();
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
   const [formData, setFormData] = useState({
@@ -198,7 +200,7 @@ export function EmployeeManagement() {
       username: employee.username,
       password: employee.password,
       weeklyLimit: employee.weeklyLimit,
-      birthday: formatBirthday(employee.birthday || ''),
+      birthday: employee.birthday ? formatDate(new Date(employee.birthday)) : '',
       color: employee.color,
       isActive: employee.isActive,
       role: employee.role,
@@ -579,7 +581,7 @@ export function EmployeeManagement() {
                   </div>
                   <div className="flex items-center">
                     <Calendar className="w-4 h-4 text-gray-400 mr-2" />
-                    <span>{employee.birthday ? formatBirthday(employee.birthday) : 'No especificada'}</span>
+                    <span>{employee.birthday ? formatDate(new Date(employee.birthday)) : 'No especificada'}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-gray-500 font-mono bg-gray-100 px-2 py-1 rounded">

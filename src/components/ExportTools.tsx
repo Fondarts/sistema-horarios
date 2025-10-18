@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useSchedule } from '../contexts/ScheduleContext';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useDateFormat } from '../contexts/DateFormatContext';
 import { useEmployees } from '../contexts/EmployeeContext';
 import { Download, Calendar, FileText, ExternalLink, Table } from 'lucide-react';
 import { format, startOfWeek, endOfWeek, eachDayOfInterval, addDays } from 'date-fns';
@@ -11,6 +12,7 @@ export function ExportTools() {
   const { shifts } = useSchedule();
   const { employees } = useEmployees();
   const { t } = useLanguage();
+  const { formatDate } = useDateFormat();
   const [selectedFormat, setSelectedFormat] = useState<'ical' | 'csv' | 'excel' | 'google'>('ical');
   const [dateRange, setDateRange] = useState({
     start: format(startOfWeek(new Date(), { weekStartsOn: 1 }), 'yyyy-MM-dd'),
