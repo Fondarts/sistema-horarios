@@ -29,6 +29,21 @@ export default function ScheduleManagement() {
   const getLocale = () => {
     return language === 'es' ? es : undefined; // undefined uses English by default
   };
+  
+  // Function to get translated day name
+  const getTranslatedDayName = (date: Date) => {
+    const dayOfWeek = date.getDay(); // 0 = Sunday, 1 = Monday, etc.
+    const dayNames = [
+      t('daysOfWeek.sunday'),
+      t('daysOfWeek.monday'),
+      t('daysOfWeek.tuesday'),
+      t('daysOfWeek.wednesday'),
+      t('daysOfWeek.thursday'),
+      t('daysOfWeek.friday'),
+      t('daysOfWeek.saturday')
+    ];
+    return dayNames[dayOfWeek];
+  };
   const { theme } = useTheme();
   
   // Definir ancho fijo para columnas de horas en móvil
@@ -1540,7 +1555,7 @@ export default function ScheduleManagement() {
                         <div className="text-center">
                           <div className="flex items-center justify-center gap-1">
                           <div className="text-xs font-semibold">
-                            {format(day, 'EEE', { locale: getLocale() })}
+                            {getTranslatedDayName(day)}
                             </div>
                             <button
                               onClick={() => toggleDayCollapse(dayString)}
@@ -1560,7 +1575,7 @@ export default function ScheduleManagement() {
                       ) : (
                         <div className="flex items-center gap-2">
                           <span>
-                          {format(day, 'EEE d', { locale: getLocale() })}
+                          {getTranslatedDayName(day)} {format(day, 'd')}
                           {isHolidayDay && (
                             <span className="ml-2 text-xs">🎉</span>
                           )}
