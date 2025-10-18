@@ -159,7 +159,7 @@ export default function EmployeeDashboard() {
                   <Logo />
                   <div className="ml-4">
                     <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                      {t('mySchedules')} - {language}
+                      {t('mySchedules')}
                     </h1>
                     <p className="text-gray-600 dark:text-gray-400">
                       {t('welcomeEmployee').replace('{name}', currentEmployee.name)}
