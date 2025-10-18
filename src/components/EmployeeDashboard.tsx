@@ -440,10 +440,15 @@ export default function EmployeeDashboard() {
             // Vista de Calendario
             <div className="p-6">
               <div className="grid grid-cols-7 gap-1 mb-4">
-                {(language === 'es' 
-                  ? ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']
-                  : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-                ).map((day) => (
+                {[
+                  t('daysOfWeek.monday'),
+                  t('daysOfWeek.tuesday'),
+                  t('daysOfWeek.wednesday'),
+                  t('daysOfWeek.thursday'),
+                  t('daysOfWeek.friday'),
+                  t('daysOfWeek.saturday'),
+                  t('daysOfWeek.sunday')
+                ].map((day) => (
                   <div key={day} className="text-center text-sm font-medium text-gray-600 dark:text-gray-400 py-2">
                     {day}
                   </div>

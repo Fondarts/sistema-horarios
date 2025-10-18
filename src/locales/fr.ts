@@ -325,13 +325,13 @@ export const fr = {
   
   // Days of week
   daysOfWeek: {
-    monday: 'Lundi',
-    tuesday: 'Mardi',
-    wednesday: 'Mercredi',
-    thursday: 'Jeudi',
-    friday: 'Vendredi',
-    saturday: 'Samedi',
-    sunday: 'Dimanche'
+    monday: 'Lun',
+    tuesday: 'Mar',
+    wednesday: 'Mer',
+    thursday: 'Jeu',
+    friday: 'Ven',
+    saturday: 'Sam',
+    sunday: 'Dim'
   },
 
   // Store Management

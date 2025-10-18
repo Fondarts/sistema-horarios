@@ -98,7 +98,14 @@ export function ConfigurationModal({ isOpen, onClose, isEmployeeDashboard = fals
               </div>
 
               {/* País - Solo para encargados y encargados de distrito, pero NO desde dashboard de empleado */}
-              {!isEmployeeDashboard && (currentEmployee?.role === 'encargado' || currentEmployee?.role === 'distrito') && (
+              {(() => {
+                console.log('ConfigurationModal Debug:', {
+                  isEmployeeDashboard,
+                  currentEmployeeRole: currentEmployee?.role,
+                  shouldShowCountry: !isEmployeeDashboard && (currentEmployee?.role === 'encargado' || currentEmployee?.role === 'distrito')
+                });
+                return !isEmployeeDashboard && (currentEmployee?.role === 'encargado' || currentEmployee?.role === 'distrito');
+              })() && (
                 <div>
                   <label className="flex items-center space-x-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
                     <Flag className="w-4 h-4" />
