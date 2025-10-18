@@ -321,7 +321,7 @@ export const es = {
   
   // Time formats
   timeFormat: 'HH:MM',
-  dateFormat: 'DD/MM/YYYY',
+  defaultDateFormat: 'DD/MM/YYYY',
   
   // Days of week
   daysOfWeek: {
