@@ -3,7 +3,7 @@ import { useEmployees } from '../contexts/EmployeeContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useDateFormat } from '../contexts/DateFormatContext';
 import { useCompactMode } from '../contexts/CompactModeContext';
-import { Plus, Edit, Trash2, User, Clock, Calendar } from 'lucide-react';
+import { Plus, Edit, Trash2, User, Clock, Calendar, Eye, EyeOff } from 'lucide-react';
 import { Employee, UnavailableTime } from '../types';
 import TimeInput from './TimeInput';
 
@@ -122,6 +122,7 @@ export function EmployeeManagement() {
 
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     username: '',
@@ -362,14 +363,27 @@ export function EmployeeManagement() {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   {t('password')}
                 </label>
-                <input
-                  type="password"
-                  value={formData.password}
-                  onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
-                  className="input-field"
-                  placeholder="Mínimo 4 caracteres"
-                  required
-                />
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    value={formData.password}
+                    onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+                    className="input-field pr-10"
+                    placeholder="Mínimo 4 caracteres"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-5 w-5" />
+                    ) : (
+                      <Eye className="h-5 w-5" />
+                    )}
+                  </button>
+                </div>
                 <p className="text-xs text-gray-500 mt-1">
                   {t('passwordForLogin')}
                 </p>
@@ -642,10 +656,7 @@ export function EmployeeManagement() {
                     <Calendar className="w-4 h-4 text-gray-400 mr-2" />
                     <span>{employee.birthday ? formatDate(new Date(employee.birthday)) : 'No especificada'}</span>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-gray-500 font-mono bg-gray-100 px-2 py-1 rounded">
-                      PIN: {employee.pin}
-                    </span>
+                  <div className="flex items-center justify-end">
                     <span className={`text-xs px-2 py-1 rounded font-medium ${
                       employee.role === 'encargado' 
                         ? 'bg-blue-100 text-blue-800' 

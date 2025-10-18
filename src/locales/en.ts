@@ -371,5 +371,10 @@ export const en = {
   myShifts: 'My Shifts',
   shiftCalendar: 'Shift Calendar',
   list: 'List',
-  calendar: 'Calendar'
+  calendar: 'Calendar',
+  noShiftsThisWeek: 'You have no shifts assigned this week',
+  noShiftsThisMonth: 'You have no shifts assigned this month',
+  previousMonth: 'Previous Month',
+  nextMonth: 'Next Month',
+  closeSession: 'Logout'
 };

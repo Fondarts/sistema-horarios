@@ -58,7 +58,11 @@ import {
   ABSENCE_STATUS_COLORS
 } from '../types/absence';
 
-export const AbsenceManagement: React.FC = () => {
+interface AbsenceManagementProps {
+  isEmployeeDashboard?: boolean;
+}
+
+export const AbsenceManagement: React.FC<AbsenceManagementProps> = ({ isEmployeeDashboard = false }) => {
   const { t } = useLanguage();
   const { formatDate, parseDate, dateFormat } = useDateFormat();
   
@@ -122,7 +126,7 @@ export const AbsenceManagement: React.FC = () => {
 
   // Formulario de nueva solicitud
   const [newRequest, setNewRequest] = useState({
-    employeeId: currentEmployee?.role === 'empleado' ? currentEmployee.id : '',
+    employeeId: currentEmployee?.id || '',
     startDate: '',
     endDate: '',
     reason: '',
@@ -283,7 +287,7 @@ export const AbsenceManagement: React.FC = () => {
         <button
           onClick={() => {
             setNewRequest({
-              employeeId: currentEmployee?.role === 'empleado' ? currentEmployee.id : '',
+              employeeId: currentEmployee?.id || '',
               startDate: '',
               endDate: '',
               reason: '',
@@ -496,10 +500,19 @@ export const AbsenceManagement: React.FC = () => {
                   <div className="bg-gray-200 dark:bg-gray-800 rounded-lg p-6 w-full max-w-md border border-gray-200 dark:border-gray-700">
                     <h3 className="text-lg font-medium text-gray-900 dark:text-gray-50 mb-4">{t('newAbsenceRequest')}</h3>
                     <form onSubmit={handleSubmitRequest} className="space-y-4">
-                      {/* Solo mostrar selector de empleado para encargados y encargados de distrito */}
-                      {(currentEmployee?.role === 'encargado' || currentEmployee?.role === 'distrito') && (
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('employee')}</label>
+                      {/* Mostrar selector de empleado para encargados y encargados de distrito, o campo fijo para empleados */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('employee')}</label>
+                        {(() => {
+                          // Si estamos en el dashboard de empleado, siempre mostrar campo fijo
+                          // Si no, verificar el rol del empleado
+                          if (isEmployeeDashboard) {
+                            return false; // Mostrar campo fijo desde dashboard de empleado
+                          }
+                          
+                          const isEmployee = currentEmployee?.role === 'empleado';
+                          return !isEmployee; // Mostrar dropdown si NO es empleado regular
+                        })() ? (
                           <select
                             value={newRequest.employeeId}
                             onChange={(e) => setNewRequest({...newRequest, employeeId: e.target.value})}
@@ -511,8 +524,24 @@ export const AbsenceManagement: React.FC = () => {
                               <option key={employee.id} value={employee.id}>{employee.name}</option>
                             ))}
                           </select>
-                        </div>
-                      )}
+                        ) : (
+                          <input
+                            type="text"
+                            value={(() => {
+                              // Para empleados regulares, siempre mostrar su propio nombre
+                              if (currentEmployee?.role === 'empleado') {
+                                return currentEmployee?.name || '';
+                              }
+                              // Para encargados/distrito, mostrar el nombre del empleado seleccionado
+                              const selectedEmployee = employees.find(emp => emp.id === newRequest.employeeId);
+                              return selectedEmployee?.name || '';
+                            })()}
+                            className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-300 cursor-not-allowed"
+                            disabled
+                            readOnly
+                          />
+                        )}
+                      </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('absenceType')}</label>
                         <select

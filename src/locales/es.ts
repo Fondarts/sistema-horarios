@@ -371,5 +371,10 @@ export const es = {
   myShifts: 'Mis Turnos',
   shiftCalendar: 'Calendario de Turnos',
   list: 'Lista',
-  calendar: 'Calendario'
+  calendar: 'Calendario',
+  noShiftsThisWeek: 'No tienes turnos asignados esta semana',
+  noShiftsThisMonth: 'No tienes turnos asignados este mes',
+  previousMonth: 'Mes Anterior',
+  nextMonth: 'Mes Siguiente',
+  closeSession: 'Cerrar Sesión'
 };

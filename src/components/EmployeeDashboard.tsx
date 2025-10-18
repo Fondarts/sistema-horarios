@@ -5,7 +5,7 @@ import { useEmployees } from '../contexts/EmployeeContext';
 import { useHolidays } from '../contexts/HolidayContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { format, startOfWeek, endOfWeek, eachDayOfInterval, addWeeks, subWeeks, startOfMonth, endOfMonth, addMonths, subMonths, isSameMonth, isSameDay } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { es, enUS } from 'date-fns/locale';
 import { ChevronLeft, ChevronRight, LogOut, Calendar, Clock, UserX, List, Grid3X3 } from 'lucide-react';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { useCompactMode } from '../contexts/CompactModeContext';
@@ -26,6 +26,9 @@ export default function EmployeeDashboard() {
   const { holidays, isHoliday, getHolidayForDate } = useHolidays();
   const { isCompactMode, toggleCompactMode, isMobile } = useCompactMode();
   const { t, language } = useLanguage();
+  
+  // Get the appropriate locale for date formatting
+  const dateLocale = language === 'es' ? es : enUS;
   const [currentWeek, setCurrentWeek] = useState(new Date());
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [showBirthdayNotification, setShowBirthdayNotification] = useState(true);
@@ -191,7 +194,7 @@ export default function EmployeeDashboard() {
                   <button
                     onClick={() => setShowConfig(true)}
                     className="flex items-center text-gray-600 hover:text-gray-900 transition-colors dark:text-gray-400 dark:hover:text-gray-100"
-                    title="Configuración"
+                    title={t('configuration')}
                   >
                     <Settings className="w-5 h-5" />
                   </button>
@@ -206,7 +209,7 @@ export default function EmployeeDashboard() {
                   className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
                 >
                   <LogOut className="w-4 h-4" />
-                  <span>Cerrar Sesión</span>
+                  <span>{t('closeSession')}</span>
                 </button>
               )}
               
@@ -252,7 +255,7 @@ export default function EmployeeDashboard() {
             >
               <div className="flex items-center">
                 <UserX className="w-4 h-4 mr-2" />
-                Vacaciones y Ausencias
+                {t('vacationsAndAbsences')}
               </div>
             </button>
           </nav>
@@ -310,7 +313,7 @@ export default function EmployeeDashboard() {
                     <span>{t('previousWeek')}</span>
                   </button>
                   <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                    {format(weekStart, 'd MMM', { locale: es })} - {format(weekEnd, 'd MMM yyyy', { locale: es })}
+                    {format(weekStart, 'd MMM', { locale: dateLocale })} - {format(weekEnd, 'd MMM yyyy', { locale: dateLocale })}
                   </h2>
                   <button
                     onClick={() => navigateWeek('next')}
@@ -327,16 +330,16 @@ export default function EmployeeDashboard() {
                     className="flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
                   >
                     <ChevronLeft className="w-4 h-4" />
-                    <span>Mes Anterior</span>
+                    <span>{t('previousMonth')}</span>
                   </button>
                   <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                    {format(currentMonth, 'MMMM yyyy', { locale: es })}
+                    {format(currentMonth, 'MMMM yyyy', { locale: dateLocale })}
                   </h2>
                   <button
                     onClick={() => navigateMonth('next')}
                     className="flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
                   >
-                    <span>Mes Siguiente</span>
+                    <span>{t('nextMonth')}</span>
                     <ChevronRight className="w-4 h-4" />
                   </button>
                 </>
@@ -394,15 +397,15 @@ export default function EmployeeDashboard() {
             employeeShifts.length === 0 ? (
               <div className="text-center py-12">
                 <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-600 dark:text-gray-400">No tienes turnos asignados esta semana</p>
+                <p className="text-gray-600 dark:text-gray-400">{t('noShiftsThisWeek')}</p>
               </div>
             ) : (
               <div className="divide-y divide-gray-200 dark:divide-gray-700">
                 {employeeShifts.map((shift) => {
                   const shiftDate = new Date(shift.date);
-                  const dayName = format(shiftDate, 'EEEE', { locale: es });
+                  const dayName = format(shiftDate, 'EEEE', { locale: dateLocale });
                   const dayNumber = format(shiftDate, 'd');
-                  const month = format(shiftDate, 'MMM', { locale: es });
+                  const month = format(shiftDate, 'MMM', { locale: dateLocale });
                   
                   return (
                     <div key={shift.id} className="px-6 py-4 flex items-center justify-between">
@@ -415,7 +418,7 @@ export default function EmployeeDashboard() {
                         </div>
                         <div>
                           <p className="text-sm font-medium text-gray-900 dark:text-gray-100 capitalize">
-                            {dayName}, {dayNumber} de {month}
+                            {language === 'es' ? `${dayName}, ${dayNumber} de ${month}` : `${dayName}, ${month} ${dayNumber}`}
                           </p>
                           <p className="text-sm text-gray-600 dark:text-gray-400">
                             {shift.startTime} - {shift.endTime}
@@ -437,7 +440,10 @@ export default function EmployeeDashboard() {
             // Vista de Calendario
             <div className="p-6">
               <div className="grid grid-cols-7 gap-1 mb-4">
-                {['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'].map((day) => (
+                {(language === 'es' 
+                  ? ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']
+                  : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+                ).map((day) => (
                   <div key={day} className="text-center text-sm font-medium text-gray-600 dark:text-gray-400 py-2">
                     {day}
                   </div>
@@ -505,7 +511,7 @@ export default function EmployeeDashboard() {
               {employeeShiftsMonth.length === 0 && (
                 <div className="text-center py-8">
                   <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600 dark:text-gray-400">No tienes turnos asignados este mes</p>
+                  <p className="text-gray-600 dark:text-gray-400">{t('noShiftsThisMonth')}</p>
                 </div>
               )}
             </div>
@@ -513,7 +519,7 @@ export default function EmployeeDashboard() {
         </div>
           </>
         ) : (
-          <AbsenceManagement />
+          <AbsenceManagement isEmployeeDashboard={true} />
         )}
       </div>
 
@@ -529,6 +535,7 @@ export default function EmployeeDashboard() {
       <ConfigurationModal 
         isOpen={showConfig}
         onClose={() => setShowConfig(false)}
+        isEmployeeDashboard={true}
       />
     </div>
   );

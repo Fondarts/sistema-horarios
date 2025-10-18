@@ -3,16 +3,19 @@ import { X, Settings, Globe, Flag, Calendar } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useCountry, Country } from '../contexts/CountryContext';
 import { useDateFormat, DateFormat } from '../contexts/DateFormatContext';
+import { useAuth } from '../contexts/AuthContext';
 
 interface ConfigurationModalProps {
   isOpen: boolean;
   onClose: () => void;
+  isEmployeeDashboard?: boolean;
 }
 
-export function ConfigurationModal({ isOpen, onClose }: ConfigurationModalProps) {
+export function ConfigurationModal({ isOpen, onClose, isEmployeeDashboard = false }: ConfigurationModalProps) {
   const { language, setLanguage, t } = useLanguage();
   const { country, setCountry } = useCountry();
   const { dateFormat, setDateFormat } = useDateFormat();
+  const { currentEmployee } = useAuth();
 
   const languages = [
     { code: 'es', name: 'Español', flag: '🇪🇸' },
@@ -94,24 +97,26 @@ export function ConfigurationModal({ isOpen, onClose }: ConfigurationModalProps)
                 </select>
               </div>
 
-              {/* País */}
-              <div>
-                <label className="flex items-center space-x-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                  <Flag className="w-4 h-4" />
-                  <span>{t('country')}</span>
-                </label>
-                <select
-                  value={country}
-                  onChange={(e) => setCountry(e.target.value as Country)}
-                  className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  {countries.map((countryOption) => (
-                    <option key={countryOption.code} value={countryOption.code}>
-                      {countryOption.flag} {countryOption.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              {/* País - Solo para encargados y encargados de distrito, pero NO desde dashboard de empleado */}
+              {!isEmployeeDashboard && (currentEmployee?.role === 'encargado' || currentEmployee?.role === 'distrito') && (
+                <div>
+                  <label className="flex items-center space-x-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                    <Flag className="w-4 h-4" />
+                    <span>{t('country')}</span>
+                  </label>
+                  <select
+                    value={country}
+                    onChange={(e) => setCountry(e.target.value as Country)}
+                    className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    {countries.map((countryOption) => (
+                      <option key={countryOption.code} value={countryOption.code}>
+                        {countryOption.flag} {countryOption.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
               {/* Formato de Fecha */}
               <div>
