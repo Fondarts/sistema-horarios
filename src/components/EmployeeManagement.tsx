@@ -238,8 +238,20 @@ export function EmployeeManagement() {
     setShowAddForm(true);
   };
 
+  // Función para validar username (solo letras, números y puntos)
+  const validateUsername = (username: string): boolean => {
+    const usernameRegex = /^[a-zA-Z0-9.]+$/;
+    return usernameRegex.test(username);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validar username
+    if (!validateUsername(formData.username)) {
+      alert('El nombre de usuario solo puede contener letras, números y puntos (sin tildes ni caracteres especiales)');
+      return;
+    }
     
     if (editingEmployee) {
       updateEmployee(editingEmployee.id, formData);
@@ -317,13 +329,20 @@ export function EmployeeManagement() {
                   type="text"
                   value={formData.username}
                   onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}
-                  className="input-field"
+                  className={`input-field ${formData.username && !validateUsername(formData.username) ? 'border-red-500 focus:ring-red-500' : ''}`}
                   placeholder="Ej: ana.perez"
+                  pattern="[a-zA-Z0-9.]+"
+                  title="Solo letras, números y puntos (sin tildes ni caracteres especiales)"
                   required
                 />
                 <p className="text-xs text-gray-500 mt-1">
                   {t('uniqueUsernameForLogin')}
                 </p>
+                {formData.username && !validateUsername(formData.username) && (
+                  <p className="text-xs text-red-500 mt-1">
+                    Solo se permiten letras, números y puntos (sin tildes ni caracteres especiales)
+                  </p>
+                )}
               </div>
               
               <div>
