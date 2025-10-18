@@ -41,9 +41,9 @@ export function ConfigurationModal({ isOpen, onClose }: ConfigurationModalProps)
   ];
 
   const dateFormats = [
-    { code: 'dd/mm/yyyy' as DateFormat, name: t('dateFormatDDMMYYYY'), example: '31/12/2024' },
-    { code: 'mm/dd/yyyy' as DateFormat, name: t('dateFormatMMDDYYYY'), example: '12/31/2024' },
-    { code: 'yyyy/mm/dd' as DateFormat, name: t('dateFormatYYYYMMDD'), example: '2024/12/31' }
+    { code: 'dd/mm/yyyy' as DateFormat, name: t('dateFormatDDMMYYYY') },
+    { code: 'mm/dd/yyyy' as DateFormat, name: t('dateFormatMMDDYYYY') },
+    { code: 'yyyy/mm/dd' as DateFormat, name: t('dateFormatYYYYMMDD') }
   ];
 
   const handleSave = () => {
@@ -126,7 +126,7 @@ export function ConfigurationModal({ isOpen, onClose }: ConfigurationModalProps)
                 >
                   {dateFormats.map((format) => (
                     <option key={format.code} value={format.code}>
-                      {format.name} ({format.example})
+                      {format.name}
                     </option>
                   ))}
                 </select>
