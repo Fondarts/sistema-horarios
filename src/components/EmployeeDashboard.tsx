@@ -25,7 +25,7 @@ export default function EmployeeDashboard() {
   const { employees } = useEmployees();
   const { holidays, isHoliday, getHolidayForDate } = useHolidays();
   const { isCompactMode, toggleCompactMode, isMobile } = useCompactMode();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [currentWeek, setCurrentWeek] = useState(new Date());
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [showBirthdayNotification, setShowBirthdayNotification] = useState(true);
@@ -159,7 +159,7 @@ export default function EmployeeDashboard() {
                   <Logo />
                   <div className="ml-4">
                     <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                      {t('mySchedules')}
+                      {t('mySchedules')} - {language}
                     </h1>
                     <p className="text-gray-600 dark:text-gray-400">
                       {t('welcomeEmployee').replace('{name}', currentEmployee.name)}
