@@ -131,15 +131,13 @@ export function ExportTools() {
     const row2 = worksheet.addRow(headerRow2);
     const row3 = worksheet.addRow(headerRow3);
     
-    // Configurar celdas unificadas para cada día
+    // Configurar celdas unificadas solo para números de días (fila 1)
     days.forEach((day, dayIndex) => {
       const startCol = 2 + (dayIndex * 6); // Columna B del día actual
       const endCol = startCol + 4; // Columna F del día actual
       
-      // Unificar celdas para cada día
+      // Solo unificar celdas para el número del día (fila 1)
       worksheet.mergeCells(1, startCol, 1, endCol); // Fila 1: número del día
-      worksheet.mergeCells(2, startCol, 2, endCol); // Fila 2: día de la semana
-      worksheet.mergeCells(3, startCol, 3, endCol); // Fila 3: vacía
     });
     
     // Filas de empleados
@@ -284,6 +282,9 @@ export function ExportTools() {
         right: { style: 'thin', color: { argb: 'FF808080' } }
       };
     });
+    
+    // Configurar ancho de columnas
+    worksheet.getColumn(1).width = 20; // Columna A más ancha para nombres completos
     
     // Generar y descargar el archivo único con todas las hojas
     const buffer = await workbook.xlsx.writeBuffer();
