@@ -354,5 +354,11 @@ export const en = {
   storeNameRequired: 'Store name is required',
   confirmDeleteStore: 'Are you sure you want to delete the store "{storeName}"? This action cannot be undone.',
   shifts: 'Shifts',
-  manageStore: 'Manage Store'
+  manageStore: 'Manage Store',
+
+  // Date Format
+  dateFormat: 'Date Format',
+  dateFormatDDMMYYYY: 'DD/MM/YYYY',
+  dateFormatMMDDYYYY: 'MM/DD/YYYY',
+  dateFormatYYYYMMDD: 'YYYY/MM/DD'
 };

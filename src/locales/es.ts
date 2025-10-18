@@ -354,5 +354,11 @@ export const es = {
   storeNameRequired: 'El nombre de la tienda es obligatorio',
   confirmDeleteStore: '¿Estás seguro de que quieres eliminar la tienda "{storeName}"? Esta acción no se puede deshacer.',
   shifts: 'Turnos',
-  manageStore: 'Gestionar Tienda'
+  manageStore: 'Gestionar Tienda',
+
+  // Date Format
+  dateFormat: 'Formato de Fecha',
+  dateFormatDDMMYYYY: 'DD/MM/YYYY',
+  dateFormatMMDDYYYY: 'MM/DD/YYYY',
+  dateFormatYYYYMMDD: 'YYYY/MM/DD'
 };

@@ -12,6 +12,7 @@ import { CompactModeProvider } from './contexts/CompactModeContext';
 import { StoreProvider } from './contexts/StoreContext';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { CountryProvider } from './contexts/CountryContext';
+import { DateFormatProvider } from './contexts/DateFormatContext';
 import { AppRouter } from './components/AppRouter';
 import { NotificationStack } from './components/NotificationStack';
 
@@ -19,7 +20,8 @@ function App() {
   return (
     <LanguageProvider>
       <CountryProvider>
-        <ThemeProvider>
+        <DateFormatProvider>
+          <ThemeProvider>
         <CompactModeProvider>
           <StoreProvider>
             <EmployeeProvider>
@@ -43,6 +45,7 @@ function App() {
           </StoreProvider>
         </CompactModeProvider>
       </ThemeProvider>
+      </DateFormatProvider>
       </CountryProvider>
     </LanguageProvider>
   );
