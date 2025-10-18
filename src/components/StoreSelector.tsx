@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Building2, Plus, Edit, Trash2, BarChart3, Users, Calendar, LogOut } from 'lucide-react';
+import { Building2, Plus, Edit, Trash2, BarChart3, Users, Calendar, LogOut, Settings } from 'lucide-react';
 import { useStore } from '../contexts/StoreContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useEmployees } from '../contexts/EmployeeContext';
@@ -10,6 +10,8 @@ import { KeyboardShortcuts } from './KeyboardShortcuts';
 import { NotificationCenter } from './NotificationCenter';
 import { Logo } from './Logo';
 import { TestDataGenerator } from './TestDataGenerator';
+import { ConfigurationModal } from './ConfigurationModal';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface StoreSelectorProps {
   onStoreSelect: (storeId: string) => void;
@@ -21,10 +23,12 @@ export function StoreSelector({ onStoreSelect }: StoreSelectorProps) {
   const { getAllEmployees, getEmployeesByStore } = useEmployees();
   const { getAllShifts, getShiftsByStore } = useSchedule();
   const { isMobile } = useCompactMode();
+  const { t } = useLanguage();
   
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingStore, setEditingStore] = useState<string | null>(null);
   const [showTestDataGenerator, setShowTestDataGenerator] = useState(false);
+  const [showConfig, setShowConfig] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     address: '',
@@ -176,6 +180,13 @@ export function StoreSelector({ onStoreSelect }: StoreSelectorProps) {
                   <KeyboardShortcuts 
                     isManager={true}
                   />
+                  <button
+                    onClick={() => setShowConfig(true)}
+                    className="flex items-center text-gray-600 hover:text-gray-900 transition-colors dark:text-gray-400 dark:hover:text-gray-100"
+                    title={t('configuration')}
+                  >
+                    <Settings className="w-5 h-5" />
+                  </button>
                   <ThemeToggle />
                 </>
               )}
@@ -451,6 +462,12 @@ export function StoreSelector({ onStoreSelect }: StoreSelectorProps) {
           </div>
         )}
       </div>
+
+      {/* Modal de Configuración */}
+      <ConfigurationModal 
+        isOpen={showConfig}
+        onClose={() => setShowConfig(false)}
+      />
     </div>
   );
 }
