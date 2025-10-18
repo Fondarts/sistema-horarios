@@ -342,7 +342,6 @@ export const en = {
   generateTestData: 'Generate Test Data',
   noStoresYet: 'No stores created yet',
   createFirstStore: 'Create your first store to start managing schedules and employees.',
-  storeName: 'Store Name',
   storeAddress: 'Address',
   storePhone: 'Phone',
   storeEmail: 'Email',

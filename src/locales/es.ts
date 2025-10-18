@@ -342,7 +342,6 @@ export const es = {
   generateTestData: 'Generar Datos de Prueba',
   noStoresYet: 'Aún no hay tiendas creadas',
   createFirstStore: 'Crea tu primera tienda para comenzar a gestionar horarios y empleados.',
-  storeName: 'Nombre de la Tienda',
   storeAddress: 'Dirección',
   storePhone: 'Teléfono',
   storeEmail: 'Email',
