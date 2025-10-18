@@ -60,7 +60,34 @@ import {
 
 export const AbsenceManagement: React.FC = () => {
   const { t } = useLanguage();
-  const { formatDate, parseDate } = useDateFormat();
+  const { formatDate, parseDate, dateFormat } = useDateFormat();
+  
+  // Función para obtener el placeholder dinámico según el formato de fecha
+  const getDatePlaceholder = () => {
+    switch (dateFormat) {
+      case 'mm/dd/yyyy':
+        return 'mm/dd/yyyy';
+      case 'yyyy/mm/dd':
+        return 'yyyy/mm/dd';
+      case 'dd/mm/yyyy':
+      default:
+        return 'dd/mm/yyyy';
+    }
+  };
+
+  // Función para obtener el ejemplo dinámico según el formato de fecha
+  const getDateExample = () => {
+    switch (dateFormat) {
+      case 'mm/dd/yyyy':
+        return '03/15/2024';
+      case 'yyyy/mm/dd':
+        return '2024/03/15';
+      case 'dd/mm/yyyy':
+      default:
+        return '15/03/2024';
+    }
+  };
+
   const { 
     absenceRequests, 
     addAbsenceRequest, 
@@ -493,9 +520,9 @@ export const AbsenceManagement: React.FC = () => {
                             value={newRequest.startDate}
                             onChange={(e) => setNewRequest({...newRequest, startDate: formatDateInput(e.target.value)})}
                             className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-50"
-                            placeholder="dd/mm/yyyy"
+                            placeholder={getDatePlaceholder()}
                             pattern="\d{2}/\d{2}/\d{4}"
-                            title="Formato: dd/mm/yyyy (ejemplo: 15/03/2024)"
+                            title={`Formato: ${getDatePlaceholder()} (ejemplo: ${getDateExample()})`}
                             required
                           />
                         </div>
@@ -506,9 +533,9 @@ export const AbsenceManagement: React.FC = () => {
                             value={newRequest.endDate}
                             onChange={(e) => setNewRequest({...newRequest, endDate: formatDateInput(e.target.value)})}
                             className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-50"
-                            placeholder="dd/mm/yyyy"
+                            placeholder={getDatePlaceholder()}
                             pattern="\d{2}/\d{2}/\d{4}"
-                            title="Formato: dd/mm/yyyy (ejemplo: 20/03/2024)"
+                            title={`Formato: ${getDatePlaceholder()} (ejemplo: ${getDateExample()})`}
                             required
                           />
                         </div>

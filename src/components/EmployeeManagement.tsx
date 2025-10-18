@@ -79,7 +79,34 @@ export function EmployeeManagement() {
   const { employees, addEmployee, updateEmployee, deleteEmployee, resetToMockEmployees } = useEmployees();
   const { isCompactMode, isMobile } = useCompactMode();
   const { t } = useLanguage();
-  const { formatDate } = useDateFormat();
+  const { formatDate, dateFormat } = useDateFormat();
+  
+  // Función para obtener el placeholder dinámico según el formato de fecha
+  const getDatePlaceholder = () => {
+    switch (dateFormat) {
+      case 'mm/dd/yyyy':
+        return 'mm/dd/yyyy';
+      case 'yyyy/mm/dd':
+        return 'yyyy/mm/dd';
+      case 'dd/mm/yyyy':
+      default:
+        return 'dd/mm/yyyy';
+    }
+  };
+
+  // Función para obtener el ejemplo dinámico según el formato de fecha
+  const getDateExample = () => {
+    switch (dateFormat) {
+      case 'mm/dd/yyyy':
+        return '07/22/1992';
+      case 'yyyy/mm/dd':
+        return '1992/07/22';
+      case 'dd/mm/yyyy':
+      default:
+        return '22/07/1992';
+    }
+  };
+
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
   const [formData, setFormData] = useState({
@@ -361,12 +388,12 @@ export function EmployeeManagement() {
                   value={formData.birthday}
                   onChange={(e) => setFormData(prev => ({ ...prev, birthday: formatDateInput(e.target.value) }))}
                   className="input-field"
-                  placeholder="dd/mm/yyyy"
+                  placeholder={getDatePlaceholder()}
                   pattern="\d{2}/\d{2}/\d{4}"
-                  title="Formato: dd/mm/yyyy (ejemplo: 22/07/1992)"
+                  title={`Formato: ${getDatePlaceholder()} (ejemplo: ${getDateExample()})`}
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  Formato: día/mes/año (ejemplo: 22/07/1992) - Opcional
+                  Formato: {getDatePlaceholder()} (ejemplo: {getDateExample()}) - Opcional
                 </p>
               </div>
 
@@ -379,12 +406,12 @@ export function EmployeeManagement() {
                   value={formData.startDate}
                   onChange={(e) => setFormData(prev => ({ ...prev, startDate: formatDateInput(e.target.value) }))}
                   className="input-field"
-                  placeholder="dd/mm/yyyy"
+                  placeholder={getDatePlaceholder()}
                   pattern="\d{2}/\d{2}/\d{4}"
-                  title="Formato: dd/mm/yyyy (ejemplo: 15/03/2020)"
+                  title={`Formato: ${getDatePlaceholder()} (ejemplo: ${getDateExample()})`}
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  Formato: día/mes/año (ejemplo: 15/03/2020) - Opcional
+                  Formato: {getDatePlaceholder()} (ejemplo: {getDateExample()}) - Opcional
                 </p>
               </div>
 
