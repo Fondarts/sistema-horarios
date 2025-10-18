@@ -3,7 +3,7 @@ import { useSchedule } from '../contexts/ScheduleContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useDateFormat } from '../contexts/DateFormatContext';
 import { useEmployees } from '../contexts/EmployeeContext';
-import { Download, Calendar, FileText, ExternalLink, Table } from 'lucide-react';
+import { Download, Calendar, FileText, Table } from 'lucide-react';
 import { format, startOfWeek, endOfWeek, eachDayOfInterval, addDays } from 'date-fns';
 import { es } from 'date-fns/locale';
 import ExcelJS from 'exceljs';
@@ -27,7 +27,7 @@ export function ExportTools() {
     }
   };
 
-  const [selectedFormat, setSelectedFormat] = useState<'ical' | 'csv' | 'excel' | 'google'>('ical');
+  const [selectedFormat, setSelectedFormat] = useState<'ical' | 'csv' | 'excel'>('ical');
   const [dateRange, setDateRange] = useState({
     start: format(startOfWeek(new Date(), { weekStartsOn: 1 }), 'yyyy-MM-dd'),
     end: format(endOfWeek(new Date(), { weekStartsOn: 1 }), 'yyyy-MM-dd')
@@ -296,10 +296,6 @@ export function ExportTools() {
     window.URL.revokeObjectURL(url);
   };
 
-  const exportToGoogleCalendar = () => {
-    // En una implementación real, esto integraría con la API de Google Calendar
-    alert('Funcionalidad de Google Calendar en desarrollo. Por ahora, usa la exportación iCal.');
-  };
 
   const handleExport = async () => {
     switch (selectedFormat) {
@@ -311,9 +307,6 @@ export function ExportTools() {
         break;
       case 'ical':
         exportToICal();
-        break;
-      case 'google':
-        exportToGoogleCalendar();
         break;
     }
   };
@@ -364,7 +357,7 @@ export function ExportTools() {
       {/* Format Selection */}
       <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow dark:border dark:border-gray-700">
         <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">{t('exportFormat')}</h3>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <label className="flex items-center space-x-3 p-4 border border-gray-200 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700">
             <input
               type="radio"
@@ -400,18 +393,6 @@ export function ExportTools() {
             />
             <Calendar className="w-6 h-6 text-purple-600" />
             <span className="font-medium text-gray-900 dark:text-gray-100">{t('ical')}</span>
-          </label>
-          <label className="flex items-center space-x-3 p-4 border border-gray-200 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700">
-            <input
-              type="radio"
-              name="format"
-              value="google"
-              checked={selectedFormat === 'google'}
-              onChange={(e) => setSelectedFormat(e.target.value as any)}
-              className="w-4 h-4 text-blue-600"
-            />
-            <ExternalLink className="w-6 h-6 text-red-600" />
-            <span className="font-medium text-gray-900 dark:text-gray-100">{t('google')}</span>
           </label>
         </div>
       </div>
