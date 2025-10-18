@@ -365,7 +365,7 @@ export function ExportTools() {
       <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow dark:border dark:border-gray-700">
         <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">{t('exportFormat')}</h3>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <label className="flex items-center space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
+          <label className="flex items-center space-x-3 p-4 border border-gray-200 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700">
             <input
               type="radio"
               name="format"
@@ -375,9 +375,9 @@ export function ExportTools() {
               className="w-4 h-4 text-blue-600"
             />
             <Table className="w-6 h-6 text-green-600" />
-            <span className="font-medium">{t('excel')}</span>
+            <span className="font-medium text-gray-900 dark:text-gray-100">{t('excel')}</span>
           </label>
-          <label className="flex items-center space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
+          <label className="flex items-center space-x-3 p-4 border border-gray-200 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700">
             <input
               type="radio"
               name="format"
@@ -387,9 +387,9 @@ export function ExportTools() {
               className="w-4 h-4 text-blue-600"
             />
             <FileText className="w-6 h-6 text-blue-600" />
-            <span className="font-medium">{t('csv')}</span>
+            <span className="font-medium text-gray-900 dark:text-gray-100">{t('csv')}</span>
           </label>
-          <label className="flex items-center space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
+          <label className="flex items-center space-x-3 p-4 border border-gray-200 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700">
             <input
               type="radio"
               name="format"
@@ -399,9 +399,9 @@ export function ExportTools() {
               className="w-4 h-4 text-blue-600"
             />
             <Calendar className="w-6 h-6 text-purple-600" />
-            <span className="font-medium">{t('ical')}</span>
+            <span className="font-medium text-gray-900 dark:text-gray-100">{t('ical')}</span>
           </label>
-          <label className="flex items-center space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
+          <label className="flex items-center space-x-3 p-4 border border-gray-200 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700">
             <input
               type="radio"
               name="format"
@@ -411,7 +411,7 @@ export function ExportTools() {
               className="w-4 h-4 text-blue-600"
             />
             <ExternalLink className="w-6 h-6 text-red-600" />
-            <span className="font-medium">{t('google')}</span>
+            <span className="font-medium text-gray-900 dark:text-gray-100">{t('google')}</span>
           </label>
         </div>
       </div>
