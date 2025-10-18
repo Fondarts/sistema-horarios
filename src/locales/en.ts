@@ -215,7 +215,7 @@ export const en = {
   // Holidays
   holidayName: 'Holiday Name',
   holidayDate: 'Holiday Date',
-  addHoliday: 'Add Holiday',
+  addHoliday: 'Add',
   editHoliday: 'Edit Holiday',
   automaticHolidayManagement: 'Automatic management of national holidays',
   addCustomHoliday: 'Add Custom Holiday',

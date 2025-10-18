@@ -215,7 +215,7 @@ export const es = {
   // Holidays
   holidayName: 'Nombre del Feriado',
   holidayDate: 'Fecha del Feriado',
-  addHoliday: 'Agregar Feriado',
+  addHoliday: 'Agregar',
   editHoliday: 'Editar Feriado',
   automaticHolidayManagement: 'Gestión automática de días festivos nacionales',
   addCustomHoliday: 'Agregar Feriado Personalizado',
