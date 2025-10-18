@@ -360,5 +360,21 @@ export const en = {
   dateFormat: 'Date Format',
   dateFormatDDMMYYYY: 'DD/MM/YYYY',
   dateFormatMMDDYYYY: 'MM/DD/YYYY',
-  dateFormatYYYYMMDD: 'YYYY/MM/DD'
+  dateFormatYYYYMMDD: 'YYYY/MM/DD',
+
+  // Employee Dashboard
+  mySchedules: 'My Schedules',
+  welcomeEmployee: 'Welcome, {name}',
+  shiftsThisWeek: 'Shifts This Week',
+  totalHours: 'Total Hours',
+  weeklyCap: 'Weekly Cap',
+  previousWeek: 'Previous Week',
+  nextWeek: 'Next Week',
+  thisWeek: 'This Week',
+  thisMonth: 'This Month',
+  myShifts: 'My Shifts',
+  shiftCalendar: 'Shift Calendar',
+  list: 'List',
+  calendar: 'Calendar',
+  duration: 'duration'
 };

@@ -3,6 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useSchedule } from '../contexts/ScheduleContext';
 import { useEmployees } from '../contexts/EmployeeContext';
 import { useHolidays } from '../contexts/HolidayContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import { format, startOfWeek, endOfWeek, eachDayOfInterval, addWeeks, subWeeks, startOfMonth, endOfMonth, addMonths, subMonths, isSameMonth, isSameDay } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { ChevronLeft, ChevronRight, LogOut, Calendar, Clock, UserX, List, Grid3X3 } from 'lucide-react';
@@ -24,6 +25,7 @@ export default function EmployeeDashboard() {
   const { employees } = useEmployees();
   const { holidays, isHoliday, getHolidayForDate } = useHolidays();
   const { isCompactMode, toggleCompactMode, isMobile } = useCompactMode();
+  const { t } = useLanguage();
   const [currentWeek, setCurrentWeek] = useState(new Date());
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [showBirthdayNotification, setShowBirthdayNotification] = useState(true);
@@ -157,10 +159,10 @@ export default function EmployeeDashboard() {
                   <Logo />
                   <div className="ml-4">
                     <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                      Mis Horarios
+                      {t('mySchedules')}
                     </h1>
                     <p className="text-gray-600 dark:text-gray-400">
-                      Bienvenido/a, {currentEmployee.name}
+                      {t('welcomeEmployee').replace('{name}', currentEmployee.name)}
                     </p>
                   </div>
                 </>
@@ -168,7 +170,7 @@ export default function EmployeeDashboard() {
                 /* En móvil solo mostrar saludo */
                 <div>
                   <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                    Bienvenido/a, {currentEmployee.name}
+                    {t('welcomeEmployee').replace('{name}', currentEmployee.name)}
                   </h1>
                 </div>
               )}
@@ -237,7 +239,7 @@ export default function EmployeeDashboard() {
             >
               <div className="flex items-center">
                 <Calendar className="w-4 h-4 mr-2" />
-                Mis Horarios
+                {t('mySchedules')}
               </div>
             </button>
             <button
@@ -267,7 +269,7 @@ export default function EmployeeDashboard() {
             <div className="flex items-center">
               <Calendar className="w-8 h-8 text-primary-600 mr-3" />
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Turnos Esta Semana</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">{t('shiftsThisWeek')}</p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{employeeShifts.length}</p>
               </div>
             </div>
@@ -277,7 +279,7 @@ export default function EmployeeDashboard() {
             <div className="flex items-center">
               <Clock className="w-8 h-8 text-green-600 mr-3" />
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Horas Totales</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">{t('totalHours')}</p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{formatHours(totalHours)}</p>
               </div>
             </div>
@@ -287,7 +289,7 @@ export default function EmployeeDashboard() {
             <div className="flex items-center">
               <div className="w-8 h-8 rounded-full mr-3" style={{ backgroundColor: currentEmployee.color }}></div>
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Tope Semanal</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">{t('weeklyCap')}</p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{currentEmployee.weeklyLimit}h</p>
               </div>
             </div>
@@ -305,7 +307,7 @@ export default function EmployeeDashboard() {
                     className="flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
                   >
                     <ChevronLeft className="w-4 h-4" />
-                    <span>Semana Anterior</span>
+                    <span>{t('previousWeek')}</span>
                   </button>
                   <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                     {format(weekStart, 'd MMM', { locale: es })} - {format(weekEnd, 'd MMM yyyy', { locale: es })}
@@ -314,7 +316,7 @@ export default function EmployeeDashboard() {
                     onClick={() => navigateWeek('next')}
                     className="flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
                   >
-                    <span>Semana Siguiente</span>
+                    <span>{t('nextWeek')}</span>
                     <ChevronRight className="w-4 h-4" />
                   </button>
                 </>
@@ -345,7 +347,7 @@ export default function EmployeeDashboard() {
                 onClick={() => viewMode === 'list' ? setCurrentWeek(new Date()) : setCurrentMonth(new Date())}
                 className="text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300"
               >
-                {viewMode === 'list' ? 'Esta Semana' : 'Este Mes'}
+                {viewMode === 'list' ? t('thisWeek') : t('thisMonth')}
               </button>
             </div>
           </div>
@@ -356,7 +358,7 @@ export default function EmployeeDashboard() {
           <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
             <div className="flex justify-between items-center">
               <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
-                {viewMode === 'list' ? 'Mis Turnos' : 'Calendario de Turnos'}
+                {viewMode === 'list' ? t('myShifts') : t('shiftCalendar')}
               </h3>
               
               {/* View Toggle */}
@@ -370,7 +372,7 @@ export default function EmployeeDashboard() {
                   }`}
                 >
                   <List className="w-4 h-4" />
-                  <span>Lista</span>
+                  <span>{t('list')}</span>
                 </button>
                 <button
                   onClick={() => setViewMode('calendar')}
@@ -381,7 +383,7 @@ export default function EmployeeDashboard() {
                   }`}
                 >
                   <Grid3X3 className="w-4 h-4" />
-                  <span>Calendario</span>
+                  <span>{t('calendar')}</span>
                 </button>
               </div>
             </div>
@@ -424,7 +426,7 @@ export default function EmployeeDashboard() {
                         <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
                           {formatHours(shift.hours)}
                         </p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">duración</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">{t('duration')}</p>
                       </div>
                     </div>
                   );
