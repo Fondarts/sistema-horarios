@@ -29,7 +29,13 @@ export function ConfigurationModal({ isOpen, onClose }: ConfigurationModalProps)
     { code: 'PE', name: 'Perú', flag: '🇵🇪' },
     { code: 'MX', name: 'México', flag: '🇲🇽' },
     { code: 'ES', name: 'España', flag: '🇪🇸' },
-    { code: 'US', name: 'Estados Unidos', flag: '🇺🇸' }
+    { code: 'US', name: 'Estados Unidos', flag: '🇺🇸' },
+    { code: 'PT', name: 'Portugal', flag: '🇵🇹' },
+    { code: 'DE', name: 'Alemania', flag: '🇩🇪' },
+    { code: 'GB', name: 'Inglaterra', flag: '🇬🇧' },
+    { code: 'IT', name: 'Italia', flag: '🇮🇹' },
+    { code: 'FR', name: 'Francia', flag: '🇫🇷' },
+    { code: 'AD', name: 'Andorra', flag: '🇦🇩' }
   ];
 
   const handleSave = () => {

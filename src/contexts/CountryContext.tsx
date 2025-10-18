@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
-export type Country = 'AR' | 'UY' | 'CL' | 'CO' | 'PE' | 'MX' | 'ES' | 'US';
+export type Country = 'AR' | 'UY' | 'CL' | 'CO' | 'PE' | 'MX' | 'ES' | 'US' | 'PT' | 'DE' | 'GB' | 'IT' | 'FR' | 'AD';
 
 interface CountryContextType {
   country: Country;

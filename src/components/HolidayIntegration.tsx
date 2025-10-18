@@ -47,7 +47,13 @@ export function HolidayIntegration() {
       'CO': 'Colombia',
       'PE': 'Perú',
       'MX': 'México',
-      'US': 'Estados Unidos'
+      'US': 'Estados Unidos',
+      'PT': 'Portugal',
+      'DE': 'Alemania',
+      'GB': 'Inglaterra',
+      'IT': 'Italia',
+      'FR': 'Francia',
+      'AD': 'Andorra'
     };
     return countryNames[countryCode] || 'España';
   };
