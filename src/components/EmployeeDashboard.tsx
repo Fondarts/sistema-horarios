@@ -29,6 +29,21 @@ export default function EmployeeDashboard() {
   
   // Get the appropriate locale for date formatting
   const dateLocale = language === 'es' ? es : enUS;
+  
+  // Function to get translated day name
+  const getTranslatedDayName = (date: Date) => {
+    const dayOfWeek = date.getDay(); // 0 = Sunday, 1 = Monday, etc.
+    const dayNames = [
+      t('daysOfWeek.sunday'),
+      t('daysOfWeek.monday'),
+      t('daysOfWeek.tuesday'),
+      t('daysOfWeek.wednesday'),
+      t('daysOfWeek.thursday'),
+      t('daysOfWeek.friday'),
+      t('daysOfWeek.saturday')
+    ];
+    return dayNames[dayOfWeek];
+  };
   const [currentWeek, setCurrentWeek] = useState(new Date());
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [showBirthdayNotification, setShowBirthdayNotification] = useState(true);
@@ -403,7 +418,7 @@ export default function EmployeeDashboard() {
               <div className="divide-y divide-gray-200 dark:divide-gray-700">
                 {employeeShifts.map((shift) => {
                   const shiftDate = new Date(shift.date);
-                  const dayName = format(shiftDate, 'EEEE', { locale: dateLocale });
+                  const dayName = getTranslatedDayName(shiftDate);
                   const dayNumber = format(shiftDate, 'd');
                   const month = format(shiftDate, 'MMM', { locale: dateLocale });
                   
