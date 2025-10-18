@@ -332,5 +332,34 @@ export const es = {
     friday: 'Viernes',
     saturday: 'Sábado',
     sunday: 'Domingo'
-  }
+  },
+
+  // Store Management
+  storeManagement: 'Gestión de Tiendas',
+  welcomeSelectStore: 'Bienvenido/a, {name}. Selecciona una tienda para gestionar o crea una nueva.',
+  activeStores: 'Tiendas Activas',
+  totalEmployees: 'Empleados Total',
+  totalShifts: 'Turnos Total',
+  storeList: 'Lista de Tiendas',
+  createStore: 'Crear Tienda',
+  generateTestData: 'Generar Datos de Prueba',
+  noStoresYet: 'Aún no hay tiendas creadas',
+  createFirstStore: 'Crea tu primera tienda para comenzar a gestionar horarios y empleados.',
+  storeName: 'Nombre de la Tienda',
+  storeAddress: 'Dirección',
+  storePhone: 'Teléfono',
+  storeEmail: 'Email',
+  storeNamePlaceholder: 'Ej: Tienda Centro',
+  storeAddressPlaceholder: 'Ej: Calle Principal 123',
+  storePhonePlaceholder: 'Ej: +34 123 456 789',
+  storeEmailPlaceholder: 'Ej: tienda@empresa.com',
+  editStore: 'Editar Tienda',
+  deleteStore: 'Eliminar Tienda',
+  editStoreTitle: 'Editar Tienda',
+  createStoreTitle: 'Crear Nueva Tienda',
+  storeNameRequired: 'El nombre de la tienda es obligatorio',
+  confirmDeleteStore: '¿Estás seguro de que quieres eliminar la tienda "{storeName}"? Esta acción no se puede deshacer.',
+  employees: 'Empleados',
+  shifts: 'Turnos',
+  manageStore: 'Gestionar Tienda'
 };

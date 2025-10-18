@@ -326,11 +326,40 @@ export const en = {
   // Days of week
   daysOfWeek: {
     monday: 'Monday',
-    tuesday: 'Tuesday', 
+    tuesday: 'Tuesday',
     wednesday: 'Wednesday',
     thursday: 'Thursday',
     friday: 'Friday',
     saturday: 'Saturday',
     sunday: 'Sunday'
-  }
+  },
+
+  // Store Management
+  storeManagement: 'Store Management',
+  welcomeSelectStore: 'Welcome, {name}. Select a store to manage or create a new one.',
+  activeStores: 'Active Stores',
+  totalEmployees: 'Total Employees',
+  totalShifts: 'Total Shifts',
+  storeList: 'Store List',
+  createStore: 'Create Store',
+  generateTestData: 'Generate Test Data',
+  noStoresYet: 'No stores created yet',
+  createFirstStore: 'Create your first store to start managing schedules and employees.',
+  storeName: 'Store Name',
+  storeAddress: 'Address',
+  storePhone: 'Phone',
+  storeEmail: 'Email',
+  storeNamePlaceholder: 'Ex: Central Store',
+  storeAddressPlaceholder: 'Ex: Main Street 123',
+  storePhonePlaceholder: 'Ex: +1 123 456 789',
+  storeEmailPlaceholder: 'Ex: store@company.com',
+  editStore: 'Edit Store',
+  deleteStore: 'Delete Store',
+  editStoreTitle: 'Edit Store',
+  createStoreTitle: 'Create New Store',
+  storeNameRequired: 'Store name is required',
+  confirmDeleteStore: 'Are you sure you want to delete the store "{storeName}"? This action cannot be undone.',
+  employees: 'Employees',
+  shifts: 'Shifts',
+  manageStore: 'Manage Store'
 };

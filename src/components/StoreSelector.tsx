@@ -38,7 +38,7 @@ export function StoreSelector({ onStoreSelect }: StoreSelectorProps) {
 
   const handleCreateStore = async () => {
     if (!formData.name.trim()) {
-      alert('El nombre de la tienda es obligatorio');
+      alert(t('storeNameRequired'));
       return;
     }
 
@@ -72,7 +72,7 @@ export function StoreSelector({ onStoreSelect }: StoreSelectorProps) {
 
   const handleEditStore = async (storeId: string) => {
     if (!formData.name.trim()) {
-      alert('El nombre de la tienda es obligatorio');
+      alert(t('storeNameRequired'));
       return;
     }
 
@@ -104,7 +104,7 @@ export function StoreSelector({ onStoreSelect }: StoreSelectorProps) {
   };
 
   const handleDeleteStore = async (storeId: string, storeName: string) => {
-    if (window.confirm(`¿Estás seguro de que quieres eliminar la tienda "${storeName}"? Esta acción no se puede deshacer.`)) {
+    if (window.confirm(t('confirmDeleteStore').replace('{storeName}', storeName))) {
       try {
         await deleteStore(storeId);
         alert('Tienda eliminada exitosamente');
@@ -148,10 +148,10 @@ export function StoreSelector({ onStoreSelect }: StoreSelectorProps) {
                   <Logo />
                   <div className="ml-4">
                     <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                      🏪 Gestión de Tiendas
+                      🏪 {t('storeManagement')}
                     </h1>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
-                      Bienvenido/a, {currentEmployee?.name}. Selecciona una tienda para gestionar o crea una nueva.
+                      {t('welcomeSelectStore').replace('{name}', currentEmployee?.name || '')}
                     </p>
                   </div>
                 </>
@@ -159,10 +159,10 @@ export function StoreSelector({ onStoreSelect }: StoreSelectorProps) {
                 /* En móvil solo mostrar saludo */
                 <div>
                   <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                    🏪 Gestión de Tiendas
+                    🏪 {t('storeManagement')}
                   </h1>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Bienvenido/a, {currentEmployee?.name}
+                    {t('welcome')}, {currentEmployee?.name}
                   </p>
                 </div>
               )}
@@ -214,7 +214,7 @@ export function StoreSelector({ onStoreSelect }: StoreSelectorProps) {
             <div className="flex items-center">
               <Building2 className="w-8 h-8 text-blue-600 dark:text-blue-400" />
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Tiendas Activas</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('activeStores')}</p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{Array.isArray(stores) ? stores.length : 0}</p>
               </div>
             </div>
@@ -224,7 +224,7 @@ export function StoreSelector({ onStoreSelect }: StoreSelectorProps) {
             <div className="flex items-center">
               <Users className="w-8 h-8 text-green-600 dark:text-green-400" />
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Empleados Total</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('totalEmployees')}</p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{getAllEmployees().length}</p>
               </div>
             </div>
@@ -234,7 +234,7 @@ export function StoreSelector({ onStoreSelect }: StoreSelectorProps) {
             <div className="flex items-center">
               <Calendar className="w-8 h-8 text-purple-600 dark:text-purple-400" />
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Turnos Total</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('totalShifts')}</p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{getAllShifts().length}</p>
               </div>
             </div>
@@ -246,7 +246,7 @@ export function StoreSelector({ onStoreSelect }: StoreSelectorProps) {
           <div className="p-6 border-b border-gray-200 dark:border-gray-700">
             <div className="flex justify-between items-center">
               <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                Tiendas Disponibles
+                {t('storeList')}
               </h2>
               <div className="flex space-x-3">
                 <button
@@ -254,14 +254,14 @@ export function StoreSelector({ onStoreSelect }: StoreSelectorProps) {
                   className="btn-secondary flex items-center"
                 >
                   <Building2 className="w-4 h-4 mr-2" />
-                  Datos de Prueba
+                  {t('generateTestData')}
                 </button>
                 <button
                   onClick={() => setShowCreateForm(true)}
                   className="btn-primary flex items-center"
                 >
                   <Plus className="w-4 h-4 mr-2" />
-                  Nueva Tienda
+                  {t('createStore')}
                 </button>
               </div>
             </div>
@@ -272,17 +272,17 @@ export function StoreSelector({ onStoreSelect }: StoreSelectorProps) {
               <div className="text-center py-12">
                 <Building2 className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-                  No hay tiendas disponibles
+                  {t('noStoresYet')}
                 </h3>
                 <p className="text-gray-600 dark:text-gray-400 mb-6">
-                  Crea tu primera tienda para comenzar a gestionar horarios.
+                  {t('createFirstStore')}
                 </p>
                 <button
                   onClick={() => setShowCreateForm(true)}
                   className="btn-primary flex items-center mx-auto"
                 >
                   <Plus className="w-4 h-4 mr-2" />
-                  Crear Primera Tienda
+                  {t('createStore')}
                 </button>
               </div>
             ) : (
@@ -312,14 +312,14 @@ export function StoreSelector({ onStoreSelect }: StoreSelectorProps) {
                           <button
                             onClick={() => openEditForm(store)}
                             className="p-2 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400"
-                            title="Editar tienda"
+                            title={t('editStore')}
                           >
                             <Edit className="w-4 h-4" />
                           </button>
                           <button
                             onClick={() => handleDeleteStore(store.id, store.name)}
                             className="p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400"
-                            title="Eliminar tienda"
+                            title={t('deleteStore')}
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -331,13 +331,13 @@ export function StoreSelector({ onStoreSelect }: StoreSelectorProps) {
                           <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                             {stats.employees}
                           </p>
-                          <p className="text-xs text-gray-600 dark:text-gray-400">Empleados</p>
+                          <p className="text-xs text-gray-600 dark:text-gray-400">{t('employees')}</p>
                         </div>
                         <div className="text-center">
                           <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                             {stats.shifts}
                           </p>
-                          <p className="text-xs text-gray-600 dark:text-gray-400">Turnos</p>
+                          <p className="text-xs text-gray-600 dark:text-gray-400">{t('shifts')}</p>
                         </div>
                       </div>
 
@@ -345,7 +345,7 @@ export function StoreSelector({ onStoreSelect }: StoreSelectorProps) {
                         onClick={() => onStoreSelect(store.id)}
                         className="w-full btn-primary"
                       >
-                        Entrar a la Tienda
+                        {t('manageStore')}
                       </button>
                     </div>
                   );
@@ -360,60 +360,60 @@ export function StoreSelector({ onStoreSelect }: StoreSelectorProps) {
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-gray-200 dark:bg-gray-800 p-6 rounded-lg shadow-xl w-full max-w-md">
               <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
-                {editingStore ? 'Editar Tienda' : 'Nueva Tienda'}
+                {editingStore ? t('editStoreTitle') : t('createStoreTitle')}
               </h3>
               
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Nombre de la Tienda *
+                    {t('storeName')} *
                   </label>
                   <input
                     type="text"
                     value={formData.name}
                     onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                     className="input-field"
-                    placeholder="Ej: Tienda Centro"
+                    placeholder={t('storeNamePlaceholder')}
                     required
                   />
                 </div>
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Dirección
+                    {t('storeAddress')}
                   </label>
                   <input
                     type="text"
                     value={formData.address}
                     onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
                     className="input-field"
-                    placeholder="Ej: Calle Principal 123"
+                    placeholder={t('storeAddressPlaceholder')}
                   />
                 </div>
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Teléfono
+                    {t('storePhone')}
                   </label>
                   <input
                     type="tel"
                     value={formData.phone}
                     onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
                     className="input-field"
-                    placeholder="Ej: +34 123 456 789"
+                    placeholder={t('storePhonePlaceholder')}
                   />
                 </div>
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Email
+                    {t('storeEmail')}
                   </label>
                   <input
                     type="email"
                     value={formData.email}
                     onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
                     className="input-field"
-                    placeholder="Ej: tienda@empresa.com"
+                    placeholder={t('storeEmailPlaceholder')}
                   />
                 </div>
               </div>
@@ -427,13 +427,13 @@ export function StoreSelector({ onStoreSelect }: StoreSelectorProps) {
                   }}
                   className="btn-secondary"
                 >
-                  Cancelar
+                  {t('cancel')}
                 </button>
                 <button
                   onClick={editingStore ? () => handleEditStore(editingStore) : handleCreateStore}
                   className="btn-primary"
                 >
-                  {editingStore ? 'Guardar Cambios' : 'Crear Tienda'}
+                  {editingStore ? t('save') : t('createStore')}
                 </button>
               </div>
             </div>
