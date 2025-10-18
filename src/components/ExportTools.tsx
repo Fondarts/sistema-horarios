@@ -120,10 +120,10 @@ export function ExportTools() {
       const dayNumber = day.getDate();
       const dayName = format(day, 'EEEE', { locale: es });
       
-      // Para cada día: número del día (unificado en 5 columnas) + HOURS
-      headerRow1.push(dayNumber.toString(), '', '', '', '', 'HOURS');
+      // Para cada día: número del día (unificado en 5 columnas) + celda vacía
+      headerRow1.push(dayNumber.toString(), '', '', '', '', '');
       headerRow2.push(dayName.toUpperCase(), '', '', '', '', '');
-      headerRow3.push('', '', '', '', '', '');
+      headerRow3.push('', '', '', '', '', 'HOURS');
     });
     
     // Agregar filas de headers
