@@ -123,7 +123,7 @@ export function ExportTools() {
       // Para cada día: número del día (unificado en 5 columnas) + celda vacía
       headerRow1.push(dayNumber.toString(), '', '', '', '', '');
       headerRow2.push(dayName.toUpperCase(), '', '', '', '', '');
-      headerRow3.push('', '', '', '', '', 'HOURS');
+      headerRow3.push('', '', '', '', 'HOURS', '');
     });
     
     // Agregar filas de headers
