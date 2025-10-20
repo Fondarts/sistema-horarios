@@ -549,7 +549,7 @@ export default function ScheduleManagement() {
     setModalEmployee(employee);
     setEditingShift(null);
     setShiftForm({
-      date: format(new Date(), 'yyyy-MM-dd'),
+      date: format(currentWeek, 'yyyy-MM-dd'), // Usar la fecha de la semana actual
       startTime: '09:00',
       endTime: '17:00',
       employeeId: employee.id

@@ -599,7 +599,9 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
 
   const addStoreSchedule = async (scheduleData: Omit<StoreSchedule, 'id'>) => {
     try {
-      await addDoc(collection(db, 'storeSchedule'), scheduleData);
+      console.log('ScheduleContext: addStoreSchedule called with:', scheduleData);
+      const docRef = await addDoc(collection(db, 'storeSchedule'), scheduleData);
+      console.log('ScheduleContext: addStoreSchedule completed with ID:', docRef.id);
     } catch (error) {
       console.error('Error adding store schedule:', error);
     }
@@ -607,7 +609,9 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
 
   const updateStoreSchedule = async (id: string, updates: Partial<StoreSchedule>) => {
     try {
+      console.log('ScheduleContext: updateStoreSchedule called with:', { id, updates });
       await updateDoc(doc(db, 'storeSchedule', id), updates);
+      console.log('ScheduleContext: updateStoreSchedule completed successfully');
     } catch (error) {
       console.error('Error updating store schedule:', error);
     }

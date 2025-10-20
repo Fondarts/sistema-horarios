@@ -107,47 +107,29 @@ export function ExportTools() {
   const exportToExcel = async () => {
     const startDate = new Date(dateRange.start);
     const endDate = new Date(dateRange.end);
-    const days = eachDayOfInterval({ start: startDate, end: endDate });
+    
+    // Dividir el rango en semanas completas (Lunes a Domingo)
+    const weeks = [];
+    let currentWeekStart = startOfWeek(startDate, { weekStartsOn: 1 }); // Lunes
+    
+    while (currentWeekStart <= endDate) {
+      const weekEnd = endOfWeek(currentWeekStart, { weekStartsOn: 1 }); // Domingo
+      
+      // Solo incluir la semana si tiene días dentro del rango seleccionado
+      if (weekEnd >= startDate && currentWeekStart <= endDate) {
+        const weekDays = eachDayOfInterval({ 
+          start: new Date(Math.max(currentWeekStart.getTime(), startDate.getTime())), 
+          end: new Date(Math.min(weekEnd.getTime(), endDate.getTime())) 
+        });
+        weeks.push(weekDays);
+      }
+      
+      currentWeekStart = addDays(weekEnd, 1); // Siguiente lunes
+    }
     
     // Crear un solo workbook con una sola hoja
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Horarios Semana');
-    
-    // Crear headers para todos los días
-    const headerRow1 = ['TARGET'];
-    const headerRow2 = [''];
-    const headerRow3 = [''];
-    
-    days.forEach(day => {
-      const dayNumber = day.getDate();
-      const dayName = format(day, 'EEEE', { locale: es });
-      
-      // Para cada día: 5 columnas consecutivas (sin columna separadora)
-      headerRow1.push(dayNumber.toString(), '', '', '', '');
-      headerRow2.push(dayName.toUpperCase(), '', '', '', '');
-      headerRow3.push('', '', '', '', 'HOURS');
-    });
-    
-    // Agregar columnas de resumen semanal después del domingo
-    headerRow1.push('', '', '');
-    headerRow2.push('WORKED HOURS', 'CONTRACT HOURS', 'EXTRA HOURS THIS WEEK');
-    headerRow3.push('', '', '');
-    
-    // Agregar filas de headers
-    const row1 = worksheet.addRow(headerRow1);
-    const row2 = worksheet.addRow(headerRow2);
-    const row3 = worksheet.addRow(headerRow3);
-    
-    // Configurar celdas unificadas: números de días (fila 1) y nombres de días (fila 2)
-    days.forEach((day, dayIndex) => {
-      const startCol = 2 + (dayIndex * 5); // Columna B del día actual
-      const endCol = startCol + 4; // 5 columnas por día
-      
-      // Unificar celdas para el número del día (fila 1)
-      worksheet.mergeCells(1, startCol, 1, endCol);
-      // Unificar celdas para el nombre del día (fila 2)
-      worksheet.mergeCells(2, startCol, 2, endCol);
-    });
     
     // Filas de empleados (orden personalizado si existe)
     const savedOrder = (currentStore?.settings as any)?.employeeOrder as string[] | undefined;
@@ -155,82 +137,134 @@ export function ExportTools() {
       ? savedOrder.map(id => employees.find(e => e.id === id)).filter(Boolean) as typeof employees
       : employees;
 
-    orderedEmployees.forEach(employee => {
-      const employeeRow = [employee.name]; // Columna A: nombre del empleado
-      let totalWeeklyHours = 0;
+    let currentRow = 1;
+    
+    // Procesar cada semana
+    weeks.forEach((weekDays, weekIndex) => {
+      // Crear headers para esta semana
+      const headerRow1 = ['TARGET'];
+      const headerRow2 = [''];
+      const headerRow3 = [''];
       
-      // Para cada día, agregar los datos del empleado
-      days.forEach(day => {
-        const dayStr = format(day, 'yyyy-MM-dd');
-        const dayShifts = publishedShifts.filter(shift => 
-          shift.date === dayStr && shift.employeeId === employee.id
-        );
+      weekDays.forEach(day => {
+        const dayNumber = day.getDate();
+        const dayName = format(day, 'EEEE', { locale: es });
         
-        // Llenar horarios para hasta 2 turnos (4 columnas)
-        if (dayShifts.length > 0) {
-          employeeRow.push(dayShifts[0].startTime, dayShifts[0].endTime);
-        } else {
-          employeeRow.push('', '');
-        }
-        
-        if (dayShifts.length > 1) {
-          employeeRow.push(dayShifts[1].startTime, dayShifts[1].endTime);
-        } else {
-          employeeRow.push('', '');
-        }
-        
-        // Calcular total de horas del empleado en este día
-        const totalDayHours = dayShifts.reduce((sum, shift) => sum + shift.hours, 0);
-        totalWeeklyHours += totalDayHours;
-        employeeRow.push(totalDayHours > 0 ? formatHoursToHHMM(totalDayHours) : '0:00');
+        // Para cada día: 5 columnas consecutivas (sin columna separadora)
+        headerRow1.push(dayNumber.toString(), '', '', '', '');
+        headerRow2.push(dayName.toUpperCase(), '', '', '', '');
+        headerRow3.push('', '', '', '', 'HOURS');
       });
       
-      // Agregar columnas de resumen semanal
-      const contractHours = employee.weeklyLimit || 40; // Horas por contrato (default 40)
-      const extraHours = Math.max(0, totalWeeklyHours - contractHours);
+      // Agregar columnas de resumen semanal después del domingo
+      headerRow1.push('', '', '');
+      headerRow2.push('WORKED HOURS', 'CONTRACT HOURS', 'EXTRA HOURS THIS WEEK');
+      headerRow3.push('', '', '');
       
-      employeeRow.push(
-        formatHoursToHHMM(totalWeeklyHours), // WORKED HOURS
-        formatHoursToHHMM(contractHours),    // CONTRACT HOURS
-        formatHoursToHHMM(extraHours)        // EXTRA HOURS THIS WEEK
+      // Agregar filas de headers
+      const row1 = worksheet.addRow(headerRow1);
+      const row2 = worksheet.addRow(headerRow2);
+      const row3 = worksheet.addRow(headerRow3);
+      
+      // Configurar celdas unificadas: números de días (fila 1) y nombres de días (fila 2)
+      weekDays.forEach((day, dayIndex) => {
+        const startCol = 2 + (dayIndex * 5); // Columna B del día actual
+        const endCol = startCol + 4; // 5 columnas por día
+        
+        // Unificar celdas para el número del día (fila 1)
+        worksheet.mergeCells(currentRow, startCol, currentRow, endCol);
+        // Unificar celdas para el nombre del día (fila 2)
+        worksheet.mergeCells(currentRow + 1, startCol, currentRow + 1, endCol);
+      });
+      
+      currentRow += 3; // Avanzar 3 filas (headers)
+      
+      // Filas de empleados para esta semana
+      orderedEmployees.forEach(employee => {
+        const employeeRow = [employee.name]; // Columna A: nombre del empleado
+        let totalWeeklyHours = 0;
+        
+        // Para cada día de esta semana, agregar los datos del empleado
+        weekDays.forEach(day => {
+          const dayStr = format(day, 'yyyy-MM-dd');
+          const dayShifts = publishedShifts.filter(shift => 
+            shift.date === dayStr && shift.employeeId === employee.id
+          );
+          
+          // Llenar horarios para hasta 2 turnos (4 columnas)
+          if (dayShifts.length > 0) {
+            employeeRow.push(dayShifts[0].startTime, dayShifts[0].endTime);
+          } else {
+            employeeRow.push('', '');
+          }
+          
+          if (dayShifts.length > 1) {
+            employeeRow.push(dayShifts[1].startTime, dayShifts[1].endTime);
+          } else {
+            employeeRow.push('', '');
+          }
+          
+          // Calcular total de horas del empleado en este día
+          const totalDayHours = dayShifts.reduce((sum, shift) => sum + shift.hours, 0);
+          totalWeeklyHours += totalDayHours;
+          employeeRow.push(totalDayHours > 0 ? formatHoursToHHMM(totalDayHours) : '0:00');
+        });
+        
+        // Agregar columnas de resumen semanal
+        const contractHours = employee.weeklyLimit || 40; // Horas por contrato (default 40)
+        const extraHours = Math.max(0, totalWeeklyHours - contractHours);
+        
+        employeeRow.push(
+          formatHoursToHHMM(totalWeeklyHours), // WORKED HOURS
+          formatHoursToHHMM(contractHours),    // CONTRACT HOURS
+          formatHoursToHHMM(extraHours)        // EXTRA HOURS THIS WEEK
+        );
+        
+        worksheet.addRow(employeeRow);
+        currentRow++;
+      });
+      
+      // Fila de totales para esta semana
+      const totalRow = ['TOTAL'];
+      let totalWeeklyWorkedHours = 0;
+      let totalContractHours = 0;
+      
+      weekDays.forEach(day => {
+        const dayStr = format(day, 'yyyy-MM-dd');
+        const dayShifts = publishedShifts.filter(shift => shift.date === dayStr);
+        const totalDayHours = dayShifts.reduce((sum, shift) => sum + shift.hours, 0);
+        totalWeeklyWorkedHours += totalDayHours;
+        
+        // Agregar celdas vacías para horarios + total en columna HOURS
+        totalRow.push('', '', '', '', formatHoursToHHMM(totalDayHours));
+      });
+      
+      // Calcular totales de contrato para todos los empleados
+      orderedEmployees.forEach(employee => {
+        totalContractHours += employee.weeklyLimit || 40;
+      });
+      
+      const totalExtraHours = Math.max(0, totalWeeklyWorkedHours - totalContractHours);
+      
+      // Agregar totales de resumen semanal
+      totalRow.push(
+        formatHoursToHHMM(totalWeeklyWorkedHours), // Total WORKED HOURS
+        formatHoursToHHMM(totalContractHours),     // Total CONTRACT HOURS
+        formatHoursToHHMM(totalExtraHours)         // Total EXTRA HOURS THIS WEEK
       );
       
-      worksheet.addRow(employeeRow);
-    });
-    
-    // Fila de totales
-    const totalRow = ['TOTAL'];
-    let totalWeeklyWorkedHours = 0;
-    let totalContractHours = 0;
-    
-    days.forEach(day => {
-      const dayStr = format(day, 'yyyy-MM-dd');
-      const dayShifts = publishedShifts.filter(shift => shift.date === dayStr);
-      const totalDayHours = dayShifts.reduce((sum, shift) => sum + shift.hours, 0);
-      totalWeeklyWorkedHours += totalDayHours;
+      const totalRowAdded = worksheet.addRow(totalRow);
+      currentRow++;
       
-      // Agregar celdas vacías para horarios + total en columna HOURS
-      totalRow.push('', '', '', '', formatHoursToHHMM(totalDayHours));
+      // Agregar 2 filas en blanco entre semanas (excepto la última)
+      if (weekIndex < weeks.length - 1) {
+        worksheet.addRow([]);
+        worksheet.addRow([]);
+        currentRow += 2;
+      }
     });
     
-    // Calcular totales de contrato para todos los empleados
-    orderedEmployees.forEach(employee => {
-      totalContractHours += employee.weeklyLimit || 40;
-    });
-    
-    const totalExtraHours = Math.max(0, totalWeeklyWorkedHours - totalContractHours);
-    
-    // Agregar totales de resumen semanal
-    totalRow.push(
-      formatHoursToHHMM(totalWeeklyWorkedHours), // Total WORKED HOURS
-      formatHoursToHHMM(totalContractHours),     // Total CONTRACT HOURS
-      formatHoursToHHMM(totalExtraHours)         // Total EXTRA HOURS THIS WEEK
-    );
-    
-    const totalRowAdded = worksheet.addRow(totalRow);
-    
-    // Aplicar estilos
-    // Colores para empleados
+    // Aplicar estilos para múltiples semanas
     const employeeColors = [
       '#FFFFFF', // Blanco
       '#E8E8E8', // Gris claro
@@ -240,17 +274,80 @@ export function ExportTools() {
       '#FFFFFF'  // Blanco
     ];
     
-    // Aplicar colores a las filas de empleados (empezando desde la fila 4)
-    for (let i = 0; i < employees.length; i++) {
-      const row = worksheet.getRow(4 + i);
-      const color = employeeColors[i % employeeColors.length];
+    // Configurar ancho de columnas
+    worksheet.getColumn(1).width = 25; // Columna A más ancha para nombres completos
+    
+    // Aplicar estilos semana por semana
+    let styleRow = 1;
+    
+    weeks.forEach((weekDays, weekIndex) => {
+      const weeklySummaryStartCol = 2 + (weekDays.length * 5); // Primera columna de resumen semanal
+      const lastCol = weeklySummaryStartCol + 2; // Última columna (EXTRA HOURS THIS WEEK)
+      const weekEndRow = styleRow + 3 + employees.length; // Headers (3) + empleados + fila total
       
-      row.eachCell((cell) => {
-        cell.fill = {
-          type: 'pattern',
-          pattern: 'solid',
-          fgColor: { argb: color.replace('#', 'FF') }
-        };
+      // Configurar ancho de las columnas de resumen semanal
+      worksheet.getColumn(weeklySummaryStartCol).width = 15;     // WORKED HOURS
+      worksheet.getColumn(weeklySummaryStartCol + 1).width = 15; // CONTRACT HOURS  
+      worksheet.getColumn(weeklySummaryStartCol + 2).width = 20; // EXTRA HOURS THIS WEEK
+      
+      // Aplicar colores a las filas de empleados
+      for (let i = 0; i < employees.length; i++) {
+        const row = worksheet.getRow(styleRow + 3 + i);
+        const color = employeeColors[i % employeeColors.length];
+        
+        row.eachCell((cell) => {
+          cell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: color.replace('#', 'FF') }
+          };
+          cell.alignment = { horizontal: 'center', vertical: 'middle' };
+          cell.border = {
+            top: { style: 'thin', color: { argb: 'FF808080' } },
+            bottom: { style: 'thin', color: { argb: 'FF808080' } },
+            left: { style: 'thin', color: { argb: 'FF808080' } },
+            right: { style: 'thin', color: { argb: 'FF808080' } }
+          };
+        });
+      }
+      
+      // Estilos para headers (filas 1, 2, 3 de cada semana)
+      for (let headerRow = 0; headerRow < 3; headerRow++) {
+        const row = worksheet.getRow(styleRow + headerRow);
+        row.eachCell((cell, colNumber) => {
+          if (colNumber > 1) { // Todas las columnas excepto TARGET
+            // Estilo especial para las columnas de resumen semanal
+            const isWeeklySummary = colNumber > (1 + weekDays.length * 5);
+            let fillColor = 'FFD3D3D3'; // Default gris claro
+            
+            if (headerRow === 1) { // Fila 2 (nombres de días)
+              fillColor = isWeeklySummary ? 'FFB0E0E6' : 'FFA9A9A9';
+            } else if (headerRow === 2) { // Fila 3 (HOURS)
+              fillColor = isWeeklySummary ? 'FFE0F0FF' : 'FFD3D3D3';
+            }
+            
+            cell.fill = {
+              type: 'pattern',
+              pattern: 'solid',
+              fgColor: { argb: fillColor }
+            };
+          }
+          
+          cell.font = { bold: true };
+          cell.alignment = { horizontal: 'center', vertical: 'middle' };
+          cell.border = {
+            top: { style: 'thin', color: { argb: 'FF808080' } },
+            bottom: { style: 'thin', color: { argb: 'FF808080' } },
+            left: { style: 'thin', color: { argb: 'FF808080' } },
+            right: { style: 'thin', color: { argb: 'FF808080' } }
+          };
+        });
+      }
+      
+      // Estilos para fila de totales
+      const totalRow = worksheet.getRow(weekEndRow);
+      totalRow.eachCell((cell) => {
+        cell.font = { bold: true };
         cell.alignment = { horizontal: 'center', vertical: 'middle' };
         cell.border = {
           top: { style: 'thin', color: { argb: 'FF808080' } },
@@ -259,157 +356,70 @@ export function ExportTools() {
           right: { style: 'thin', color: { argb: 'FF808080' } }
         };
       });
-    }
-    
-    // Estilos para fila 1 (TARGET + números de días + HOURS)
-    row1.eachCell((cell, colNumber) => {
-      cell.fill = {
-        type: 'pattern',
-        pattern: 'solid',
-        fgColor: { argb: 'FFD3D3D3' }
-      };
-      cell.font = { bold: true };
-      cell.alignment = { horizontal: 'center', vertical: 'middle' };
-      cell.border = {
-        top: { style: 'thin', color: { argb: 'FF808080' } },
-        bottom: { style: 'thin', color: { argb: 'FF808080' } },
-        left: { style: 'thin', color: { argb: 'FF808080' } },
-        right: { style: 'thin', color: { argb: 'FF808080' } }
-      };
-    });
-    
-    // Estilos para fila 2 (días de la semana)
-    row2.eachCell((cell, colNumber) => {
-      if (colNumber > 1) { // Todas las columnas excepto TARGET
-        // Estilo especial para las columnas de resumen semanal
-        const isWeeklySummary = colNumber > (1 + days.length * 5);
-        const fillColor = isWeeklySummary ? 'FFB0E0E6' : 'FFA9A9A9'; // Azul claro para resumen semanal
-        
-        cell.fill = {
-          type: 'pattern',
-          pattern: 'solid',
-          fgColor: { argb: fillColor }
+      
+      // Aplicar bordes gruesos para esta semana
+      // Borde grueso exterior (toda la semana)
+      for (let row = styleRow; row <= weekEndRow; row++) {
+        // Borde izquierdo (columna A)
+        const leftCell = worksheet.getCell(row, 1);
+        leftCell.border = {
+          ...leftCell.border,
+          left: { style: 'thick', color: { argb: 'FF000000' } }
         };
-        cell.font = { bold: true };
-        cell.alignment = { horizontal: 'center', vertical: 'middle' };
-        cell.border = {
-          top: { style: 'thin', color: { argb: 'FF808080' } },
-          bottom: { style: 'thin', color: { argb: 'FF808080' } },
-          left: { style: 'thin', color: { argb: 'FF808080' } },
-          right: { style: 'thin', color: { argb: 'FF808080' } }
+        
+        // Borde derecho (última columna)
+        const rightCell = worksheet.getCell(row, lastCol);
+        rightCell.border = {
+          ...rightCell.border,
+          right: { style: 'thick', color: { argb: 'FF000000' } }
         };
       }
-    });
-    
-    // Estilos para fila 3 (unificada - mismo formato que fila 1)
-    row3.eachCell((cell, colNumber) => {
-      if (colNumber > 1) { // Todas las columnas excepto TARGET
-        // Estilo especial para las columnas de resumen semanal
-        const isWeeklySummary = colNumber > (1 + days.length * 5);
-        const fillColor = isWeeklySummary ? 'FFE0F0FF' : 'FFD3D3D3'; // Azul muy claro para resumen semanal
-        
-        cell.fill = {
-          type: 'pattern',
-          pattern: 'solid',
-          fgColor: { argb: fillColor }
+      
+      // Borde superior e inferior
+      for (let col = 1; col <= lastCol; col++) {
+        // Borde superior (primera fila de la semana)
+        const topCell = worksheet.getCell(styleRow, col);
+        topCell.border = {
+          ...topCell.border,
+          top: { style: 'thick', color: { argb: 'FF000000' } }
         };
-        cell.font = { bold: true };
-        cell.alignment = { horizontal: 'center', vertical: 'middle' };
-        cell.border = {
-          top: { style: 'thin', color: { argb: 'FF808080' } },
-          bottom: { style: 'thin', color: { argb: 'FF808080' } },
-          left: { style: 'thin', color: { argb: 'FF808080' } },
-          right: { style: 'thin', color: { argb: 'FF808080' } }
+        
+        // Borde inferior (fila total de la semana)
+        const bottomCell = worksheet.getCell(weekEndRow, col);
+        bottomCell.border = {
+          ...bottomCell.border,
+          bottom: { style: 'thick', color: { argb: 'FF000000' } }
         };
       }
-    });
-    
-    // Estilos para fila de totales
-    totalRowAdded.eachCell((cell) => {
-      cell.font = { bold: true };
-      cell.alignment = { horizontal: 'center', vertical: 'middle' };
-      cell.border = {
-        top: { style: 'thin', color: { argb: 'FF808080' } },
-        bottom: { style: 'thin', color: { argb: 'FF808080' } },
-        left: { style: 'thin', color: { argb: 'FF808080' } },
-        right: { style: 'thin', color: { argb: 'FF808080' } }
-      };
-    });
-    
-    // Configurar ancho de columnas
-    worksheet.getColumn(1).width = 25; // Columna A más ancha para nombres completos
-    
-    // Configurar ancho de las columnas de resumen semanal
-    const weeklySummaryStartCol = 2 + (days.length * 5); // Primera columna de resumen semanal
-    worksheet.getColumn(weeklySummaryStartCol).width = 15;     // WORKED HOURS
-    worksheet.getColumn(weeklySummaryStartCol + 1).width = 15; // CONTRACT HOURS  
-    worksheet.getColumn(weeklySummaryStartCol + 2).width = 20; // EXTRA HOURS THIS WEEK
-    
-    // Aplicar bordes gruesos
-    const totalRows = 4 + employees.length; // Headers (3) + empleados + fila total
-    
-    // Borde grueso alrededor de toda la tabla
-    const lastCol = weeklySummaryStartCol + 2; // Última columna (EXTRA HOURS THIS WEEK)
-    
-    // Borde grueso exterior (toda la tabla)
-    for (let row = 1; row <= totalRows; row++) {
-      // Borde izquierdo (columna A)
-      const leftCell = worksheet.getCell(row, 1);
-      leftCell.border = {
-        ...leftCell.border,
-        left: { style: 'thick', color: { argb: 'FF000000' } }
-      };
       
-      // Borde derecho (última columna)
-      const rightCell = worksheet.getCell(row, lastCol);
-      rightCell.border = {
-        ...rightCell.border,
-        right: { style: 'thick', color: { argb: 'FF000000' } }
-      };
-    }
-    
-    // Borde superior e inferior
-    for (let col = 1; col <= lastCol; col++) {
-      // Borde superior (fila 1)
-      const topCell = worksheet.getCell(1, col);
-      topCell.border = {
-        ...topCell.border,
-        top: { style: 'thick', color: { argb: 'FF000000' } }
-      };
-      
-      // Borde inferior (fila total)
-      const bottomCell = worksheet.getCell(totalRows, col);
-      bottomCell.border = {
-        ...bottomCell.border,
-        bottom: { style: 'thick', color: { argb: 'FF000000' } }
-      };
-    }
-    
-    // Bordes gruesos para cada día (separadores verticales)
-    days.forEach((day, dayIndex) => {
-      const dayStartCol = 2 + (dayIndex * 5); // Primera columna del día
-      const dayEndCol = dayStartCol + 4; // Última columna del día
-      
-      // Borde izquierdo del día (excepto el primer día)
-      if (dayIndex > 0) {
-        for (let row = 1; row <= totalRows; row++) {
-          const cell = worksheet.getCell(row, dayStartCol);
-          cell.border = {
-            ...cell.border,
-            left: { style: 'thick', color: { argb: 'FF000000' } }
-          };
+      // Bordes gruesos para cada día (separadores verticales)
+      weekDays.forEach((day, dayIndex) => {
+        const dayStartCol = 2 + (dayIndex * 5); // Primera columna del día
+        
+        // Borde izquierdo del día (excepto el primer día)
+        if (dayIndex > 0) {
+          for (let row = styleRow; row <= weekEndRow; row++) {
+            const cell = worksheet.getCell(row, dayStartCol);
+            cell.border = {
+              ...cell.border,
+              left: { style: 'thick', color: { argb: 'FF000000' } }
+            };
+          }
         }
+      });
+      
+      // Borde grueso antes de las columnas de resumen semanal
+      for (let row = styleRow; row <= weekEndRow; row++) {
+        const cell = worksheet.getCell(row, weeklySummaryStartCol);
+        cell.border = {
+          ...cell.border,
+          left: { style: 'thick', color: { argb: 'FF000000' } }
+        };
       }
+      
+      // Avanzar para la siguiente semana (incluyendo las 2 filas en blanco)
+      styleRow = weekEndRow + 3; // +1 por la fila total + 2 filas en blanco
     });
-    
-    // Borde grueso antes de las columnas de resumen semanal
-    for (let row = 1; row <= totalRows; row++) {
-      const cell = worksheet.getCell(row, weeklySummaryStartCol);
-      cell.border = {
-        ...cell.border,
-        left: { style: 'thick', color: { argb: 'FF000000' } }
-      };
-    }
     
     // Generar y descargar el archivo único con todas las hojas
     const buffer = await workbook.xlsx.writeBuffer();
@@ -417,7 +427,10 @@ export function ExportTools() {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `horarios_semana_${format(startDate, 'dd-MM')}_${format(endDate, 'dd-MM')}.xlsx`;
+    const fileName = weeks.length === 1 
+      ? `horarios_semana_${format(startDate, 'dd-MM')}_${format(endDate, 'dd-MM')}.xlsx`
+      : `horarios_${weeks.length}_semanas_${format(startDate, 'dd-MM')}_${format(endDate, 'dd-MM')}.xlsx`;
+    a.download = fileName;
     a.click();
     window.URL.revokeObjectURL(url);
   };

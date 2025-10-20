@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSchedule } from '../contexts/ScheduleContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useCompactMode } from '../contexts/CompactModeContext';
@@ -21,6 +21,37 @@ export function StoreSettings() {
   } = useSchedule();
   const { isCompactMode, isMobile } = useCompactMode();
 
+  // Horario de tienda por defecto (Lunes a Domingo + Feriados)
+  const defaultStoreSchedule = [
+    { dayOfWeek: 1, isOpen: true, timeRanges: [{ id: 'range_1', openTime: '09:00', closeTime: '20:00' }], openTime: '09:00', closeTime: '20:00' }, // Lunes
+    { dayOfWeek: 2, isOpen: true, timeRanges: [{ id: 'range_2', openTime: '09:00', closeTime: '20:00' }], openTime: '09:00', closeTime: '20:00' }, // Martes
+    { dayOfWeek: 3, isOpen: true, timeRanges: [{ id: 'range_3', openTime: '09:00', closeTime: '20:00' }], openTime: '09:00', closeTime: '20:00' }, // Miércoles
+    { dayOfWeek: 4, isOpen: true, timeRanges: [{ id: 'range_4', openTime: '09:00', closeTime: '20:00' }], openTime: '09:00', closeTime: '20:00' }, // Jueves
+    { dayOfWeek: 5, isOpen: true, timeRanges: [{ id: 'range_5', openTime: '09:00', closeTime: '20:00' }], openTime: '09:00', closeTime: '20:00' }, // Viernes
+    { dayOfWeek: 6, isOpen: true, timeRanges: [{ id: 'range_6', openTime: '09:00', closeTime: '20:00' }], openTime: '09:00', closeTime: '20:00' }, // Sábado
+    { dayOfWeek: 0, isOpen: false, timeRanges: [] }, // Domingo cerrado
+    { dayOfWeek: 7, isOpen: false, timeRanges: [] }, // Feriados cerrado por defecto
+  ];
+
+  // Función para inicializar horarios por defecto si no existen
+  const initializeDefaultSchedules = async () => {
+    if (storeSchedule.length === 0) {
+      console.log('StoreSettings: Inicializando horarios por defecto...');
+      for (const schedule of defaultStoreSchedule) {
+        console.log('StoreSettings: Agregando horario para dayOfWeek:', schedule.dayOfWeek);
+        await addStoreSchedule(schedule);
+      }
+    } else {
+      console.log('StoreSettings: Horarios existentes:', storeSchedule.length);
+      console.log('StoreSettings: Horarios:', storeSchedule.map(s => ({ dayOfWeek: s.dayOfWeek, isOpen: s.isOpen })));
+    }
+  };
+
+  // Inicializar horarios por defecto cuando se carga el componente
+  useEffect(() => {
+    initializeDefaultSchedules();
+  }, [storeSchedule.length]);
+
   const [showExceptionForm, setShowExceptionForm] = useState(false);
   const [editingException, setEditingException] = useState<StoreException | null>(null);
   const [exceptionForm, setExceptionForm] = useState({
@@ -42,6 +73,7 @@ export function StoreSettings() {
   };
 
   const handleScheduleChange = (id: string, updates: Partial<StoreSchedule>) => {
+    console.log('StoreSettings: handleScheduleChange called with:', { id, updates });
     updateStoreSchedule(id, updates);
   };
 
