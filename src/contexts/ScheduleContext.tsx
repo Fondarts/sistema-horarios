@@ -273,17 +273,11 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
           }
           */
 
-          // Combinar datos existentes con defaults y migrar si es necesario
-          const completeSchedule = defaultStoreSchedule.map(defaultDay => {
-            const existing = scheduleData.find(s => s.dayOfWeek === defaultDay.dayOfWeek);
-            if (existing) {
-              return migrateStoreSchedule(existing);
-            }
-            return defaultDay;
-          });
+          // Solo usar datos de Firebase, no mezclar con defaults
+          const migratedSchedule = scheduleData.map(schedule => migrateStoreSchedule(schedule));
 
           // Ordenar: Lunes -> Domingo -> Feriados
-          const sortedSchedule = completeSchedule.sort((a, b) => {
+          const sortedSchedule = migratedSchedule.sort((a, b) => {
             const order = (day: number) => {
               if (day === 1) return 0; // Lunes
               if (day === 2) return 1; // Martes
