@@ -401,17 +401,12 @@ export default function ScheduleManagement() {
     const isCollapsed = collapsedDays.has(dayString);
     const dayShifts = weekShifts.filter(shift => shift.date === dayString);
     
-    // Agrupar turnos por empleado para contar barras reales
-    const groupedShifts: { [employeeId: string]: Shift[] } = {};
-    dayShifts.forEach(shift => {
-      if (!groupedShifts[shift.employeeId]) {
-        groupedShifts[shift.employeeId] = [];
-      }
-      groupedShifts[shift.employeeId].push(shift);
-    });
+    // Usar la misma lógica que el renderizado: empleados únicos
+    const employeesOnDay = Array.from(new Set(dayShifts.map(shift => shift.employeeId)));
+    const totalBars = employeesOnDay.length;
     
-    // Contar barras reales (una por empleado, no por turno)
-    const totalBars = Object.keys(groupedShifts).length;
+    // Debug: Verificar consistencia
+    console.log(`HEIGHT Day ${dayString}: Found ${dayShifts.length} shifts, ${totalBars} unique employees`);
 
     // Usar la misma lógica que getBarHeight para consistencia
     const barHeight = isCollapsed ? 8 : (dayInCompact ? 20 : 32);
