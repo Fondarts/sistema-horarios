@@ -405,15 +405,16 @@ export default function ScheduleManagement() {
     const employeesOnDay = Array.from(new Set(dayShifts.map(shift => shift.employeeId)));
     const totalBars = employeesOnDay.length;
     
-    // Debug: Verificar consistencia
-    console.log(`HEIGHT Day ${dayString}: Found ${dayShifts.length} shifts, ${totalBars} unique employees`);
-
-    // Usar la misma lógica que getBarHeight para consistencia
-    const barHeight = isCollapsed ? 8 : (dayInCompact ? 20 : 32);
-    const barSpacing = dayInCompact ? 2 : 35;
+    // Usar exactamente las mismas funciones que el renderizado
+    const barHeight = getBarHeight(dayString);
+    const barSpacing = dayInCompact ? 2 : 35; // Mismo cálculo que en renderizado
     const minHeight = isCollapsed ? 32 : (dayInCompact ? 32 : 120);
     const baseTop = (typeof isHoliday === 'function' && isHoliday(dayString)) ? 55 : 15;
     const bottomPadding = isCollapsed ? 5 : (dayInCompact ? 5 : 5);
+
+    // Debug: Verificar consistencia
+    console.log(`HEIGHT Day ${dayString}: Found ${dayShifts.length} shifts, ${totalBars} unique employees`);
+    console.log(`HEIGHT Day ${dayString}: barHeight=${barHeight}, spacing=${barSpacing}, baseTop=${baseTop}, bottomPadding=${bottomPadding}`);
 
     if (totalBars === 0) {
       return Math.max(minHeight, baseTop + bottomPadding);
