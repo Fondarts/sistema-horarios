@@ -398,21 +398,24 @@ export default function ScheduleManagement() {
   // Altura dinámica de la celda del día (normal y compacto)
   const calculateDayCellHeight = (dayString: string): number => {
     const dayInCompact = isDayInCompactMode(dayString);
+    const isCollapsed = collapsedDays.has(dayString);
     const dayShifts = weekShifts.filter(shift => shift.date === dayString);
     const totalBars = dayShifts.length;
 
-    const barHeight = dayInCompact ? 20 : 32;
+    // Usar la misma lógica que getBarHeight para consistencia
+    const barHeight = isCollapsed ? 8 : (dayInCompact ? 20 : 32);
     const barSpacing = dayInCompact ? 2 : 35;
-    const minHeight = dayInCompact ? 32 : 120;
+    const minHeight = isCollapsed ? 32 : (dayInCompact ? 32 : 120);
     const baseTop = (typeof isHoliday === 'function' && isHoliday(dayString)) ? 55 : 15;
-    const bottomPadding = dayInCompact ? 5 : 10;
+    const bottomPadding = isCollapsed ? 5 : (dayInCompact ? 5 : 10);
 
     if (totalBars === 0) {
       return Math.max(minHeight, baseTop + bottomPadding);
     }
 
     // Altura suficiente hasta la última barra renderizada
-    const lastBarBottom = baseTop + (totalBars - 1) * barSpacing + barHeight;
+    // Para múltiples barras: baseTop + (n-1) * (barHeight + spacing) + barHeight + padding
+    const lastBarBottom = baseTop + (totalBars - 1) * (barHeight + barSpacing) + barHeight;
     const calculatedHeight = lastBarBottom + bottomPadding;
 
     return Math.max(minHeight, calculatedHeight);
@@ -1753,6 +1756,11 @@ export default function ScheduleManagement() {
                         left = timeToPosition(shiftStartTimeInHours, startHour, endHour) + 2;
                         const rightPosition = timeToPosition(shiftEndTimeInHours, startHour, endHour);
                         width = rightPosition - left; // Sin margen para conectar barras perfectamente
+                        
+                        // Debug: Log para verificar posiciones
+                        if (shift.id && (shiftStartTimeInHours < startHour || shiftEndTimeInHours > endHour + 1)) {
+                          console.log(`Shift ${shift.id} (${dayString}): start=${shiftStartTimeInHours}, end=${shiftEndTimeInHours}, dayRange=${startHour}-${endHour}, left=${left}, width=${width}`);
+                        }
                         
                         // Calcular availableWidth para validaciones
                         const containerWidth = scrollContainerRef.current?.offsetWidth || 800;

@@ -45,6 +45,8 @@ export function Statistics() {
   const { formatDate } = useDateFormat();
   
   const [selectedWeek, setSelectedWeek] = useState(new Date());
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [employeeOrder, setEmployeeOrder] = useState<string[]>(() => employees.map(emp => emp.id));
 
   // Calcular estadísticas básicas (semanal)
   const weekStart = startOfWeek(selectedWeek, { weekStartsOn: 1 }); // Lunes
@@ -65,7 +67,43 @@ export function Statistics() {
            shift.isPublished;
   });
 
-  const employeeStats: StatisticsType[] = employees.map(employee => {
+  // Función para reordenar empleados
+  const reorderEmployees = (startIndex: number, endIndex: number) => {
+    const newOrder = Array.from(employeeOrder);
+    const [removed] = newOrder.splice(startIndex, 1);
+    newOrder.splice(endIndex, 0, removed);
+    setEmployeeOrder(newOrder);
+  };
+
+  // Funciones de drag & drop
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    setDraggedIndex(index);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDrop = (e: React.DragEvent, dropIndex: number) => {
+    e.preventDefault();
+    if (draggedIndex !== null && draggedIndex !== dropIndex) {
+      reorderEmployees(draggedIndex, dropIndex);
+    }
+    setDraggedIndex(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
+  };
+
+  // Obtener empleados en el orden personalizado
+  const orderedEmployees = employeeOrder
+    .map(id => employees.find(emp => emp.id === id))
+    .filter(Boolean) as Employee[];
+
+  const employeeStats: StatisticsType[] = orderedEmployees.map(employee => {
     const employeeShifts = weeklyShifts.filter(s => s.employeeId === employee.id);
     const assignedHours = employeeShifts.reduce((total, shift) => total + shift.hours, 0);
     
@@ -292,15 +330,34 @@ export function Statistics() {
               </tr>
             </thead>
             <tbody className="bg-gray-200 dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-              {employeeStats.map((stat) => {
+              {employeeStats.map((stat, index) => {
                 const utilization = (stat.weeklyAssignedHours / stat.weeklyLimit) * 100;
                 const isNearLimit = utilization > 90;
                 const isOverLimit = utilization > 100;
+                const isDragging = draggedIndex === index;
 
                 return (
-                  <tr key={stat.employeeId}>
+                  <tr 
+                    key={stat.employeeId}
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, index)}
+                    onDragOver={handleDragOver}
+                    onDrop={(e) => handleDrop(e, index)}
+                    onDragEnd={handleDragEnd}
+                    className={`cursor-move transition-colors ${
+                      isDragging ? 'opacity-50 bg-blue-100 dark:bg-blue-900' : 
+                      'hover:bg-gray-100 dark:hover:bg-gray-700'
+                    }`}
+                  >
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="font-medium text-gray-900 dark:text-gray-100">{stat.employeeName}</div>
+                      <div className="flex items-center">
+                        <div className="mr-2 text-gray-400 dark:text-gray-500 cursor-move">
+                          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M7 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM7 8a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM7 14a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM13 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM13 8a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM13 14a2 2 0 1 0 0 4 2 2 0 0 0 0-4z" />
+                          </svg>
+                        </div>
+                        <div className="font-medium text-gray-900 dark:text-gray-100">{stat.employeeName}</div>
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
