@@ -44,6 +44,19 @@ export function StoreSettings() {
     } else {
       console.log('StoreSettings: Horarios existentes:', storeSchedule.length);
       console.log('StoreSettings: Horarios:', storeSchedule.map(s => ({ id: s.id, dayOfWeek: s.dayOfWeek, isOpen: s.isOpen })));
+      
+      // Verificar si falta el horario de feriados (dayOfWeek: 7)
+      const hasHolidaySchedule = storeSchedule.some(s => s.dayOfWeek === 7);
+      if (!hasHolidaySchedule) {
+        console.log('StoreSettings: Falta horario de feriados, agregando...');
+        const holidaySchedule = defaultStoreSchedule.find(s => s.dayOfWeek === 7);
+        if (holidaySchedule) {
+          await addStoreSchedule(holidaySchedule);
+          console.log('StoreSettings: Horario de feriados agregado');
+        }
+      } else {
+        console.log('StoreSettings: Horario de feriados ya existe');
+      }
     }
   };
 
