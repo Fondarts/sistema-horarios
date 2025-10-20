@@ -133,6 +133,7 @@ export default function ScheduleManagement() {
   
   const [currentWeek, setCurrentWeek] = useState(new Date());
   const [showUnpublished, setShowUnpublished] = useState(true);
+  const [hasUnpublishedChanges, setHasUnpublishedChanges] = useState(false);
   const [showShiftModal, setShowShiftModal] = useState(false);
   const [modalEmployee, setModalEmployee] = useState<{id: string, name: string} | null>(null);
   const [editingShift, setEditingShift] = useState<Shift | null>(null);
@@ -373,6 +374,14 @@ export default function ScheduleManagement() {
     return 35; // Espaciado normal en modo normal
   };
 
+  // Altura consistente de barras según estado del día
+  const getBarHeight = (dayString: string): number => {
+    if (collapsedDays.has(dayString)) {
+      return 8;
+    }
+    return isDayInCompactMode(dayString) ? 20 : 32;
+  };
+
   // Función para determinar si un día está en modo compacto
   const isDayInCompactMode = (dayString: string): boolean => {
     // Si el modo compacto global está activo, todos los días están en modo compacto
@@ -386,58 +395,27 @@ export default function ScheduleManagement() {
     return false;
   };
 
-  // Función para calcular la altura dinámica de las celdas solo en modo compacto
-  const calculateCompactCellHeight = (dayString: string): number => {
-    // Solo calcular altura dinámica si está en modo compacto
-    if (!isDayInCompactMode(dayString)) {
-      console.log(`Day ${dayString}: Not in compact mode, returning 120px`);
-      return 120; // Altura fija para modo normal
-    }
-
-    console.log(`Day ${dayString}: In compact mode, calculating dynamic height`);
-
-    // Contar el número total de barras para este día
+  // Altura dinámica de la celda del día (normal y compacto)
+  const calculateDayCellHeight = (dayString: string): number => {
+    const dayInCompact = isDayInCompactMode(dayString);
     const dayShifts = weekShifts.filter(shift => shift.date === dayString);
     const totalBars = dayShifts.length;
-    
-    // Debug: Mostrar información detallada del filtro
-    console.log(`Day ${dayString}: Filtering shifts for date. Total weekShifts: ${weekShifts.length}, dayShifts found: ${dayShifts.length}`);
-    console.log(`Day ${dayString}: Looking for date format: "${dayString}"`);
-    
-    // Debug: Mostrar TODOS los shifts para verificar datos
-    if (dayString === '2025-10-18') {
-      console.log(`Day ${dayString}: ALL weekShifts:`, weekShifts.map(s => ({ id: s.id, date: s.date, employeeId: s.employeeId })));
-      console.log(`Day ${dayString}: Filtering for exact match: "${dayString}"`);
-      const exactMatches = weekShifts.filter(shift => shift.date === dayString);
-      console.log(`Day ${dayString}: Exact matches found:`, exactMatches.length);
-    }
-    
-    if (weekShifts.length > 0) {
-      console.log(`Day ${dayString}: Sample shift dates:`, weekShifts.slice(0, 3).map(s => s.date));
-    }
-    if (dayShifts.length > 0) {
-      console.log(`Day ${dayString}: Found shifts:`, dayShifts.map(s => ({ id: s.id, date: s.date, employeeId: s.employeeId })));
-    }
+
+    const barHeight = dayInCompact ? 20 : 32;
+    const barSpacing = dayInCompact ? 2 : 35;
+    const minHeight = dayInCompact ? 32 : 120;
+    const baseTop = (typeof isHoliday === 'function' && isHoliday(dayString)) ? 55 : 15;
+    const bottomPadding = dayInCompact ? 5 : 10;
 
     if (totalBars === 0) {
-      // Si no hay barras, altura mínima compacta para todos los días en modo compacto
-      console.log(`Day ${dayString}: No bars, returning 32px`);
-      return 32;
+      return Math.max(minHeight, baseTop + bottomPadding);
     }
 
-    // Usar parámetros compactos para TODOS los días en modo compacto
-    const barHeight = 8; // Altura pequeña para todos los días compactos
-    const barSpacing = 2; // Espaciado mínimo
-    const minHeight = 32; // Mínimo pequeño para todos los días compactos
-    const baseHeight = 8; // Altura base pequeña
-    const bottomPadding = 5; // Padding inferior mínimo
-    
-    const calculatedHeight = baseHeight + (totalBars * (barHeight + barSpacing)) + bottomPadding;
-    const finalHeight = Math.max(minHeight, calculatedHeight);
-    
-    console.log(`Day ${dayString}: ${totalBars} bars, barHeight: ${barHeight}px, calculated: ${calculatedHeight}px, final: ${finalHeight}px`);
-    
-    return finalHeight;
+    // Altura suficiente hasta la última barra renderizada
+    const lastBarBottom = baseTop + (totalBars - 1) * barSpacing + barHeight;
+    const calculatedHeight = lastBarBottom + bottomPadding;
+
+    return Math.max(minHeight, calculatedHeight);
   };
 
   // Funciones de conversión para texto en tiempo real
@@ -616,6 +594,7 @@ export default function ScheduleManagement() {
         endTime: shiftForm.endTime,
         hours: hours
       });
+      setHasUnpublishedChanges(true);
     } else {
       // Crear nuevo turno
       console.log('ScheduleManagement: Creating new shift from form:', shiftForm);
@@ -635,6 +614,7 @@ export default function ScheduleManagement() {
         alert(errors.map(e => e.message).join('\n'));
         return;
       }
+      setHasUnpublishedChanges(true);
     }
     
     closeShiftModal();
@@ -643,10 +623,68 @@ export default function ScheduleManagement() {
   const handleDeleteShift = () => {
     if (editingShift) {
       deleteShift(editingShift.id);
+      setHasUnpublishedChanges(true);
       closeShiftModal();
     }
   };
 
+  const handleRepeatPreviousDay = () => {
+    if (!shiftForm.date) return;
+    
+    // Calcular la fecha del día anterior
+    const currentDate = new Date(shiftForm.date);
+    const previousDate = new Date(currentDate);
+    previousDate.setDate(currentDate.getDate() - 1);
+    const previousDateString = format(previousDate, 'yyyy-MM-dd');
+    
+    // Buscar turnos del día anterior
+    const previousDayShifts = shifts.filter(shift => shift.date === previousDateString);
+    
+    if (previousDayShifts.length === 0) {
+      addNotification({
+        userId: 'manager',
+        type: 'schedule_change',
+        title: 'Sin turnos anteriores',
+        message: 'No hay turnos programados para el día anterior.'
+      });
+      return;
+    }
+    
+    // Crear turnos para el día actual basados en los del día anterior
+    const newShifts = previousDayShifts.map(shift => ({
+      ...shift,
+      id: '', // Se generará automáticamente
+      date: shiftForm.date,
+      isPublished: false // Los turnos copiados no están publicados
+    }));
+    
+    // Agregar los turnos uno por uno
+    newShifts.forEach(async (shift) => {
+      try {
+        await addShift({
+          employeeId: shift.employeeId,
+          date: shift.date,
+          startTime: shift.startTime,
+          endTime: shift.endTime,
+          hours: shift.hours,
+          isPublished: false
+        });
+      } catch (error) {
+        console.error('Error al crear turno:', error);
+      }
+    });
+    
+    // Mostrar notificación de éxito
+    addNotification({
+      userId: 'manager',
+      type: 'schedule_change',
+      title: 'Turnos copiados',
+      message: `Se copiaron ${newShifts.length} turnos del día anterior.`
+    });
+    
+    // Cerrar el modal
+    closeShiftModal();
+  };
 
   const publishWeekShifts = async () => {
     const unpublishedShifts = weekShifts.filter(s => !s.isPublished);
@@ -664,6 +702,8 @@ export default function ScheduleManagement() {
         weekEnd: weekEnd.toISOString()
       }
     });
+
+    setHasUnpublishedChanges(false);
   };
 
   const repeatPreviousWeek = async () => {
@@ -1344,11 +1384,11 @@ export default function ScheduleManagement() {
           <button
             onClick={publishWeekShifts}
             className={`flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-              weekShifts.filter(s => !s.isPublished).length > 0
+              weekShifts.filter(s => !s.isPublished).length > 0 || hasUnpublishedChanges
                 ? 'bg-primary-600 hover:bg-primary-700 text-white'
                 : 'bg-gray-400 text-gray-200 cursor-not-allowed'
             }`}
-            disabled={weekShifts.filter(s => !s.isPublished).length === 0}
+            disabled={weekShifts.filter(s => !s.isPublished).length === 0 && !hasUnpublishedChanges}
           >
             <Save className="w-4 h-4 mr-2" />
             {t('published')}
@@ -1535,9 +1575,9 @@ export default function ScheduleManagement() {
                     className="grid border-b border-gray-300 dark:border-gray-600 relative" 
                     style={{ 
                       gridTemplateColumns: `${isMobile ? '60px' : (isCompactMode ? '100px' : '120px')} ${isMobile ? `repeat(${hours.length}, ${mobileHourColumnWidth}px)` : `repeat(${hours.length}, 1fr)`}`, 
-                      minHeight: collapsedDays.has(dayString) ? '32px' : `${calculateCompactCellHeight(dayString)}px`,
+                      minHeight: `${calculateDayCellHeight(dayString)}px`,
                       minWidth: 'max-content',
-                      height: isDayInCompactMode(dayString) ? `${calculateCompactCellHeight(dayString)}px` : 'auto'
+                      height: isDayInCompactMode(dayString) ? `${calculateDayCellHeight(dayString)}px` : 'auto'
                     }}
                   >
                   {/* Day and employees */}
@@ -1634,8 +1674,8 @@ export default function ScheduleManagement() {
                         key={`${day.toISOString()}-${hour}`} 
                         className={`relative border-r border-gray-200 dark:border-gray-600 ${backgroundColor} ${diagonalPattern}`} 
                         style={{ 
-                          minHeight: collapsedDays.has(dayString) ? '32px' : `${calculateCompactCellHeight(dayString)}px`, 
-                          height: isDayInCompactMode(dayString) ? `${calculateCompactCellHeight(dayString)}px` : '100%' 
+                          minHeight: `${calculateDayCellHeight(dayString)}px`, 
+                          height: isDayInCompactMode(dayString) ? `${calculateDayCellHeight(dayString)}px` : '100%'
                         }}
                         title={isHolidayDay ? `Feriado: ${holiday?.name}` : ''}
                       >
@@ -1783,7 +1823,7 @@ export default function ScheduleManagement() {
                       
                       // Calcular posición vertical usando función inteligente
                       const dayInCompactMode = isDayInCompactMode(dayString);
-                      const barHeight = collapsedDays.has(dayString) ? 8 : (dayInCompactMode ? 20 : 32);
+                      const barHeight = getBarHeight(dayString);
                       const spacing = dayInCompactMode ? 2 : 35; // Espaciado entre barras
                       
                       // Calcular posición basada en la barra anterior
@@ -1818,7 +1858,10 @@ export default function ScheduleManagement() {
                             zIndex: 5,
                             backgroundColor: employee?.color || '#3B82F6',
                             touchAction: 'none',
-                            opacity: opacity
+                            opacity: opacity,
+                            // Borde punteado para turnos en borrador
+                            border: !shift.isPublished ? '2px dashed' : 'none',
+                            borderColor: !shift.isPublished ? (theme === 'dark' ? 'white' : 'black') : 'transparent'
                           }}
                           title={`${employee?.name} - ${shift.startTime} a ${shift.endTime} (${formatHours(shift.hours)})${!shift.isPublished ? ' - Sin publicar' : ''}${hasConflict ? ` - CONFLICTO: ${conflictType}` : ''}`}
                           onMouseDown={collapsedDays.has(dayString) ? undefined : (e) => startDrag(e, shift)}
@@ -1970,6 +2013,22 @@ export default function ScheduleManagement() {
                   />
                 </div>
               </div>
+
+              {/* Botón para repetir día anterior */}
+              {!editingShift && (
+                <div className="pt-2">
+                  <button
+                    type="button"
+                    onClick={handleRepeatPreviousDay}
+                    className="w-full px-4 py-2 text-sm font-medium text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-700 rounded-md hover:bg-primary-100 dark:hover:bg-primary-900/30 focus:outline-none focus:ring-2 focus:ring-primary-500 flex items-center justify-center"
+                  >
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    Repetir día anterior
+                  </button>
+                </div>
+              )}
 
               <div className="flex justify-between pt-4">
                 {/* Botón de eliminar (solo visible cuando se está editando) */}
