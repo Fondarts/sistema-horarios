@@ -407,20 +407,24 @@ export default function ScheduleManagement() {
     // 2. Cuánto mide de alto cada barra? Y = getBarHeight
     const barHeight = getBarHeight(dayString);
     
-    // 3. Calcular el alto de la hilera: X × Y + padding
+    // 3. Espaciado entre barras (mismo que en renderizado)
+    const spacing = dayInCompact ? 2 : 35;
+    
+    // 4. Calcular el alto de la hilera: baseTop + (barras × alto) + espaciado + padding
     const minHeight = isCollapsed ? 32 : (dayInCompact ? 32 : 120);
     const baseTop = (typeof isHoliday === 'function' && isHoliday(dayString)) ? 55 : 15;
     const bottomPadding = isCollapsed ? 5 : (dayInCompact ? 5 : 5);
 
     // Debug
-    console.log(`HEIGHT Day ${dayString}: ${totalBars} bars × ${barHeight}px + ${bottomPadding}px padding`);
+    console.log(`HEIGHT Day ${dayString}: ${totalBars} bars × ${barHeight}px + ${totalBars > 1 ? (totalBars - 1) * spacing : 0}px spacing + ${bottomPadding}px padding`);
 
     if (totalBars === 0) {
       return Math.max(minHeight, baseTop + bottomPadding);
     }
 
-    // Altura total = baseTop + (barras × alto) + padding
-    const calculatedHeight = baseTop + (totalBars * barHeight) + bottomPadding;
+    // Altura total = baseTop + (barras × alto) + espaciado entre barras + padding
+    const spacingHeight = totalBars > 1 ? (totalBars - 1) * spacing : 0;
+    const calculatedHeight = baseTop + (totalBars * barHeight) + spacingHeight + bottomPadding;
 
     return Math.max(minHeight, calculatedHeight);
   };
