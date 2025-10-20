@@ -273,11 +273,25 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
           }
           */
 
-          // Solo usar datos de Firebase, no mezclar con defaults
-          const migratedSchedule = scheduleData.map(schedule => migrateStoreSchedule(schedule));
+          console.log('ScheduleContext: Datos originales de Firebase:', scheduleData.length);
+          console.log('ScheduleContext: Datos por dayOfWeek:', scheduleData.map(s => ({ id: s.id, dayOfWeek: s.dayOfWeek })));
+          
+          // Eliminar duplicados y migrar datos
+          const uniqueSchedule = scheduleData.reduce((acc, schedule) => {
+            const existing = acc.find(s => s.dayOfWeek === schedule.dayOfWeek);
+            if (!existing) {
+              acc.push(migrateStoreSchedule(schedule));
+            } else {
+              console.log('ScheduleContext: Duplicado encontrado para dayOfWeek:', schedule.dayOfWeek);
+            }
+            return acc;
+          }, [] as StoreSchedule[]);
+          
+          console.log('ScheduleContext: Horarios únicos después de eliminar duplicados:', uniqueSchedule.length);
+          console.log('ScheduleContext: Horarios únicos:', uniqueSchedule.map(s => ({ id: s.id, dayOfWeek: s.dayOfWeek, isOpen: s.isOpen })));
 
           // Ordenar: Lunes -> Domingo -> Feriados
-          const sortedSchedule = migratedSchedule.sort((a, b) => {
+          const sortedSchedule = uniqueSchedule.sort((a, b) => {
             const order = (day: number) => {
               if (day === 1) return 0; // Lunes
               if (day === 2) return 1; // Martes
