@@ -401,29 +401,26 @@ export default function ScheduleManagement() {
     const isCollapsed = collapsedDays.has(dayString);
     const dayShifts = weekShifts.filter(shift => shift.date === dayString);
     
-    // Usar la misma lógica que el renderizado: empleados únicos
-    const employeesOnDay = Array.from(new Set(dayShifts.map(shift => shift.employeeId)));
-    const totalBars = employeesOnDay.length;
+    // 1. Cuántas barras hay visibles? X = cantidad de turnos
+    const totalBars = dayShifts.length;
     
-    // Usar exactamente las mismas funciones que el renderizado
+    // 2. Cuánto mide de alto cada barra? Y = getBarHeight
     const barHeight = getBarHeight(dayString);
-    const barSpacing = dayInCompact ? 2 : 35; // Mismo cálculo que en renderizado
+    
+    // 3. Calcular el alto de la hilera: X × Y + padding
     const minHeight = isCollapsed ? 32 : (dayInCompact ? 32 : 120);
     const baseTop = (typeof isHoliday === 'function' && isHoliday(dayString)) ? 55 : 15;
     const bottomPadding = isCollapsed ? 5 : (dayInCompact ? 5 : 2);
 
-    // Debug: Verificar consistencia
-    console.log(`HEIGHT Day ${dayString}: Found ${dayShifts.length} shifts, ${totalBars} unique employees`);
-    console.log(`HEIGHT Day ${dayString}: barHeight=${barHeight}, spacing=${barSpacing}, baseTop=${baseTop}, bottomPadding=${bottomPadding}`);
+    // Debug
+    console.log(`HEIGHT Day ${dayString}: ${totalBars} bars × ${barHeight}px + ${bottomPadding}px padding`);
 
     if (totalBars === 0) {
       return Math.max(minHeight, baseTop + bottomPadding);
     }
 
-    // Altura suficiente hasta la última barra renderizada
-    // Para múltiples barras: baseTop + (n-1) * (barHeight + spacing) + barHeight + padding
-    const lastBarBottom = baseTop + (totalBars - 1) * (barHeight + barSpacing) + barHeight;
-    const calculatedHeight = lastBarBottom + bottomPadding;
+    // Altura total = baseTop + (barras × alto) + padding
+    const calculatedHeight = baseTop + (totalBars * barHeight) + bottomPadding;
 
     return Math.max(minHeight, calculatedHeight);
   };
