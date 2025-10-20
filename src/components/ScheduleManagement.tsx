@@ -407,7 +407,7 @@ export default function ScheduleManagement() {
     const barSpacing = dayInCompact ? 2 : 35;
     const minHeight = isCollapsed ? 32 : (dayInCompact ? 32 : 120);
     const baseTop = (typeof isHoliday === 'function' && isHoliday(dayString)) ? 55 : 15;
-    const bottomPadding = isCollapsed ? 5 : (dayInCompact ? 5 : 10);
+    const bottomPadding = isCollapsed ? 5 : (dayInCompact ? 5 : 5);
 
     if (totalBars === 0) {
       return Math.max(minHeight, baseTop + bottomPadding);
