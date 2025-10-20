@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useSchedule } from '../contexts/ScheduleContext';
+import { useStore } from '../contexts/StoreContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useDateFormat } from '../contexts/DateFormatContext';
 import { useEmployees } from '../contexts/EmployeeContext';
@@ -40,13 +41,27 @@ const minutesToTime = (minutes: number): string => {
 export function Statistics() {
   const { shifts, storeSchedule } = useSchedule();
   const { employees } = useEmployees();
+  const { currentStore, updateStore } = useStore();
   const { isMobile } = useCompactMode();
   const { t } = useLanguage();
   const { formatDate } = useDateFormat();
   
   const [selectedWeek, setSelectedWeek] = useState(new Date());
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
-  const [employeeOrder, setEmployeeOrder] = useState<string[]>(() => employees.map(emp => emp.id));
+  const [employeeOrder, setEmployeeOrder] = useState<string[]>(() => {
+    const saved = (currentStore?.settings as any)?.employeeOrder as string[] | undefined;
+    return saved && saved.length > 0 ? saved : employees.map(emp => emp.id);
+  });
+
+  // Sincronizar cuando cambie la tienda o la lista de empleados
+  React.useEffect(() => {
+    const saved = (currentStore?.settings as any)?.employeeOrder as string[] | undefined;
+    if (saved && saved.length > 0) {
+      setEmployeeOrder(saved);
+    } else {
+      setEmployeeOrder(employees.map(emp => emp.id));
+    }
+  }, [currentStore?.id, (currentStore?.settings as any)?.employeeOrder, employees.map(e => e.id).join(',')]);
 
   // Calcular estadísticas básicas (semanal)
   const weekStart = startOfWeek(selectedWeek, { weekStartsOn: 1 }); // Lunes
@@ -68,11 +83,24 @@ export function Statistics() {
   });
 
   // Función para reordenar empleados
-  const reorderEmployees = (startIndex: number, endIndex: number) => {
+  const reorderEmployees = async (startIndex: number, endIndex: number) => {
     const newOrder = Array.from(employeeOrder);
     const [removed] = newOrder.splice(startIndex, 1);
     newOrder.splice(endIndex, 0, removed);
     setEmployeeOrder(newOrder);
+    // Persistir en servidor por tienda
+    if (currentStore?.id) {
+      try {
+        await updateStore(currentStore.id, {
+          settings: {
+            ...(currentStore.settings || {}),
+            employeeOrder: newOrder
+          }
+        });
+      } catch (e) {
+        console.error('Error saving employee order', e);
+      }
+    }
   };
 
   // Funciones de drag & drop

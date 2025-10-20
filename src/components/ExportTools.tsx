@@ -3,6 +3,7 @@ import { useSchedule } from '../contexts/ScheduleContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useDateFormat } from '../contexts/DateFormatContext';
 import { useEmployees } from '../contexts/EmployeeContext';
+import { useStore } from '../contexts/StoreContext';
 import { Download, Calendar, FileText, Table } from 'lucide-react';
 import { format, startOfWeek, endOfWeek, eachDayOfInterval, addDays } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -11,6 +12,7 @@ import ExcelJS from 'exceljs';
 export function ExportTools() {
   const { shifts } = useSchedule();
   const { employees } = useEmployees();
+  const { currentStore } = useStore();
   const { t } = useLanguage();
   const { formatDate, dateFormat } = useDateFormat();
   
@@ -140,8 +142,13 @@ export function ExportTools() {
       worksheet.mergeCells(1, startCol, 1, endCol); // Fila 1: número del día
     });
     
-    // Filas de empleados
-    employees.forEach(employee => {
+    // Filas de empleados (orden personalizado si existe)
+    const savedOrder = (currentStore?.settings as any)?.employeeOrder as string[] | undefined;
+    const orderedEmployees = savedOrder && savedOrder.length > 0
+      ? savedOrder.map(id => employees.find(e => e.id === id)).filter(Boolean) as typeof employees
+      : employees;
+
+    orderedEmployees.forEach(employee => {
       const employeeRow = [employee.name]; // Columna A: nombre del empleado
       
       // Para cada día, agregar los datos del empleado
