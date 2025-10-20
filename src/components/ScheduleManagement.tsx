@@ -410,7 +410,7 @@ export default function ScheduleManagement() {
     // 3. Calcular el alto de la hilera: X × Y + padding
     const minHeight = isCollapsed ? 32 : (dayInCompact ? 32 : 120);
     const baseTop = (typeof isHoliday === 'function' && isHoliday(dayString)) ? 55 : 15;
-    const bottomPadding = isCollapsed ? 5 : (dayInCompact ? 5 : 2);
+    const bottomPadding = isCollapsed ? 5 : (dayInCompact ? 5 : 5);
 
     // Debug
     console.log(`HEIGHT Day ${dayString}: ${totalBars} bars × ${barHeight}px + ${bottomPadding}px padding`);
