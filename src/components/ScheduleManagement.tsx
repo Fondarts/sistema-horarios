@@ -423,8 +423,9 @@ export default function ScheduleManagement() {
     }
 
     // Altura total = baseTop + (barras × alto) + espaciado entre barras + padding
+    // En modo normal: baseTop + (barras-1) × spacing + altura de la última barra + padding
     const spacingHeight = totalBars > 1 ? (totalBars - 1) * spacing : 0;
-    const calculatedHeight = baseTop + (totalBars * barHeight) + spacingHeight + bottomPadding;
+    const calculatedHeight = baseTop + spacingHeight + barHeight + bottomPadding;
 
     return Math.max(minHeight, calculatedHeight);
   };
