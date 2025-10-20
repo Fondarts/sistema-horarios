@@ -23,12 +23,12 @@ export function StoreSettings() {
 
   // Horario de tienda por defecto (Lunes a Domingo + Feriados)
   const defaultStoreSchedule = [
-    { dayOfWeek: 1, isOpen: true, timeRanges: [{ id: 'range_1', openTime: '09:00', closeTime: '20:00' }], openTime: '09:00', closeTime: '20:00' }, // Lunes
-    { dayOfWeek: 2, isOpen: true, timeRanges: [{ id: 'range_2', openTime: '09:00', closeTime: '20:00' }], openTime: '09:00', closeTime: '20:00' }, // Martes
-    { dayOfWeek: 3, isOpen: true, timeRanges: [{ id: 'range_3', openTime: '09:00', closeTime: '20:00' }], openTime: '09:00', closeTime: '20:00' }, // Miércoles
-    { dayOfWeek: 4, isOpen: true, timeRanges: [{ id: 'range_4', openTime: '09:00', closeTime: '20:00' }], openTime: '09:00', closeTime: '20:00' }, // Jueves
-    { dayOfWeek: 5, isOpen: true, timeRanges: [{ id: 'range_5', openTime: '09:00', closeTime: '20:00' }], openTime: '09:00', closeTime: '20:00' }, // Viernes
-    { dayOfWeek: 6, isOpen: true, timeRanges: [{ id: 'range_6', openTime: '09:00', closeTime: '20:00' }], openTime: '09:00', closeTime: '20:00' }, // Sábado
+    { dayOfWeek: 1, isOpen: true, timeRanges: [{ id: `range_1_${Date.now()}`, openTime: '09:00', closeTime: '20:00' }], openTime: '09:00', closeTime: '20:00' }, // Lunes
+    { dayOfWeek: 2, isOpen: true, timeRanges: [{ id: `range_2_${Date.now()}`, openTime: '09:00', closeTime: '20:00' }], openTime: '09:00', closeTime: '20:00' }, // Martes
+    { dayOfWeek: 3, isOpen: true, timeRanges: [{ id: `range_3_${Date.now()}`, openTime: '09:00', closeTime: '20:00' }], openTime: '09:00', closeTime: '20:00' }, // Miércoles
+    { dayOfWeek: 4, isOpen: true, timeRanges: [{ id: `range_4_${Date.now()}`, openTime: '09:00', closeTime: '20:00' }], openTime: '09:00', closeTime: '20:00' }, // Jueves
+    { dayOfWeek: 5, isOpen: true, timeRanges: [{ id: `range_5_${Date.now()}`, openTime: '09:00', closeTime: '20:00' }], openTime: '09:00', closeTime: '20:00' }, // Viernes
+    { dayOfWeek: 6, isOpen: true, timeRanges: [{ id: `range_6_${Date.now()}`, openTime: '09:00', closeTime: '20:00' }], openTime: '09:00', closeTime: '20:00' }, // Sábado
     { dayOfWeek: 0, isOpen: false, timeRanges: [] }, // Domingo cerrado
     { dayOfWeek: 7, isOpen: false, timeRanges: [] }, // Feriados cerrado por defecto
   ];
@@ -43,7 +43,7 @@ export function StoreSettings() {
       }
     } else {
       console.log('StoreSettings: Horarios existentes:', storeSchedule.length);
-      console.log('StoreSettings: Horarios:', storeSchedule.map(s => ({ dayOfWeek: s.dayOfWeek, isOpen: s.isOpen })));
+      console.log('StoreSettings: Horarios:', storeSchedule.map(s => ({ id: s.id, dayOfWeek: s.dayOfWeek, isOpen: s.isOpen })));
     }
   };
 
