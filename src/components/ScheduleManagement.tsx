@@ -408,7 +408,7 @@ export default function ScheduleManagement() {
     const barHeight = getBarHeight(dayString);
     
     // 3. Espaciado entre barras (mismo que en renderizado)
-    const spacing = dayInCompact ? 2 : 35;
+    const spacing = dayInCompact ? 2 : 30;
     
     // 4. Calcular el alto de la hilera: baseTop + (barras × alto) + espaciado + padding
     const minHeight = isCollapsed ? 32 : (dayInCompact ? 32 : 120);
@@ -1840,7 +1840,7 @@ export default function ScheduleManagement() {
                       // Calcular posición vertical usando función inteligente
                       const dayInCompactMode = isDayInCompactMode(dayString);
                       const barHeight = getBarHeight(dayString);
-                      const spacing = dayInCompactMode ? 2 : 35; // Espaciado entre barras
+                      const spacing = dayInCompactMode ? 2 : 30; // Espaciado entre barras
                       
                       // Calcular posición basada en la barra anterior
                       let baseTop = isHolidayDay ? 55 : 15; // Posición inicial
