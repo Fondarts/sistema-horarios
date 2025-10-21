@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Menu, X, Calendar, Users, UserX, CalendarDays, Home, BarChart3, FileText, Sun, Moon, HelpCircle, LogOut, Building2, FolderOpen } from 'lucide-react';
+import { Menu, X, Calendar, Users, UserX, CalendarDays, Home, BarChart3, FileText, Sun, Moon, HelpCircle, LogOut, Building2 } from 'lucide-react';
 import { useCompactMode } from '../contexts/CompactModeContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -30,7 +30,6 @@ export function HamburgerMenu({ activeTab, onTabChange, isManager = false, onSho
     { id: 'settings', label: 'Tienda', icon: Home },
     { id: 'statistics', label: 'Estadísticas', icon: BarChart3 },
     { id: 'export', label: 'Exportar', icon: FileText },
-    { id: 'files', label: 'Archivos', icon: FolderOpen },
   ];
 
   const employeeTabs = [
