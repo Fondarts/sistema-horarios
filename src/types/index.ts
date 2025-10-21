@@ -27,6 +27,7 @@ export interface Employee {
   unavailableHours?: UnavailableTime[]; // horas no disponibles (alias para compatibilidad)
   vacationDaysPerYear?: number; // días de vacaciones por año
   startDate?: string; // fecha de inicio en la empresa (formato YYYY-MM-DD)
+  terminationDate?: string; // fecha de baja (formato YYYY-MM-DD)
   // Campos para traspasos
   transferHistory?: EmployeeTransfer[]; // historial de traspasos
   currentTransfer?: EmployeeTransfer; // traspaso actual si es temporal

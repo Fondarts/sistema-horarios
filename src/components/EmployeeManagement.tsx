@@ -159,6 +159,10 @@ export function EmployeeManagement() {
   const [transferType, setTransferType] = useState<'permanent' | 'temporary'>('permanent');
   const [transferStartDate, setTransferStartDate] = useState<string>('');
   const [returnDate, setReturnDate] = useState<string>('');
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [employeeToDelete, setEmployeeToDelete] = useState<Employee | null>(null);
+  const [terminationDate, setTerminationDate] = useState<string>('');
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     username: '',
@@ -348,6 +352,45 @@ export function EmployeeManagement() {
       setTransferType('permanent');
       setTransferStartDate('');
       setReturnDate('');
+    }
+  };
+
+  const handleDelete = (employee: Employee) => {
+    setEmployeeToDelete(employee);
+    setTerminationDate(new Date().toISOString().split('T')[0]);
+    setShowDeleteModal(true);
+    setShowDeleteConfirmation(false);
+  };
+
+  const confirmDelete = () => {
+    if (employeeToDelete && terminationDate) {
+      const today = format(new Date(), 'yyyy-MM-dd');
+
+      // Validación de fecha de baja
+      if (terminationDate < today) {
+        alert('La fecha de baja no puede ser en el pasado.');
+        return;
+      }
+
+      if (!showDeleteConfirmation) {
+        setShowDeleteConfirmation(true);
+        return;
+      }
+
+      // Actualizar empleado con fecha de baja
+      const updatedEmployee = { 
+        ...employeeToDelete, 
+        isActive: false,
+        terminationDate: terminationDate
+      };
+      
+      updateEmployee(employeeToDelete.id, updatedEmployee);
+      
+      // Limpiar modal
+      setShowDeleteModal(false);
+      setEmployeeToDelete(null);
+      setTerminationDate('');
+      setShowDeleteConfirmation(false);
     }
   };
 
@@ -756,10 +799,7 @@ export function EmployeeManagement() {
                       <ArrowRightLeft className="w-4 h-4" />
                     </button>
                     <button
-                      onClick={() => {
-                        console.log('Delete button clicked for employee:', employee.id);
-                        deleteEmployee(employee.id);
-                      }}
+                      onClick={() => handleDelete(employee)}
                       className="text-red-600 hover:text-red-800"
                       title={t('delete')}
                     >
@@ -912,6 +952,89 @@ export function EmployeeManagement() {
                 Traspasar
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Eliminación */}
+      {showDeleteModal && employeeToDelete && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+              Eliminar Empleado
+            </h3>
+            
+            {!showDeleteConfirmation ? (
+              <>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                  ¿Estás seguro de que deseas eliminar a <strong>{employeeToDelete.name}</strong>?
+                </p>
+                
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Fecha de Baja
+                  </label>
+                  <input
+                    type="text"
+                    value={getDisplayDate(terminationDate)}
+                    onChange={(e) => setTerminationDate(getInternalDate(e.target.value))}
+                    placeholder={getDatePlaceholder()}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  />
+                </div>
+
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
+                  El empleado estará disponible hasta la fecha de baja especificada.
+                </p>
+
+                <div className="flex justify-end space-x-3">
+                  <button
+                    onClick={() => {
+                      setShowDeleteModal(false);
+                      setEmployeeToDelete(null);
+                      setTerminationDate('');
+                      setShowDeleteConfirmation(false);
+                    }}
+                    className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-600 rounded-md hover:bg-gray-200 dark:hover:bg-gray-500 transition-colors"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={confirmDelete}
+                    disabled={!terminationDate}
+                    className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+                  >
+                    Continuar
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
+                  <p className="text-sm text-red-800 dark:text-red-200 font-medium mb-2">
+                    ⚠️ Confirmación Final
+                  </p>
+                  <p className="text-sm text-red-700 dark:text-red-300">
+                    Esta acción marcará a <strong>{employeeToDelete.name}</strong> como inactivo a partir del <strong>{getDisplayDate(terminationDate)}</strong>.
+                  </p>
+                </div>
+
+                <div className="flex justify-end space-x-3">
+                  <button
+                    onClick={() => setShowDeleteConfirmation(false)}
+                    className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-600 rounded-md hover:bg-gray-200 dark:hover:bg-gray-500 transition-colors"
+                  >
+                    Volver
+                  </button>
+                  <button
+                    onClick={confirmDelete}
+                    className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 transition-colors"
+                  >
+                    Confirmar Eliminación
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
