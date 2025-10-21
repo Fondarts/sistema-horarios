@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useEmployees } from '../contexts/EmployeeContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useDateFormat } from '../contexts/DateFormatContext';
-import { format, parseISO, isValid, parse } from 'date-fns';
 import { useCompactMode } from '../contexts/CompactModeContext';
 import { useStore } from '../contexts/StoreContext';
 import { Plus, Edit, Trash2, User, Clock, Calendar, Eye, EyeOff, ArrowRightLeft } from 'lucide-react';
@@ -84,32 +83,6 @@ export function EmployeeManagement() {
   const { t } = useLanguage();
   const { formatDate, dateFormat } = useDateFormat();
   
-  // Helper function to format date for display
-  const getDisplayDate = (dateString: string | undefined) => {
-    if (!dateString) return '';
-    try {
-      return formatDate(dateString);
-    } catch (error) {
-      console.error("Error formatting date for display:", error);
-      return dateString; // Fallback to YYYY-MM-DD if formatting fails
-    }
-  };
-
-  // Helper function to parse input date string to YYYY-MM-DD
-  const getInternalDate = (inputString: string) => {
-    if (!inputString) return '';
-    try {
-      // Convert the input string to a Date object using the configured format
-      const dateObj = new Date(inputString);
-      if (isValid(dateObj)) {
-        return format(dateObj, 'yyyy-MM-dd');
-      }
-      return '';
-    } catch (error) {
-      console.error("Error parsing input date:", error);
-      return ''; // Return empty string for invalid input
-    }
-  };
   
   // Función para obtener el placeholder dinámico según el formato de fecha
   const getDatePlaceholder = () => {
@@ -303,7 +276,7 @@ export function EmployeeManagement() {
 
   const confirmTransfer = () => {
     if (employeeToTransfer && selectedStoreId && transferStartDate) {
-      const today = format(new Date(), 'yyyy-MM-dd');
+      const today = new Date().toISOString().split('T')[0];
 
       // Validación de fechas
       if (transferStartDate < today) {
@@ -364,7 +337,7 @@ export function EmployeeManagement() {
 
   const confirmDelete = () => {
     if (employeeToDelete && terminationDate) {
-      const today = format(new Date(), 'yyyy-MM-dd');
+      const today = new Date().toISOString().split('T')[0];
 
       // Validación de fecha de baja
       if (terminationDate < today) {
@@ -907,10 +880,10 @@ export function EmployeeManagement() {
                 Fecha de Inicio
               </label>
               <input
-                type="text"
-                value={getDisplayDate(transferStartDate)}
-                onChange={(e) => setTransferStartDate(getInternalDate(e.target.value))}
-                placeholder={getDatePlaceholder()}
+                type="date"
+                value={transferStartDate}
+                onChange={(e) => setTransferStartDate(e.target.value)}
+                min={new Date().toISOString().split('T')[0]}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
               />
             </div>
@@ -921,10 +894,10 @@ export function EmployeeManagement() {
                   Fecha de Retorno
                 </label>
                 <input
-                  type="text"
-                  value={getDisplayDate(returnDate)}
-                  onChange={(e) => setReturnDate(getInternalDate(e.target.value))}
-                  placeholder={getDatePlaceholder()}
+                  type="date"
+                  value={returnDate}
+                  onChange={(e) => setReturnDate(e.target.value)}
+                  min={transferStartDate || new Date().toISOString().split('T')[0]}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
               </div>
@@ -975,10 +948,10 @@ export function EmployeeManagement() {
                     Fecha de Baja
                   </label>
                   <input
-                    type="text"
-                    value={getDisplayDate(terminationDate)}
-                    onChange={(e) => setTerminationDate(getInternalDate(e.target.value))}
-                    placeholder={getDatePlaceholder()}
+                    type="date"
+                    value={terminationDate}
+                    onChange={(e) => setTerminationDate(e.target.value)}
+                    min={new Date().toISOString().split('T')[0]}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
                   />
                 </div>
@@ -1015,7 +988,7 @@ export function EmployeeManagement() {
                     ⚠️ Confirmación Final
                   </p>
                   <p className="text-sm text-red-700 dark:text-red-300">
-                    Esta acción marcará a <strong>{employeeToDelete.name}</strong> como inactivo a partir del <strong>{getDisplayDate(terminationDate)}</strong>.
+                    Esta acción marcará a <strong>{employeeToDelete.name}</strong> como inactivo a partir del <strong>{formatDate(terminationDate)}</strong>.
                   </p>
                 </div>
 
