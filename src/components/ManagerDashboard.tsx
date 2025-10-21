@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useEmployees } from '../contexts/EmployeeContext';
 import { useStore } from '../contexts/StoreContext';
-import { LogOut, Calendar, Users, Home, BarChart3, FileText, CalendarDays, Settings, Building2, UserX, X } from 'lucide-react';
+import { LogOut, Calendar, Users, Home, BarChart3, FileText, CalendarDays, Settings, Building2, UserX } from 'lucide-react';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { useCompactMode } from '../contexts/CompactModeContext';
 import { EmployeeManagement } from './EmployeeManagement';
@@ -32,7 +32,6 @@ export function ManagerDashboard() {
   const [activeTab, setActiveTab] = useState<TabType>('schedule');
   const [showBirthdayNotification, setShowBirthdayNotification] = useState(true);
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
-  const [showConfig, setShowConfig] = useState(false);
 
   const tabs = [
     { id: 'schedule' as TabType, label: t('schedule'), icon: Calendar },
@@ -105,44 +104,6 @@ export function ManagerDashboard() {
   ]);
 
   const renderContent = () => {
-    // Si el modal de configuración está abierto, mostrar la página de configuración
-    if (showConfig) {
-      return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-          <div className="max-w-4xl mx-auto p-6">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
-              {/* Header */}
-              <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
-                <div className="flex items-center space-x-3">
-                  <Settings className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-                  <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                    {t('configuration')}
-                  </h2>
-                </div>
-                <button
-                  onClick={() => setShowConfig(false)}
-                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-                  title="Cerrar configuración"
-                >
-                  <X className="w-6 h-6" />
-                </button>
-              </div>
-
-              {/* Content */}
-              <div className="p-6">
-                <ConfigurationModal 
-                  isOpen={true}
-                  onClose={() => setShowConfig(false)}
-                  isEmployeeDashboard={false}
-                  asPage={false}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      );
-    }
-
     switch (activeTab) {
       case 'schedule':
         return <ScheduleManagement />;
@@ -158,6 +119,33 @@ export function ManagerDashboard() {
         return <Statistics />;
       case 'export':
         return <ExportTools />;
+      case 'configuration':
+        return (
+          <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+            <div className="max-w-4xl mx-auto p-6">
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+                {/* Header */}
+                <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+                  <div className="flex items-center space-x-3">
+                    <Settings className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                    <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                      {t('configuration')}
+                    </h2>
+                  </div>
+                </div>
+
+                {/* Content */}
+                <div className="p-6">
+                  <ConfigurationModal 
+                    isOpen={true}
+                    onClose={() => {}}
+                    isEmployeeDashboard={false}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        );
       default:
         return <ScheduleManagement />;
     }
@@ -217,7 +205,7 @@ export function ManagerDashboard() {
                     isManager={true}
                   />
                   <button
-                    onClick={() => setShowConfig(true)}
+                    onClick={() => setActiveTab('configuration')}
                     className="flex items-center text-gray-600 hover:text-gray-900 transition-colors dark:text-gray-400 dark:hover:text-gray-100"
                     title={t('configuration')}
                   >
@@ -256,12 +244,7 @@ export function ManagerDashboard() {
             <HamburgerMenu 
               activeTab={activeTab}
               onTabChange={(tab) => {
-                if (tab === 'configuration') {
-                  setShowConfig(true);
-                  // No cambiar el activeTab, mantener el actual
-                } else {
-                  setActiveTab(tab as TabType);
-                }
+                setActiveTab(tab as TabType);
               }}
               isManager={true}
               onShowKeyboardHelp={() => setShowKeyboardHelp(true)}
@@ -312,11 +295,6 @@ export function ManagerDashboard() {
         />
       )}
 
-      {/* Configuration Modal */}
-      <ConfigurationModal 
-        isOpen={showConfig}
-        onClose={() => setShowConfig(false)}
-      />
     </div>
   );
 }
