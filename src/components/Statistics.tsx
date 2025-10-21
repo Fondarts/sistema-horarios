@@ -150,12 +150,45 @@ export function Statistics() {
       return total;
     }, 0);
 
+    // Calcular rotación de personal (empleados nuevos y que se van)
+    const calculateStaffRotation = () => {
+      // Obtener empleados del mes anterior
+      const previousMonth = new Date(month.getFullYear(), month.getMonth() - 1, 1);
+      const previousMonthEnd = new Date(month.getFullYear(), month.getMonth(), 0);
+      const previousMonthShifts = yearlyShifts.filter(shift => {
+        const shiftDate = new Date(shift.date);
+        return shiftDate >= previousMonth && shiftDate <= previousMonthEnd;
+      });
+      
+      const currentMonthEmployees = new Set(monthShifts.map(shift => shift.employeeId));
+      const previousMonthEmployees = new Set(previousMonthShifts.map(shift => shift.employeeId));
+      
+      // Empleados nuevos (están en este mes pero no en el anterior)
+      const newEmployees = [...currentMonthEmployees].filter(id => !previousMonthEmployees.has(id));
+      
+      // Empleados que se fueron (estaban en el mes anterior pero no en este)
+      const departedEmployees = [...previousMonthEmployees].filter(id => !currentMonthEmployees.has(id));
+      
+      const changes = [];
+      if (newEmployees.length > 0) {
+        changes.push(`+${newEmployees.length} nuevo${newEmployees.length > 1 ? 's' : ''}`);
+      }
+      if (departedEmployees.length > 0) {
+        changes.push(`-${departedEmployees.length} se fue${departedEmployees.length > 1 ? 'ron' : ''}`);
+      }
+      
+      return changes.length > 0 ? changes.join(', ') : null;
+    };
+
+    const staffRotation = calculateStaffRotation();
+
     return {
       month: format(month, 'MMM yyyy', { locale: es }),
       shifts: monthShifts.length,
       totalHours: monthShifts.reduce((total, shift) => total + shift.hours, 0),
       uniqueEmployees: new Set(monthShifts.map(shift => shift.employeeId)).size,
-      extraHours: totalExtraHours
+      extraHours: totalExtraHours,
+      staffRotation: staffRotation
     };
   });
 
@@ -196,12 +229,45 @@ export function Statistics() {
       return total;
     }, 0);
 
+    // Calcular rotación de personal (empleados nuevos y que se van)
+    const calculateStaffRotation = () => {
+      // Obtener empleados de la semana anterior
+      const previousWeekStart = subDays(weekStart, 7);
+      const previousWeekEnd = subDays(weekEnd, 7);
+      const previousWeekShifts = monthlyShifts.filter(shift => {
+        const shiftDate = new Date(shift.date);
+        return shiftDate >= previousWeekStart && shiftDate <= previousWeekEnd;
+      });
+      
+      const currentWeekEmployees = new Set(weekShifts.map(shift => shift.employeeId));
+      const previousWeekEmployees = new Set(previousWeekShifts.map(shift => shift.employeeId));
+      
+      // Empleados nuevos (están en esta semana pero no en la anterior)
+      const newEmployees = [...currentWeekEmployees].filter(id => !previousWeekEmployees.has(id));
+      
+      // Empleados que se fueron (estaban en la semana anterior pero no en esta)
+      const departedEmployees = [...previousWeekEmployees].filter(id => !currentWeekEmployees.has(id));
+      
+      const changes = [];
+      if (newEmployees.length > 0) {
+        changes.push(`+${newEmployees.length} nuevo${newEmployees.length > 1 ? 's' : ''}`);
+      }
+      if (departedEmployees.length > 0) {
+        changes.push(`-${departedEmployees.length} se fue${departedEmployees.length > 1 ? 'ron' : ''}`);
+      }
+      
+      return changes.length > 0 ? changes.join(', ') : null;
+    };
+
+    const staffRotation = calculateStaffRotation();
+
     return {
       week: format(weekStart, 'd MMM', { locale: es }) + ' - ' + format(weekEnd, 'd MMM', { locale: es }),
       shifts: weekShifts.length,
       totalHours: weekShifts.reduce((total, shift) => total + shift.hours, 0),
       uniqueEmployees: new Set(weekShifts.map(shift => shift.employeeId)).size,
-      extraHours: totalExtraHours
+      extraHours: totalExtraHours,
+      staffRotation: staffRotation
     };
   });
 
@@ -822,6 +888,9 @@ export function Statistics() {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                       Horas Extras
                     </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      Rotación de Personal
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-gray-200 dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
@@ -844,6 +913,9 @@ export function Statistics() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                         {formatHours(stat.extraHours || 0)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                        {stat.staffRotation || 'Sin cambios'}
                       </td>
                     </tr>
                   ))}
@@ -996,6 +1068,9 @@ export function Statistics() {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                       Horas Extras
                     </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      Rotación de Personal
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-gray-200 dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
@@ -1018,6 +1093,9 @@ export function Statistics() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                         {formatHours(stat.extraHours || 0)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                        {stat.staffRotation || 'Sin cambios'}
                       </td>
                     </tr>
                   ))}
