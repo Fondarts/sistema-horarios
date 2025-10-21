@@ -46,8 +46,9 @@ export function Statistics() {
   const { t } = useLanguage();
   const { formatDate } = useDateFormat();
   
-  const [activeTab, setActiveTab] = useState<'weekly' | 'yearly'>('weekly');
+  const [activeTab, setActiveTab] = useState<'weekly' | 'monthly' | 'yearly'>('weekly');
   const [selectedWeek, setSelectedWeek] = useState(new Date());
+  const [selectedMonth, setSelectedMonth] = useState(new Date());
   const [selectedYear, setSelectedYear] = useState(new Date());
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [employeeOrder, setEmployeeOrder] = useState<string[]>(() => {
@@ -74,6 +75,14 @@ export function Statistics() {
       setSelectedWeek(prev => subWeeks(prev, 1));
     } else {
       setSelectedWeek(prev => addWeeks(prev, 1));
+    }
+  };
+
+  const navigateMonth = (direction: 'prev' | 'next') => {
+    if (direction === 'prev') {
+      setSelectedMonth(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
+    } else {
+      setSelectedMonth(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
     }
   };
 
@@ -118,6 +127,35 @@ export function Statistics() {
       shifts: monthShifts.length,
       totalHours: monthShifts.reduce((total, shift) => total + shift.hours, 0),
       uniqueEmployees: new Set(monthShifts.map(shift => shift.employeeId)).size
+    };
+  });
+
+  // Calcular estadísticas mensuales (para la pestaña mensual)
+  const monthStart = new Date(selectedMonth.getFullYear(), selectedMonth.getMonth(), 1);
+  const monthEnd = new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() + 1, 0);
+  
+  const monthlyShifts = shifts.filter(shift => {
+    const shiftDate = new Date(shift.date);
+    return shiftDate >= monthStart && 
+           shiftDate <= monthEnd &&
+           shift.isPublished;
+  });
+
+  // Estadísticas semanales para el mes seleccionado
+  const weeklyStatsForMonth = eachWeekOfInterval({ start: monthStart, end: monthEnd }, { weekStartsOn: 1 }).map(week => {
+    const weekStart = week;
+    const weekEnd = endOfWeek(week, { weekStartsOn: 1 });
+    
+    const weekShifts = monthlyShifts.filter(shift => {
+      const shiftDate = new Date(shift.date);
+      return shiftDate >= weekStart && shiftDate <= weekEnd;
+    });
+
+    return {
+      week: format(weekStart, 'd MMM', { locale: es }) + ' - ' + format(weekEnd, 'd MMM', { locale: es }),
+      shifts: weekShifts.length,
+      totalHours: weekShifts.reduce((total, shift) => total + shift.hours, 0),
+      uniqueEmployees: new Set(weekShifts.map(shift => shift.employeeId)).size
     };
   });
 
@@ -316,6 +354,17 @@ export function Statistics() {
             Vista Semanal
           </button>
           <button
+            onClick={() => setActiveTab('monthly')}
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              activeTab === 'monthly'
+                ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
+            }`}
+          >
+            <Calendar className="w-4 h-4 inline mr-2" />
+            Vista Mensual
+          </button>
+          <button
             onClick={() => setActiveTab('yearly')}
             className={`py-2 px-1 border-b-2 font-medium text-sm ${
               activeTab === 'yearly'
@@ -500,6 +549,140 @@ export function Statistics() {
           </table>
         </div>
       </div>
+        </>
+      )}
+
+      {/* Monthly View */}
+      {activeTab === 'monthly' && (
+        <>
+          {/* Month Navigation */}
+          <div className="card">
+            <div className="text-center mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                {format(monthStart, 'MMMM yyyy', { locale: es })}
+              </h3>
+            </div>
+
+            <div className="flex justify-center items-center space-x-2">
+              <button
+                onClick={() => navigateMonth('prev')}
+                className="px-3 py-1 bg-gray-200 hover:bg-gray-300 text-gray-800 text-sm rounded transition-colors dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200"
+              >
+                ← {t('previous')}
+              </button>
+              <button
+                onClick={() => navigateMonth('next')}
+                className="px-3 py-1 bg-gray-200 hover:bg-gray-300 text-gray-800 text-sm rounded transition-colors dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200"
+              >
+                {t('next')} →
+              </button>
+              <button
+                onClick={() => setSelectedMonth(new Date())}
+                className="px-3 py-1 bg-gray-200 hover:bg-gray-300 text-gray-800 text-sm rounded transition-colors dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200"
+              >
+                Este Mes
+              </button>
+            </div>
+          </div>
+
+          {/* Monthly Summary Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="card">
+              <div className="flex items-center">
+                <Users className="w-8 h-8 text-primary-600 mr-3" />
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Empleados Activos</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                    {new Set(monthlyShifts.map(shift => shift.employeeId)).size}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="card">
+              <div className="flex items-center">
+                <BarChart3 className="w-8 h-8 text-green-600 mr-3" />
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Turnos del Mes</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{monthlyShifts.length}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="card">
+              <div className="flex items-center">
+                <TrendingUp className="w-8 h-8 text-blue-600 mr-3" />
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Horas Totales</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                    {formatHours(monthlyShifts.reduce((total, shift) => total + shift.hours, 0))}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="card">
+              <div className="flex items-center">
+                <Calendar className="w-8 h-8 text-purple-600 mr-3" />
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Promedio Semanal</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                    {formatHours(monthlyShifts.reduce((total, shift) => total + shift.hours, 0) / 4)}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Weekly Breakdown for the Month */}
+          <div className="card">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-6">Desglose Semanal del Mes</h3>
+            
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50 dark:bg-gray-700">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      Semana
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      Turnos
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      Horas Totales
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      Empleados Activos
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      Promedio por Empleado
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-gray-200 dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                  {weeklyStatsForMonth.map((stat, index) => (
+                    <tr key={index} className="hover:bg-gray-100 dark:hover:bg-gray-700">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
+                        {stat.week}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                        {stat.shifts}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                        {formatHours(stat.totalHours)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                        {stat.uniqueEmployees}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                        {stat.uniqueEmployees > 0 ? formatHours(stat.totalHours / stat.uniqueEmployees) : '0h'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </>
       )}
 
