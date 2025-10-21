@@ -172,7 +172,7 @@ export const es = {
   addAnotherRange: 'Agregar otro rango',
   lastSynchronization: 'Última sincronización',
   holidayInformation: 'Información sobre Feriados',
-  nationalHolidaysSyncAutomatically: 'Los feriados nacionales se sincronizan automáticamente cada año. Estos días se consideran automáticamente como no laborables en la planificación de horarios.',
+  nationalHolidaysSyncAutomatically: 'Los feriados nacionales se sincronizan automáticamente cada año. Estos días usarán el horario asignado a feriados en la pestaña de tienda, a menos que crees una excepción específica.',
   
   // Statistics
   coverageAndWorkloadMetrics: 'Métricas de cobertura y carga de trabajo',
