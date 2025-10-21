@@ -145,8 +145,7 @@ export function ConfigurationModal({ isOpen, onClose, isEmployeeDashboard = fals
           </button>
         </div>
       </div>
-    </div>
-  );
+    );
   }
 
   // Renderizado como modal (comportamiento original)
