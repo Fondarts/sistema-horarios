@@ -20,7 +20,7 @@ export default function ScheduleManagement() {
   const { employees } = useEmployees();
   const { vacationRequests } = useVacation();
   const { isHoliday, getHolidayForDate } = useHolidays();
-  const { isCompactMode, isMobile } = useCompactMode();
+  const { isCompactMode, isMobile, toggleCompactMode } = useCompactMode();
   const { t, language } = useLanguage();
   const { formatDate } = useDateFormat();
   const { addNotification } = useNotifications();
@@ -423,9 +423,16 @@ export default function ScheduleManagement() {
     }
 
     // Altura total = baseTop + (barras × alto) + espaciado entre barras + padding
-    // En modo normal: baseTop + (barras-1) × spacing + altura de la última barra + padding
-    const spacingHeight = totalBars > 1 ? (totalBars - 1) * spacing : 0;
-    const calculatedHeight = baseTop + spacingHeight + barHeight + bottomPadding;
+    let calculatedHeight;
+    if (dayInCompact) {
+      // En modo compacto: baseTop + (barras × alto) + espaciado entre barras + padding
+      const spacingHeight = totalBars > 1 ? (totalBars - 1) * spacing : 0;
+      calculatedHeight = baseTop + (totalBars * barHeight) + spacingHeight + bottomPadding;
+    } else {
+      // En modo normal: baseTop + (barras-1) × spacing + altura de la última barra + padding
+      const spacingHeight = totalBars > 1 ? (totalBars - 1) * spacing : 0;
+      calculatedHeight = baseTop + spacingHeight + barHeight + bottomPadding;
+    }
 
     return Math.max(minHeight, calculatedHeight);
   };
@@ -1546,7 +1553,16 @@ export default function ScheduleManagement() {
               minWidth: 'max-content'
             }}
           >
-                <div className={`${isMobile ? 'p-1' : (isCompactMode ? 'p-2' : 'p-3')} font-medium text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700 ${isMobile ? 'text-xs' : (isCompactMode ? 'text-sm' : '')} ${isMobile ? 'sticky left-0 z-20' : ''}`}>Día</div>
+                <div className={`${isMobile ? 'p-1' : (isCompactMode ? 'p-2' : 'p-3')} font-medium text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700 ${isMobile ? 'text-xs' : (isCompactMode ? 'text-sm' : '')} ${isMobile ? 'sticky left-0 z-20' : ''} flex items-center justify-between`}>
+                  <span>Día</span>
+                  <button
+                    onClick={toggleCompactMode}
+                    className="ml-2 p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded transition-colors"
+                    title={isCompactMode ? 'Expandir todos los días' : 'Compactar todos los días'}
+                  >
+                    {isCompactMode ? '+' : '-'}
+                  </button>
+                </div>
             {hours.map((hour) => {
               // Check if this hour is within store hours (usando el día actual como referencia)
               const isStoreHour = hour >= storeStartHour && hour <= storeEndHour;
