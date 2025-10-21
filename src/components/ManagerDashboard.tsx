@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useEmployees } from '../contexts/EmployeeContext';
 import { useStore } from '../contexts/StoreContext';
-import { LogOut, Calendar, Users, Home, BarChart3, FileText, CalendarDays, Settings, Building2, UserX } from 'lucide-react';
+import { LogOut, Calendar, Users, Home, BarChart3, FileText, CalendarDays, Settings, Building2, UserX, X } from 'lucide-react';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { useCompactMode } from '../contexts/CompactModeContext';
 import { EmployeeManagement } from './EmployeeManagement';
@@ -105,6 +105,43 @@ export function ManagerDashboard() {
   ]);
 
   const renderContent = () => {
+    // Si el modal de configuración está abierto, mostrar la página de configuración
+    if (showConfig) {
+      return (
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+          <div className="max-w-4xl mx-auto p-6">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+              {/* Header */}
+              <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+                <div className="flex items-center space-x-3">
+                  <Settings className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                  <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                    {t('configuration')}
+                  </h2>
+                </div>
+                <button
+                  onClick={() => setShowConfig(false)}
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              {/* Content */}
+              <div className="p-6">
+                <ConfigurationModal 
+                  isOpen={true}
+                  onClose={() => setShowConfig(false)}
+                  isEmployeeDashboard={false}
+                  asPage={true}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     switch (activeTab) {
       case 'schedule':
         return <ScheduleManagement />;
