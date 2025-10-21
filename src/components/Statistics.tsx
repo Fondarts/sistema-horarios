@@ -915,7 +915,30 @@ export function Statistics() {
                         {formatHours(stat.extraHours || 0)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                        {stat.staffRotation || 'Sin cambios'}
+                        {stat.staffRotation ? (
+                          <div className="flex flex-wrap gap-1">
+                            {stat.staffRotation.split(', ').map((change, index) => {
+                              const isNew = change.startsWith('+');
+                              const isDeparture = change.startsWith('-');
+                              return (
+                                <span
+                                  key={index}
+                                  className={`px-2 py-1 rounded text-xs font-medium ${
+                                    isNew 
+                                      ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
+                                      : isDeparture 
+                                        ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                                        : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+                                  }`}
+                                >
+                                  {change}
+                                </span>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <span className="text-gray-500 dark:text-gray-400">Sin cambios</span>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -1095,7 +1118,30 @@ export function Statistics() {
                         {formatHours(stat.extraHours || 0)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                        {stat.staffRotation || 'Sin cambios'}
+                        {stat.staffRotation ? (
+                          <div className="flex flex-wrap gap-1">
+                            {stat.staffRotation.split(', ').map((change, index) => {
+                              const isNew = change.startsWith('+');
+                              const isDeparture = change.startsWith('-');
+                              return (
+                                <span
+                                  key={index}
+                                  className={`px-2 py-1 rounded text-xs font-medium ${
+                                    isNew 
+                                      ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
+                                      : isDeparture 
+                                        ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                                        : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+                                  }`}
+                                >
+                                  {change}
+                                </span>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <span className="text-gray-500 dark:text-gray-400">Sin cambios</span>
+                        )}
                       </td>
                     </tr>
                   ))}
