@@ -596,7 +596,7 @@ export function Statistics() {
       </div>
 
       {/* Summary Cards */}
-      <div className={`grid gap-4 ${isMobile ? 'grid-cols-2' : 'grid-cols-1 md:grid-cols-5'}`}>
+      <div className={`grid gap-4 ${isMobile ? 'grid-cols-3' : 'grid-cols-1 md:grid-cols-5'}`}>
         <div className="card">
           <div className={`${isMobile ? 'text-center' : 'flex items-center'}`}>
             <Users className={`${isMobile ? 'w-6 h-6 mx-auto mb-2' : 'w-8 h-8 mr-3'} text-primary-600`} />
