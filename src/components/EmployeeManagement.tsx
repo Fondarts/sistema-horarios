@@ -98,6 +98,25 @@ export function EmployeeManagement() {
     }
   };
 
+  // Función para determinar el estado visual del empleado
+  const getEmployeeDisplayStatus = (employee: Employee) => {
+    const today = new Date().toISOString().split('T')[0];
+    
+    // Si tiene fecha de terminación
+    if (employee.terminationDate) {
+      if (employee.terminationDate <= today) {
+        return { status: 'inactive', text: 'Inactivo' };
+      } else {
+        return { status: 'active', text: 'Activo' };
+      }
+    }
+    
+    // Si no tiene fecha de terminación, usar el campo isActive
+    return employee.isActive 
+      ? { status: 'active', text: 'Activo' }
+      : { status: 'inactive', text: 'Inactivo' };
+  };
+
   // Función para obtener el ejemplo dinámico según el formato de fecha
   const getDateExample = () => {
     switch (dateFormat) {
@@ -374,10 +393,11 @@ export function EmployeeManagement() {
         return;
       }
 
-      // Actualizar empleado con fecha de baja
+      // Actualizar empleado con fecha de baja (mantener isActive basado en fecha)
+      const currentDate = new Date().toISOString().split('T')[0];
       const updatedEmployee = { 
         ...employeeToDelete, 
-        isActive: false,
+        isActive: terminationDate > currentDate, // Solo inactivo si la fecha de baja es hoy o en el pasado
         terminationDate: terminationDate
       };
       
@@ -777,8 +797,10 @@ export function EmployeeManagement() {
           </div>
         ) : (
           <div className={`grid gap-4 ${isCompactMode ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'}`}>
-            {employees.map((employee) => (
-              <div key={employee.id} className={`bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg hover:shadow-sm transition-shadow ${isCompactMode ? 'p-3' : 'p-4'} ${!employee.isActive ? 'opacity-60 bg-gray-50 dark:bg-gray-800' : ''}`}>
+            {employees.map((employee) => {
+              const displayStatus = getEmployeeDisplayStatus(employee);
+              return (
+              <div key={employee.id} className={`bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg hover:shadow-sm transition-shadow ${isCompactMode ? 'p-3' : 'p-4'} ${displayStatus.status === 'inactive' ? 'opacity-60 bg-gray-50 dark:bg-gray-800' : ''}`}>
                 <div className="flex justify-between items-start mb-3">
                   <div className="flex items-center gap-3">
                     <div 
@@ -788,9 +810,9 @@ export function EmployeeManagement() {
                     <div>
                       <h4 className="font-medium text-gray-900 dark:text-gray-100">{employee.name}</h4>
                       <div className="flex items-center gap-2">
-                        <div className={`w-2 h-2 rounded-full ${employee.isActive ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                        <div className={`w-2 h-2 rounded-full ${displayStatus.status === 'active' ? 'bg-green-500' : 'bg-red-500'}`}></div>
                         <p className="text-sm text-gray-600 dark:text-gray-400">
-                          {employee.isActive ? t('active') : t('inactive')}
+                          {displayStatus.text}
                         </p>
                       </div>
                     </div>
@@ -860,7 +882,8 @@ export function EmployeeManagement() {
                   )}
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
