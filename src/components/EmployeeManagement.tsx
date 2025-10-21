@@ -129,8 +129,8 @@ export function EmployeeManagement() {
   const [employeeToTransfer, setEmployeeToTransfer] = useState<Employee | null>(null);
   const [selectedStoreId, setSelectedStoreId] = useState<string>('');
   const [transferType, setTransferType] = useState<'permanent' | 'temporary'>('permanent');
+  const [transferStartDate, setTransferStartDate] = useState<string>('');
   const [returnDate, setReturnDate] = useState<string>('');
-  const [transferReason, setTransferReason] = useState<string>('');
   const [formData, setFormData] = useState({
     name: '',
     username: '',
@@ -264,8 +264,8 @@ export function EmployeeManagement() {
     setEmployeeToTransfer(employee);
     setSelectedStoreId('');
     setTransferType('permanent');
+    setTransferStartDate(new Date().toISOString().split('T')[0]);
     setReturnDate('');
-    setTransferReason('');
     setShowTransferModal(true);
   };
 
@@ -280,10 +280,9 @@ export function EmployeeManagement() {
         employeeId: employeeToTransfer.id,
         fromStoreId: employeeToTransfer.storeId || currentStore?.id || '',
         toStoreId: selectedStoreId,
-        transferDate: new Date().toISOString().split('T')[0],
+        transferDate: transferStartDate,
         returnDate: transferType === 'temporary' ? returnDate : undefined,
         isTemporary: transferType === 'temporary',
-        reason: transferReason || undefined,
         status: 'active',
         createdAt: now,
         updatedAt: now
@@ -304,8 +303,8 @@ export function EmployeeManagement() {
       setEmployeeToTransfer(null);
       setSelectedStoreId('');
       setTransferType('permanent');
+      setTransferStartDate('');
       setReturnDate('');
-      setTransferReason('');
     }
   };
 
@@ -794,6 +793,19 @@ export function EmployeeManagement() {
 
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Fecha de Inicio
+              </label>
+              <input
+                type="date"
+                value={transferStartDate}
+                onChange={(e) => setTransferStartDate(e.target.value)}
+                min={new Date().toISOString().split('T')[0]}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
+              />
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Tipo de Traspaso
               </label>
               <div className="flex space-x-4">
@@ -829,24 +841,11 @@ export function EmployeeManagement() {
                   type="date"
                   value={returnDate}
                   onChange={(e) => setReturnDate(e.target.value)}
-                  min={new Date().toISOString().split('T')[0]}
+                  min={transferStartDate || new Date().toISOString().split('T')[0]}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
               </div>
             )}
-
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Motivo (opcional)
-              </label>
-              <input
-                type="text"
-                value={transferReason}
-                onChange={(e) => setTransferReason(e.target.value)}
-                placeholder="Ej: Vacaciones, enfermedad, cobertura..."
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
-              />
-            </div>
 
             <div className="flex justify-end space-x-3">
               <button
@@ -855,8 +854,8 @@ export function EmployeeManagement() {
                   setEmployeeToTransfer(null);
                   setSelectedStoreId('');
                   setTransferType('permanent');
+                  setTransferStartDate('');
                   setReturnDate('');
-                  setTransferReason('');
                 }}
                 className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-600 rounded-md hover:bg-gray-200 dark:hover:bg-gray-500 transition-colors"
               >
@@ -864,7 +863,7 @@ export function EmployeeManagement() {
               </button>
               <button
                 onClick={confirmTransfer}
-                disabled={!selectedStoreId || (transferType === 'temporary' && !returnDate)}
+                disabled={!selectedStoreId || !transferStartDate || (transferType === 'temporary' && !returnDate)}
                 className="px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-md hover:bg-primary-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
               >
                 Traspasar

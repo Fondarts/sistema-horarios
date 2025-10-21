@@ -42,7 +42,6 @@ export interface EmployeeTransfer {
   transferDate: string; // formato YYYY-MM-DD
   returnDate?: string; // formato YYYY-MM-DD (solo para traspasos temporales)
   isTemporary: boolean;
-  reason?: string; // motivo del traspaso (vacaciones, enfermedad, etc.)
   status: 'active' | 'completed' | 'cancelled';
   createdAt: string;
   updatedAt: string;
