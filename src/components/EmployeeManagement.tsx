@@ -614,7 +614,7 @@ export function EmployeeManagement() {
         ) : (
           <div className={`grid gap-4 ${isCompactMode ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'}`}>
             {employees.map((employee) => (
-              <div key={employee.id} className={`bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg hover:shadow-sm transition-shadow ${isCompactMode ? 'p-3' : 'p-4'}`}>
+              <div key={employee.id} className={`bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg hover:shadow-sm transition-shadow ${isCompactMode ? 'p-3' : 'p-4'} ${!employee.isActive ? 'opacity-60 bg-gray-50 dark:bg-gray-800' : ''}`}>
                 <div className="flex justify-between items-start mb-3">
                   <div className="flex items-center gap-3">
                     <div 
@@ -623,17 +623,31 @@ export function EmployeeManagement() {
                     ></div>
                     <div>
                       <h4 className="font-medium text-gray-900 dark:text-gray-100">{employee.name}</h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {employee.isActive ? t('active') : t('inactive')}
-                      </p>
+                      <div className="flex items-center gap-2">
+                        <div className={`w-2 h-2 rounded-full ${employee.isActive ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          {employee.isActive ? t('active') : t('inactive')}
+                        </p>
+                      </div>
                     </div>
                   </div>
                   <div className="flex space-x-2">
                     <button
                       onClick={() => handleEdit(employee)}
                       className="text-primary-600 hover:text-primary-800"
+                      title={t('edit')}
                     >
                       <Edit className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => {
+                        const updatedEmployee = { ...employee, isActive: !employee.isActive };
+                        updateEmployee(employee.id, updatedEmployee);
+                      }}
+                      className={`${employee.isActive ? 'text-orange-600 hover:text-orange-800' : 'text-green-600 hover:text-green-800'}`}
+                      title={employee.isActive ? 'Desactivar empleado' : 'Activar empleado'}
+                    >
+                      {employee.isActive ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                     <button
                       onClick={() => {
@@ -641,6 +655,7 @@ export function EmployeeManagement() {
                         deleteEmployee(employee.id);
                       }}
                       className="text-red-600 hover:text-red-800"
+                      title={t('delete')}
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
