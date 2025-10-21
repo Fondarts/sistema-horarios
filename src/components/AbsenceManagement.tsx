@@ -306,31 +306,25 @@ export const AbsenceManagement: React.FC<AbsenceManagementProps> = ({ isEmployee
 
               {/* Estadísticas */}
               <div className="grid gap-3 grid-cols-3">
-                <div className="bg-gray-200 dark:bg-gray-800 p-3 rounded-lg shadow border border-gray-200 dark:border-gray-700">
-                  <div className="flex items-center">
-                    <Calendar className="w-6 h-6 text-blue-500" />
-                    <div className="ml-2">
-                      <p className="text-xs font-medium text-gray-500 dark:text-gray-400">{t('totalAbsences')}</p>
-                      <p className="text-xl font-bold text-gray-900 dark:text-gray-50">{stats.totalAbsences}</p>
-                    </div>
+                <div className="bg-gray-200 dark:bg-gray-800 p-4 rounded-lg shadow border border-gray-200 dark:border-gray-700">
+                  <div className="text-center">
+                    <Calendar className="w-8 h-8 text-blue-500 mx-auto mb-2" />
+                    <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">{t('totalAbsences')}</p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-gray-50">{stats.totalAbsences}</p>
                   </div>
                 </div>
-                <div className="bg-gray-200 dark:bg-gray-800 p-3 rounded-lg shadow border border-gray-200 dark:border-gray-700">
-                  <div className="flex items-center">
-                    <Clock className="w-6 h-6 text-yellow-500" />
-                    <div className="ml-2">
-                      <p className="text-xs font-medium text-gray-500 dark:text-gray-400">{t('pending')}</p>
-                      <p className="text-xl font-bold text-gray-900 dark:text-gray-50">{stats.pendingApprovals}</p>
-                    </div>
+                <div className="bg-gray-200 dark:bg-gray-800 p-4 rounded-lg shadow border border-gray-200 dark:border-gray-700">
+                  <div className="text-center">
+                    <Clock className="w-8 h-8 text-yellow-500 mx-auto mb-2" />
+                    <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">{t('pending')}</p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-gray-50">{stats.pendingApprovals}</p>
                   </div>
                 </div>
-                <div className="bg-gray-200 dark:bg-gray-800 p-3 rounded-lg shadow border border-gray-200 dark:border-gray-700">
-                  <div className="flex items-center">
-                    <XCircle className="w-6 h-6 text-red-500" />
-                    <div className="ml-2">
-                      <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Ausencias No Justificadas</p>
-                      <p className="text-xl font-bold text-gray-900 dark:text-gray-50">{stats.absencesByType.unjustified}</p>
-                    </div>
+                <div className="bg-gray-200 dark:bg-gray-800 p-4 rounded-lg shadow border border-gray-200 dark:border-gray-700">
+                  <div className="text-center">
+                    <XCircle className="w-8 h-8 text-red-500 mx-auto mb-2" />
+                    <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Ausencias No Justificadas</p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-gray-50">{stats.absencesByType.unjustified}</p>
                   </div>
                 </div>
               </div>
