@@ -344,7 +344,7 @@ export function HolidayIntegration() {
           <select
             value={selectedYear}
             onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-            className="input-field"
+            className="px-4 py-2 text-sm font-medium border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-gray-200 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-50 min-w-[80px]"
           >
             {Array.from({ length: 5 }, (_, i) => {
               const year = new Date().getFullYear() + i;
