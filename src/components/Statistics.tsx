@@ -782,6 +782,8 @@ export function Statistics() {
             </table>
           </div>
       </div>
+        </>
+      )}
 
       {/* Monthly View */}
       {activeTab === 'monthly' && (
