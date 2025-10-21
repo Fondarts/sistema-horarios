@@ -1556,11 +1556,22 @@ export default function ScheduleManagement() {
                 <div className={`${isMobile ? 'p-1' : (isCompactMode ? 'p-2' : 'p-3')} font-medium text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700 ${isMobile ? 'text-xs' : (isCompactMode ? 'text-sm' : '')} ${isMobile ? 'sticky left-0 z-20' : ''} flex items-center justify-between`}>
                   <span>Día</span>
                   <button
-                    onClick={toggleCompactMode}
+                    onClick={() => {
+                      // Si hay días colapsados, expandir todos. Si no, colapsar todos
+                      const hasCollapsedDays = days.some(day => collapsedDays.has(format(day, 'yyyy-MM-dd')));
+                      if (hasCollapsedDays) {
+                        // Expandir todos los días
+                        setCollapsedDays(new Set());
+                      } else {
+                        // Colapsar todos los días
+                        const allDays = new Set(days.map(day => format(day, 'yyyy-MM-dd')));
+                        setCollapsedDays(allDays);
+                      }
+                    }}
                     className="ml-2 p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded transition-colors"
-                    title={isCompactMode ? 'Expandir todos los días' : 'Compactar todos los días'}
+                    title={days.some(day => collapsedDays.has(format(day, 'yyyy-MM-dd'))) ? 'Expandir todos los días' : 'Colapsar todos los días'}
                   >
-                    {isCompactMode ? '+' : '-'}
+                    {days.some(day => collapsedDays.has(format(day, 'yyyy-MM-dd'))) ? '+' : '-'}
                   </button>
                 </div>
             {hours.map((hour) => {
