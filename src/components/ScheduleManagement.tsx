@@ -1468,86 +1468,127 @@ export default function ScheduleManagement() {
           })()}
         </div>
 
-        {/* Todos los botones distribuidos */}
-        <div className="flex items-center justify-between mb-4">
-          {/* Lado izquierdo: Navegación de semanas */}
-          <div className="flex items-center space-x-3">
-          <button
-            onClick={() => navigateWeek('prev')}
-            className="px-4 py-2 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 text-sm font-medium rounded-lg transition-colors"
-          >
-            ← {t('previous')}
-          </button>
-            <button
-              onClick={() => setCurrentWeek(new Date())}
-              className="px-4 py-2 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 text-sm font-medium rounded-lg transition-colors"
-            >
-              {t('thisWeek')}
-          </button>
-          <button
-            onClick={() => navigateWeek('next')}
-            className="px-4 py-2 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 text-sm font-medium rounded-lg transition-colors"
-          >
-            {t('next')} →
-          </button>
+        {/* Panel de navegación de semana mejorado */}
+        <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 mb-4">
+          {/* Navegación de semanas - Layout responsive */}
+          <div className={`flex ${isMobile ? 'flex-col space-y-3' : 'flex-row items-center justify-between'} mb-4`}>
+            {/* Navegación de semanas */}
+            <div className={`flex items-center ${isMobile ? 'justify-center space-x-2' : 'space-x-3'}`}>
+              <button
+                onClick={() => navigateWeek('prev')}
+                className="flex items-center px-3 py-2 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 text-sm font-medium rounded-lg transition-colors shadow-sm border border-gray-200 dark:border-gray-600"
+                title="Semana anterior"
+              >
+                <span className="text-lg">←</span>
+                <span className="ml-1">{t('previous')}</span>
+              </button>
+              
+              <button
+                onClick={() => setCurrentWeek(new Date())}
+                className="px-3 py-2 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 text-sm font-medium rounded-lg transition-colors shadow-sm border border-gray-200 dark:border-gray-600"
+                title="Ir a la semana actual"
+              >
+                {t('thisWeek')}
+              </button>
+              
+              <button
+                onClick={() => navigateWeek('next')}
+                className="flex items-center px-3 py-2 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 text-sm font-medium rounded-lg transition-colors shadow-sm border border-gray-200 dark:border-gray-600"
+                title="Semana siguiente"
+              >
+                <span className="mr-1">{t('next')}</span>
+                <span className="text-lg">→</span>
+              </button>
+            </div>
+
+            {/* Botones de acción - Solo en desktop */}
+            {!isMobile && (
+              <div className="flex items-center space-x-3">
+                <button
+                  onClick={repeatPreviousWeek}
+                  disabled={isCopyingShifts}
+                  className={`flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors shadow-sm ${
+                    isCopyingShifts 
+                      ? 'bg-gray-300 dark:bg-gray-600 opacity-50 cursor-not-allowed text-gray-500 dark:text-gray-400' 
+                      : 'bg-blue-600 hover:bg-blue-700 text-white'
+                  }`}
+                  title={isCopyingShifts ? "Copiando turnos..." : "Copiar todos los turnos de la semana anterior"}
+                >
+                  <Copy className={`w-4 h-4 mr-2 ${isCopyingShifts ? 'animate-spin' : ''}`} />
+                  <span>{isCopyingShifts ? t('copying') : t('repeatWeek')}</span>
+                </button>
+                
+                <button
+                  onClick={deleteCurrentWeek}
+                  className="flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors bg-red-600 hover:bg-red-700 text-white shadow-sm"
+                  title="Borrar todos los turnos de la semana actual"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  <span>{t('deleteWeek')}</span>
+                </button>
+              </div>
+            )}
+
+            {/* Controles de vista */}
+            <div className={`flex items-center ${isMobile ? 'justify-center space-x-2' : 'space-x-3'}`}>
+              {/* 24h Toggle */}
+              <div className="flex items-center space-x-2 bg-white dark:bg-gray-700 rounded-lg px-3 py-2 shadow-sm border border-gray-200 dark:border-gray-600">
+                <label className="flex items-center space-x-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={show24Hours}
+                    onChange={(e) => setShow24Hours(e.target.checked)}
+                    className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                  />
+                  <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">
+                    {t('view24h')}
+                  </span>
+                </label>
+              </div>
+              
+              {/* Botón de borrador */}
+              <button
+                onClick={() => setShowUnpublished(!showUnpublished)}
+                className={`flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm border ${
+                  showUnpublished 
+                    ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300 border-blue-200 dark:border-blue-800' 
+                    : 'bg-white text-gray-700 dark:bg-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-600'
+                }`}
+                title={showUnpublished ? "Ocultar borradores" : "Mostrar borradores"}
+              >
+                {showUnpublished ? <Eye className="w-4 h-4 mr-2" /> : <EyeOff className="w-4 h-4 mr-2" />}
+                {t('draft')}
+              </button>
+            </div>
           </div>
 
-          {/* Centro: Botones Repetir y Borrar Semana */}
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={repeatPreviousWeek}
-              disabled={isCopyingShifts}
-              className={`flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-                isCopyingShifts 
-                  ? 'bg-white dark:bg-gray-700 opacity-50 cursor-not-allowed text-gray-500 dark:text-gray-400' 
-                  : 'bg-primary-600 hover:bg-primary-700 text-white'
-              }`}
-              title={isCopyingShifts ? "Copiando turnos..." : "Copiar todos los turnos de la semana anterior"}
-            >
-              <Copy className={`w-4 h-4 mr-2 ${isCopyingShifts ? 'animate-spin' : ''}`} />
-              <span>{isCopyingShifts ? t('copying') : t('repeatWeek')}</span>
-            </button>
-            
-            <button
-              onClick={deleteCurrentWeek}
-              className="flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors bg-red-600 hover:bg-red-700 text-white"
-              title="Borrar todos los turnos de la semana actual"
-            >
-              <Trash2 className="w-4 h-4 mr-2" />
-              <span>{t('deleteWeek')}</span>
-            </button>
-          </div>
-
-          {/* Lado derecho: Ver 24h y Borrador */}
-          <div className="flex items-center space-x-3">
-            {/* 24h Toggle */}
-          <div className="flex items-center space-x-2 bg-gray-100 dark:bg-gray-700 rounded-lg px-3 py-2">
-            <label className="flex items-center space-x-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={show24Hours}
-                onChange={(e) => setShow24Hours(e.target.checked)}
-                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-              />
-              <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">
-                {t('view24h')}
-              </span>
-            </label>
-          </div>
-          
-            {/* Botón de borrador */}
-          <button
-              onClick={() => setShowUnpublished(!showUnpublished)}
-              className={`flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                showUnpublished 
-                  ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/20 dark:text-primary-300' 
-                  : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
-              }`}
-            >
-              {showUnpublished ? <Eye className="w-4 h-4 mr-2" /> : <EyeOff className="w-4 h-4 mr-2" />}
-              {t('draft')}
-          </button>
-          </div>
+          {/* Botones de acción para móvil */}
+          {isMobile && (
+            <div className="flex items-center justify-center space-x-3">
+              <button
+                onClick={repeatPreviousWeek}
+                disabled={isCopyingShifts}
+                className={`flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors shadow-sm ${
+                  isCopyingShifts 
+                    ? 'bg-gray-300 dark:bg-gray-600 opacity-50 cursor-not-allowed text-gray-500 dark:text-gray-400' 
+                    : 'bg-blue-600 hover:bg-blue-700 text-white'
+                }`}
+                title={isCopyingShifts ? "Copiando turnos..." : "Copiar todos los turnos de la semana anterior"}
+              >
+                <Copy className={`w-4 h-4 mr-2 ${isCopyingShifts ? 'animate-spin' : ''}`} />
+                <span>{isCopyingShifts ? t('copying') : t('repeatWeek')}</span>
+              </button>
+              
+              <button
+                onClick={deleteCurrentWeek}
+                className="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors bg-red-600 hover:bg-red-700 text-white shadow-sm"
+                title="Borrar todos los turnos de la semana actual"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                <span>{t('deleteWeek')}</span>
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
