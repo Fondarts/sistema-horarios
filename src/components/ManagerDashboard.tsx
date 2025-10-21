@@ -21,7 +21,7 @@ import { HamburgerMenu } from './HamburgerMenu';
 import { ConfigurationModal } from './ConfigurationModal';
 import { useLanguage } from '../contexts/LanguageContext';
 
-type TabType = 'schedule' | 'employees' | 'settings' | 'statistics' | 'export' | 'absences' | 'holidays';
+type TabType = 'schedule' | 'employees' | 'settings' | 'statistics' | 'export' | 'absences' | 'holidays' | 'configuration';
 
 export function ManagerDashboard() {
   const { currentEmployee, logout, isDistrictManager } = useAuth();
@@ -217,7 +217,14 @@ export function ManagerDashboard() {
             {/* Menú hamburguesa - solo visible en móvil */}
             <HamburgerMenu 
               activeTab={activeTab}
-              onTabChange={(tab) => setActiveTab(tab as TabType)}
+              onTabChange={(tab) => {
+                if (tab === 'configuration') {
+                  setShowConfig(true);
+                  // No cambiar el activeTab, mantener el actual
+                } else {
+                  setActiveTab(tab as TabType);
+                }
+              }}
               isManager={true}
               onShowKeyboardHelp={() => setShowKeyboardHelp(true)}
               onLogout={logout}
