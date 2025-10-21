@@ -523,7 +523,7 @@ export function Statistics() {
 
       {/* Tabs */}
       <div className="border-b border-gray-200 dark:border-gray-700">
-        <nav className="-mb-px flex space-x-8">
+        <nav className={`-mb-px flex ${isMobile ? 'space-x-2' : 'space-x-8'}`}>
           <button
             onClick={() => setActiveTab('weekly')}
             className={`py-2 px-1 border-b-2 font-medium text-sm ${
@@ -532,8 +532,8 @@ export function Statistics() {
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
             }`}
           >
-            <Calendar className="w-4 h-4 inline mr-2" />
-            Vista Semanal
+            <Calendar className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'} inline mr-1`} />
+            {isMobile ? 'Semanal' : 'Vista Semanal'}
           </button>
           <button
             onClick={() => setActiveTab('monthly')}
@@ -543,8 +543,8 @@ export function Statistics() {
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
             }`}
           >
-            <Calendar className="w-4 h-4 inline mr-2" />
-            Vista Mensual
+            <Calendar className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'} inline mr-1`} />
+            {isMobile ? 'Mensual' : 'Vista Mensual'}
           </button>
           <button
             onClick={() => setActiveTab('yearly')}
@@ -554,8 +554,8 @@ export function Statistics() {
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
             }`}
           >
-            <CalendarDays className="w-4 h-4 inline mr-2" />
-            Vista Anual
+            <CalendarDays className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'} inline mr-1`} />
+            {isMobile ? 'Anual' : 'Vista Anual'}
           </button>
         </nav>
       </div>
@@ -596,33 +596,33 @@ export function Statistics() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+      <div className={`grid gap-4 ${isMobile ? 'grid-cols-2' : 'grid-cols-1 md:grid-cols-5'}`}>
         <div className="card">
-          <div className="flex items-center">
-            <Users className="w-8 h-8 text-primary-600 mr-3" />
+          <div className={`${isMobile ? 'text-center' : 'flex items-center'}`}>
+            <Users className={`${isMobile ? 'w-6 h-6 mx-auto mb-2' : 'w-8 h-8 mr-3'} text-primary-600`} />
             <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">{t('activeEmployees')}</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{employees.length}</p>
+              <p className={`${isMobile ? 'text-xs' : 'text-sm'} text-gray-600 dark:text-gray-400`}>{t('activeEmployees')}</p>
+              <p className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold text-gray-900 dark:text-gray-100`}>{employees.length}</p>
             </div>
           </div>
         </div>
 
         <div className="card">
-          <div className="flex items-center">
-            <BarChart3 className="w-8 h-8 text-green-600 mr-3" />
+          <div className={`${isMobile ? 'text-center' : 'flex items-center'}`}>
+            <BarChart3 className={`${isMobile ? 'w-6 h-6 mx-auto mb-2' : 'w-8 h-8 mr-3'} text-green-600`} />
             <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">{t('shiftsThisWeek')}</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{weeklyShifts.length}</p>
+              <p className={`${isMobile ? 'text-xs' : 'text-sm'} text-gray-600 dark:text-gray-400`}>{t('shiftsThisWeek')}</p>
+              <p className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold text-gray-900 dark:text-gray-100`}>{weeklyShifts.length}</p>
             </div>
           </div>
         </div>
 
         <div className="card">
-          <div className="flex items-center">
-            <TrendingUp className="w-8 h-8 text-blue-600 mr-3" />
+          <div className={`${isMobile ? 'text-center' : 'flex items-center'}`}>
+            <TrendingUp className={`${isMobile ? 'w-6 h-6 mx-auto mb-2' : 'w-8 h-8 mr-3'} text-blue-600`} />
             <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">{t('totalHours')}</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+              <p className={`${isMobile ? 'text-xs' : 'text-sm'} text-gray-600 dark:text-gray-400`}>{t('totalHours')}</p>
+              <p className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold text-gray-900 dark:text-gray-100`}>
                 {formatHours(weeklyShifts.reduce((total, shift) => total + shift.hours, 0))}
               </p>
             </div>
@@ -630,11 +630,11 @@ export function Statistics() {
         </div>
 
         <div className="card">
-          <div className="flex items-center">
-            <AlertTriangle className="w-8 h-8 text-red-600 mr-3" />
+          <div className={`${isMobile ? 'text-center' : 'flex items-center'}`}>
+            <AlertTriangle className={`${isMobile ? 'w-6 h-6 mx-auto mb-2' : 'w-8 h-8 mr-3'} text-red-600`} />
             <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Horas Extras</p>
-              <p className="text-2xl font-bold text-red-600">
+              <p className={`${isMobile ? 'text-xs' : 'text-sm'} text-gray-600 dark:text-gray-400`}>Horas Extras</p>
+              <p className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold text-red-600`}>
                 {formatHours(employeeStats.reduce((total, stat) => total + stat.extraHours, 0))}
               </p>
             </div>
@@ -642,11 +642,11 @@ export function Statistics() {
         </div>
 
         <div className="card">
-          <div className="flex items-center">
-            <RefreshCw className="w-8 h-8 text-purple-600 mr-3" />
+          <div className={`${isMobile ? 'text-center' : 'flex items-center'}`}>
+            <RefreshCw className={`${isMobile ? 'w-6 h-6 mx-auto mb-2' : 'w-8 h-8 mr-3'} text-purple-600`} />
             <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Consistencia Promedio</p>
-              <p className="text-2xl font-bold text-purple-600">
+              <p className={`${isMobile ? 'text-xs' : 'text-sm'} text-gray-600 dark:text-gray-400`}>Consistencia Promedio</p>
+              <p className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold text-purple-600`}>
                 {employeeStats.length > 0 ? Math.round(employeeStats.reduce((total, stat) => total + stat.employeeRotation, 0) / employeeStats.length) : 0}%
               </p>
             </div>
@@ -658,37 +658,94 @@ export function Statistics() {
       <div className="card">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-6">{t('statisticsByEmployee')}</h3>
         
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50 dark:bg-gray-700">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  {t('employee')}
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  {t('assignedHours')}
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  {t('weeklyCap')}
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  {t('utilization')}
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Horas Extras
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  {t('busiestDay')}
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  {t('daysWithoutWeekend')}
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Consistencia Horaria
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-gray-200 dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+        {isMobile ? (
+          // Vista móvil con tarjetas
+          <div className="space-y-4">
+            {employeeStats.map((stat, index) => {
+              const utilization = (stat.weeklyAssignedHours / stat.weeklyLimit) * 100;
+              const isNearLimit = utilization > 90;
+              const isOverLimit = utilization > 100;
+
+              return (
+                <div key={stat.employeeId} className="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-4">
+                  {/* Header del empleado */}
+                  <div className="flex justify-between items-start mb-3">
+                    <div>
+                      <h4 className="font-medium text-gray-900 dark:text-gray-50">{stat.employeeName}</h4>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        {formatHours(stat.weeklyAssignedHours)} / {formatHours(stat.weeklyLimit)}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <div className={`text-sm font-medium ${isOverLimit ? 'text-red-600' : isNearLimit ? 'text-yellow-600' : 'text-green-600'}`}>
+                        {Math.round(utilization)}%
+                      </div>
+                      {stat.extraHours > 0 && (
+                        <div className="text-xs text-red-600">
+                          +{formatHours(stat.extraHours)}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Métricas adicionales */}
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div>
+                      <span className="text-gray-500 dark:text-gray-400">Día más ocupado:</span>
+                      <div className="font-medium text-gray-900 dark:text-gray-50">
+                        {['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'][stat.busiestDayOfWeek]}
+                      </div>
+                    </div>
+                    <div>
+                      <span className="text-gray-500 dark:text-gray-400">Sin descanso:</span>
+                      <div className="font-medium text-gray-900 dark:text-gray-50">
+                        {stat.daysSinceLastWeekendOff} días
+                      </div>
+                    </div>
+                    <div className="col-span-2">
+                      <span className="text-gray-500 dark:text-gray-400">Consistencia:</span>
+                      <div className="font-medium text-gray-900 dark:text-gray-50">
+                        {stat.employeeRotation}%
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          // Vista de escritorio con tabla
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50 dark:bg-gray-700">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    {t('employee')}
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    {t('assignedHours')}
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    {t('weeklyCap')}
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    {t('utilization')}
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    Horas Extras
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    {t('busiestDay')}
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    {t('daysWithoutWeekend')}
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    Consistencia Horaria
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-gray-200 dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {employeeStats.map((stat, index) => {
                 const utilization = (stat.weeklyAssignedHours / stat.weeklyLimit) * 100;
                 const isNearLimit = utilization > 90;
@@ -777,9 +834,10 @@ export function Statistics() {
                   </tr>
                 );
               })}
-            </tbody>
-          </table>
-        </div>
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
         </>
       )}
