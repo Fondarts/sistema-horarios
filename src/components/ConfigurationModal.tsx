@@ -62,75 +62,74 @@ export function ConfigurationModal({ isOpen, onClose, isEmployeeDashboard = fals
   if (asPage) {
     return (
       <div className="space-y-6">
-              {/* Idioma */}
-              <div>
-                <label className="flex items-center space-x-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                  <Globe className="w-4 h-4" />
-                  <span>{t('language')}</span>
-                </label>
-                <select
-                  value={language}
-                  onChange={(e) => setLanguage(e.target.value as 'es' | 'en' | 'pt' | 'it' | 'de' | 'fr')}
-                  className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  {languages.map((lang) => (
-                    <option key={lang.code} value={lang.code}>
-                      {lang.flag} {lang.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+        {/* Idioma */}
+        <div>
+          <label className="flex items-center space-x-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+            <Globe className="w-4 h-4" />
+            <span>{t('language')}</span>
+          </label>
+          <select
+            value={language}
+            onChange={(e) => setLanguage(e.target.value as 'es' | 'en' | 'pt' | 'it' | 'de' | 'fr')}
+            className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+            {languages.map((lang) => (
+              <option key={lang.code} value={lang.code}>
+                {lang.flag} {lang.name}
+              </option>
+            ))}
+          </select>
+        </div>
 
-              {/* País - Solo para encargados y encargados de distrito, pero NO desde dashboard de empleado */}
-              {(() => {
-                console.log('ConfigurationModal Debug:', {
-                  isEmployeeDashboard,
-                  currentEmployeeRole: currentEmployee?.role,
-                  shouldShowCountry: !isEmployeeDashboard && (currentEmployee?.role === 'encargado' || currentEmployee?.role === 'distrito')
-                });
-                return !isEmployeeDashboard && (currentEmployee?.role === 'encargado' || currentEmployee?.role === 'distrito');
-              })() && (
-                <div>
-                  <label className="flex items-center space-x-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                    <Flag className="w-4 h-4" />
-                    <span>{t('country')}</span>
-                  </label>
-                  <select
-                    value={country}
-                    onChange={(e) => setCountry(e.target.value as Country)}
-                    className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  >
-                    {countries.map((countryOption) => (
-                      <option key={countryOption.code} value={countryOption.code}>
-                        {countryOption.flag} {countryOption.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
+        {/* País - Solo para encargados y encargados de distrito, pero NO desde dashboard de empleado */}
+        {(() => {
+          console.log('ConfigurationModal Debug:', {
+            isEmployeeDashboard,
+            currentEmployeeRole: currentEmployee?.role,
+            shouldShowCountry: !isEmployeeDashboard && (currentEmployee?.role === 'encargado' || currentEmployee?.role === 'distrito')
+          });
+          return !isEmployeeDashboard && (currentEmployee?.role === 'encargado' || currentEmployee?.role === 'distrito');
+        })() && (
+          <div>
+            <label className="flex items-center space-x-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+              <Flag className="w-4 h-4" />
+              <span>{t('country')}</span>
+            </label>
+            <select
+              value={country}
+              onChange={(e) => setCountry(e.target.value as Country)}
+              className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              {countries.map((countryOption) => (
+                <option key={countryOption.code} value={countryOption.code}>
+                  {countryOption.flag} {countryOption.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
 
-              {/* Formato de Fecha */}
-              <div>
-                <label className="flex items-center space-x-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                  <Calendar className="w-4 h-4" />
-                  <span>{t('dateFormat')}</span>
-                </label>
-                <select
-                  value={dateFormat}
-                  onChange={(e) => setDateFormat(e.target.value as DateFormat)}
-                  className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  {dateFormats.map((format) => (
-                    <option key={format.code} value={format.code}>
-                      {format.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
+        {/* Formato de Fecha */}
+        <div>
+          <label className="flex items-center space-x-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+            <Calendar className="w-4 h-4" />
+            <span>{t('dateFormat')}</span>
+          </label>
+          <select
+            value={dateFormat}
+            onChange={(e) => setDateFormat(e.target.value as DateFormat)}
+            className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+            {dateFormats.map((format) => (
+              <option key={format.code} value={format.code}>
+                {format.name}
+              </option>
+            ))}
+          </select>
+        </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end space-x-3 p-6 border-t border-gray-200 dark:border-gray-700">
+        <div className="flex items-center justify-end space-x-3 pt-6 border-t border-gray-200 dark:border-gray-700">
           <button
             onClick={onClose}
             className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
