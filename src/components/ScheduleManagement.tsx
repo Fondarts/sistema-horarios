@@ -600,6 +600,15 @@ export default function ScheduleManagement() {
   const handleCreateOrUpdateShift = async () => {
     if (!shiftForm.employeeId) return;
 
+    // Validar si el empleado tiene fecha de terminación
+    const selectedEmployee = employees.find(emp => emp.id === shiftForm.employeeId);
+    if (selectedEmployee && selectedEmployee.terminationDate) {
+      if (shiftForm.date >= selectedEmployee.terminationDate) {
+        alert(`No se puede asignar turnos a ${selectedEmployee.name} desde la fecha de baja (${selectedEmployee.terminationDate}) en adelante.`);
+        return;
+      }
+    }
+
     const startHour = parseInt(shiftForm.startTime.split(':')[0]);
     const endHour = parseInt(shiftForm.endTime.split(':')[0]);
     const hours = endHour - startHour;

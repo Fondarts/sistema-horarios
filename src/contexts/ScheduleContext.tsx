@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Shift, StoreSchedule, StoreException, ValidationError, Template } from '../types';
 import { useStore } from './StoreContext';
+import { useEmployees } from './EmployeeContext';
 import { db } from '../firebase';
 import { VacationRequest } from './VacationContext';
 import { 
@@ -184,6 +185,7 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
   const [templates, setTemplates] = useState<Template[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { currentStore } = useStore();
+  const { employees } = useEmployees();
 
   // Cargar todos los turnos para estadísticas globales
   useEffect(() => {
@@ -451,6 +453,12 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
     const hasVacationConflict = await checkVacationConflict(shiftData.employeeId, shiftData.date);
     if (hasVacationConflict) {
       errors.push({ type: 'schedule', message: 'No se puede asignar un turno durante las vacaciones aprobadas del empleado' });
+    }
+    
+    // Validar que el empleado no tenga fecha de terminación
+    const employee = employees.find(emp => emp.id === shiftData.employeeId);
+    if (employee && employee.terminationDate && shiftData.date >= employee.terminationDate) {
+      errors.push({ type: 'schedule', message: `No se puede asignar turnos a ${employee.name} desde la fecha de baja (${employee.terminationDate}) en adelante` });
     }
     
     // Validar que no haya conflictos con otros turnos del mismo empleado
