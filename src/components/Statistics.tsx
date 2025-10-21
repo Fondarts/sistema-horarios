@@ -164,10 +164,10 @@ export function Statistics() {
       const previousMonthEmployees = new Set(previousMonthShifts.map(shift => shift.employeeId));
       
       // Empleados nuevos (están en este mes pero no en el anterior)
-      const newEmployees = [...currentMonthEmployees].filter(id => !previousMonthEmployees.has(id));
+      const newEmployees = Array.from(currentMonthEmployees).filter(id => !previousMonthEmployees.has(id));
       
       // Empleados que se fueron (estaban en el mes anterior pero no en este)
-      const departedEmployees = [...previousMonthEmployees].filter(id => !currentMonthEmployees.has(id));
+      const departedEmployees = Array.from(previousMonthEmployees).filter(id => !currentMonthEmployees.has(id));
       
       const changes = [];
       if (newEmployees.length > 0) {
@@ -243,10 +243,10 @@ export function Statistics() {
       const previousWeekEmployees = new Set(previousWeekShifts.map(shift => shift.employeeId));
       
       // Empleados nuevos (están en esta semana pero no en la anterior)
-      const newEmployees = [...currentWeekEmployees].filter(id => !previousWeekEmployees.has(id));
+      const newEmployees = Array.from(currentWeekEmployees).filter(id => !previousWeekEmployees.has(id));
       
       // Empleados que se fueron (estaban en la semana anterior pero no en esta)
-      const departedEmployees = [...previousWeekEmployees].filter(id => !currentWeekEmployees.has(id));
+      const departedEmployees = Array.from(previousWeekEmployees).filter(id => !currentWeekEmployees.has(id));
       
       const changes = [];
       if (newEmployees.length > 0) {
