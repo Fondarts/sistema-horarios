@@ -5,7 +5,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { useDateFormat } from '../contexts/DateFormatContext';
 import { useEmployees } from '../contexts/EmployeeContext';
 import { useCompactMode } from '../contexts/CompactModeContext';
-import { BarChart3, TrendingUp, Users, ChevronLeft, ChevronRight, AlertTriangle, Calendar, CalendarDays } from 'lucide-react';
+import { BarChart3, TrendingUp, Users, ChevronLeft, ChevronRight, AlertTriangle, Calendar, CalendarDays, RefreshCw } from 'lucide-react';
 import { Statistics as StatisticsType, Shift, Employee } from '../types';
 import { format, startOfWeek, endOfWeek, addWeeks, subWeeks, subDays, startOfYear, endOfYear, addYears, subYears, eachWeekOfInterval, eachMonthOfInterval } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -362,6 +362,33 @@ export function Statistics() {
 
     const extraHours = Math.max(0, assignedHours - employee.weeklyLimit);
 
+    // Calcular rotación de empleados (frecuencia de cambios en turnos)
+    const calculateEmployeeRotation = () => {
+      // Obtener todos los turnos del empleado en las últimas 4 semanas
+      const fourWeeksAgo = subDays(new Date(), 28);
+      const recentShifts = shifts.filter(s => 
+        s.employeeId === employee.id && 
+        s.isPublished && 
+        new Date(s.date) >= fourWeeksAgo
+      ).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+      if (recentShifts.length <= 1) return 0;
+
+      // Contar cambios en horarios (diferentes combinaciones de startTime-endTime)
+      const scheduleChanges = new Set<string>();
+      recentShifts.forEach(shift => {
+        const scheduleKey = `${shift.startTime}-${shift.endTime}`;
+        scheduleChanges.add(scheduleKey);
+      });
+
+      // Calcular frecuencia de cambios (número de horarios únicos / total de turnos)
+      const rotationFrequency = (scheduleChanges.size / recentShifts.length) * 100;
+      
+      return Math.round(rotationFrequency);
+    };
+
+    const employeeRotation = calculateEmployeeRotation();
+
     return {
       employeeId: employee.id,
       employeeName: employee.name,
@@ -370,6 +397,7 @@ export function Statistics() {
       extraHours: extraHours,
       daysSinceLastWeekendOff: daysSinceLastWeekendOff,
       busiestDayOfWeek: busiestDay,
+      employeeRotation: employeeRotation,
       coverageIssues: [] // Placeholder
     };
   });
@@ -463,7 +491,7 @@ export function Statistics() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
         <div className="card">
           <div className="flex items-center">
             <Users className="w-8 h-8 text-primary-600 mr-3" />
@@ -507,6 +535,18 @@ export function Statistics() {
             </div>
           </div>
         </div>
+
+        <div className="card">
+          <div className="flex items-center">
+            <RefreshCw className="w-8 h-8 text-purple-600 mr-3" />
+            <div>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Rotación Promedio</p>
+              <p className="text-2xl font-bold text-purple-600">
+                {employeeStats.length > 0 ? Math.round(employeeStats.reduce((total, stat) => total + stat.employeeRotation, 0) / employeeStats.length) : 0}%
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Employee Statistics */}
@@ -537,6 +577,9 @@ export function Statistics() {
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                   {t('daysWithoutWeekend')}
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  Rotación
                 </th>
               </tr>
             </thead>
@@ -615,6 +658,16 @@ export function Statistics() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                       {stat.daysSinceLastWeekendOff} {t('days')}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                      <div className="flex items-center">
+                        <span className={`text-sm ${stat.employeeRotation > 50 ? 'text-orange-600 font-semibold' : stat.employeeRotation > 30 ? 'text-yellow-600' : 'text-green-600'}`}>
+                          {stat.employeeRotation}%
+                        </span>
+                        {stat.employeeRotation > 50 && (
+                          <AlertTriangle className="w-4 h-4 text-orange-500 ml-2" />
+                        )}
+                      </div>
                     </td>
                   </tr>
                 );

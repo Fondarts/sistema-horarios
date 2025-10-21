@@ -104,6 +104,7 @@ export interface Statistics {
   extraHours: number;
   daysSinceLastWeekendOff: number;
   busiestDayOfWeek: number;
+  employeeRotation: number;
   coverageIssues: CoverageIssue[];
 }
 
