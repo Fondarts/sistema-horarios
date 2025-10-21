@@ -209,33 +209,33 @@ export function StoreSelector({ onStoreSelect }: StoreSelectorProps) {
       <div className="max-w-6xl mx-auto p-6">
 
         {/* Dashboard Global */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-gray-200 dark:bg-gray-800 rounded-lg p-6 shadow-sm">
-            <div className="flex items-center">
-              <Building2 className="w-8 h-8 text-blue-600 dark:text-blue-400" />
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('activeStores')}</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{Array.isArray(stores) ? stores.length : 0}</p>
+        <div className={`grid gap-4 mb-8 ${isMobile ? 'grid-cols-3' : 'grid-cols-1 md:grid-cols-3'}`}>
+          <div className="bg-gray-200 dark:bg-gray-800 rounded-lg shadow-sm">
+            <div className={`${isMobile ? 'text-center p-4' : 'flex items-center p-6'}`}>
+              <Building2 className={`${isMobile ? 'w-6 h-6 mx-auto mb-2' : 'w-8 h-8 mr-4'} text-blue-600 dark:text-blue-400`} />
+              <div>
+                <p className={`${isMobile ? 'text-xs' : 'text-sm'} font-medium text-gray-600 dark:text-gray-400 ${isMobile ? 'mb-1' : ''}`}>{t('activeStores')}</p>
+                <p className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold text-gray-900 dark:text-gray-100`}>{Array.isArray(stores) ? stores.length : 0}</p>
               </div>
             </div>
           </div>
           
-          <div className="bg-gray-200 dark:bg-gray-800 rounded-lg p-6 shadow-sm">
-            <div className="flex items-center">
-              <Users className="w-8 h-8 text-green-600 dark:text-green-400" />
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('totalEmployees')}</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{getAllEmployees().length}</p>
+          <div className="bg-gray-200 dark:bg-gray-800 rounded-lg shadow-sm">
+            <div className={`${isMobile ? 'text-center p-4' : 'flex items-center p-6'}`}>
+              <Users className={`${isMobile ? 'w-6 h-6 mx-auto mb-2' : 'w-8 h-8 mr-4'} text-green-600 dark:text-green-400`} />
+              <div>
+                <p className={`${isMobile ? 'text-xs' : 'text-sm'} font-medium text-gray-600 dark:text-gray-400 ${isMobile ? 'mb-1' : ''}`}>{t('totalEmployees')}</p>
+                <p className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold text-gray-900 dark:text-gray-100`}>{getAllEmployees().length}</p>
               </div>
             </div>
           </div>
           
-          <div className="bg-gray-200 dark:bg-gray-800 rounded-lg p-6 shadow-sm">
-            <div className="flex items-center">
-              <Calendar className="w-8 h-8 text-purple-600 dark:text-purple-400" />
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('totalShifts')}</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{getAllShifts().length}</p>
+          <div className="bg-gray-200 dark:bg-gray-800 rounded-lg shadow-sm">
+            <div className={`${isMobile ? 'text-center p-4' : 'flex items-center p-6'}`}>
+              <Calendar className={`${isMobile ? 'w-6 h-6 mx-auto mb-2' : 'w-8 h-8 mr-4'} text-purple-600 dark:text-purple-400`} />
+              <div>
+                <p className={`${isMobile ? 'text-xs' : 'text-sm'} font-medium text-gray-600 dark:text-gray-400 ${isMobile ? 'mb-1' : ''}`}>{t('totalShifts')}</p>
+                <p className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold text-gray-900 dark:text-gray-100`}>{getAllShifts().length}</p>
               </div>
             </div>
           </div>
@@ -243,31 +243,31 @@ export function StoreSelector({ onStoreSelect }: StoreSelectorProps) {
 
         {/* Lista de Tiendas */}
         <div className="bg-gray-200 dark:bg-gray-800 rounded-lg shadow-sm">
-          <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-            <div className="flex justify-between items-center">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+          <div className={`${isMobile ? 'p-4' : 'p-6'} border-b border-gray-200 dark:border-gray-700`}>
+            <div className={`${isMobile ? 'flex flex-col space-y-4' : 'flex justify-between items-center'}`}>
+              <h2 className={`${isMobile ? 'text-lg' : 'text-xl'} font-semibold text-gray-900 dark:text-gray-100`}>
                 {t('storeList')}
               </h2>
-              <div className="flex space-x-3">
+              <div className={`${isMobile ? 'flex flex-col space-y-2' : 'flex space-x-3'}`}>
                 <button
                   onClick={() => setShowTestDataGenerator(true)}
-                  className="btn-secondary flex items-center"
+                  className={`${isMobile ? 'btn-secondary text-sm py-2' : 'btn-secondary'} flex items-center justify-center`}
                 >
-                  <Building2 className="w-4 h-4 mr-2" />
-                  {t('generateTestData')}
+                  <Building2 className={`${isMobile ? 'w-4 h-4 mr-1' : 'w-4 h-4 mr-2'}`} />
+                  {isMobile ? 'Datos de Prueba' : t('generateTestData')}
                 </button>
                 <button
                   onClick={() => setShowCreateForm(true)}
-                  className="btn-primary flex items-center"
+                  className={`${isMobile ? 'btn-primary text-sm py-2' : 'btn-primary'} flex items-center justify-center`}
                 >
-                  <Plus className="w-4 h-4 mr-2" />
+                  <Plus className={`${isMobile ? 'w-4 h-4 mr-1' : 'w-4 h-4 mr-2'}`} />
                   {t('createStore')}
                 </button>
               </div>
             </div>
           </div>
 
-          <div className="p-6">
+          <div className={`${isMobile ? 'p-4' : 'p-6'}`}>
             {!Array.isArray(stores) || stores.length === 0 ? (
               <div className="text-center py-12">
                 <Building2 className="w-16 h-16 text-gray-400 mx-auto mb-4" />
@@ -286,67 +286,69 @@ export function StoreSelector({ onStoreSelect }: StoreSelectorProps) {
                 </button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className={`${isMobile ? 'space-y-4' : 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'}`}>
                 {Array.isArray(stores) && stores.map((store) => {
                   const stats = getStoreStats(store.id);
                   return (
                     <div
                       key={store.id}
-                      className="bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-6 hover:shadow-md transition-shadow"
+                      className="bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg hover:shadow-md transition-shadow"
                     >
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex items-center">
-                          <Building2 className="w-6 h-6 text-blue-600 dark:text-blue-400 mr-3" />
-                          <div>
-                            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                              {store.name}
-                            </h3>
-                            {store.address && (
-                              <p className="text-sm text-gray-600 dark:text-gray-400">
-                                {store.address}
-                              </p>
-                            )}
+                      <div className={`${isMobile ? 'p-4' : 'p-6'}`}>
+                        <div className="flex items-start justify-between mb-4">
+                          <div className="flex items-center">
+                            <Building2 className="w-6 h-6 text-blue-600 dark:text-blue-400 mr-3" />
+                            <div>
+                              <h3 className={`${isMobile ? 'text-base' : 'text-lg'} font-semibold text-gray-900 dark:text-gray-100`}>
+                                {store.name}
+                              </h3>
+                              {store.address && (
+                                <p className={`${isMobile ? 'text-xs' : 'text-sm'} text-gray-600 dark:text-gray-400`}>
+                                  {store.address}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex space-x-2">
+                            <button
+                              onClick={() => openEditForm(store)}
+                              className={`${isMobile ? 'p-2' : 'p-2'} text-gray-400 hover:text-blue-600 dark:hover:text-blue-400`}
+                              title={t('editStore')}
+                            >
+                              <Edit className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteStore(store.id, store.name)}
+                              className={`${isMobile ? 'p-2' : 'p-2'} text-gray-400 hover:text-red-600 dark:hover:text-red-400`}
+                              title={t('deleteStore')}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
                           </div>
                         </div>
-                        <div className="flex space-x-2">
-                          <button
-                            onClick={() => openEditForm(store)}
-                            className="p-2 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400"
-                            title={t('editStore')}
-                          >
-                            <Edit className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteStore(store.id, store.name)}
-                            className="p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400"
-                            title={t('deleteStore')}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </div>
 
-                      <div className="grid grid-cols-2 gap-4 mb-4">
-                        <div className="text-center">
-                          <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                            {stats.employees}
-                          </p>
-                          <p className="text-xs text-gray-600 dark:text-gray-400">{t('employees')}</p>
+                        <div className={`${isMobile ? 'grid grid-cols-2 gap-3 mb-4' : 'grid grid-cols-2 gap-4 mb-4'}`}>
+                          <div className="text-center">
+                            <p className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold text-gray-900 dark:text-gray-100`}>
+                              {stats.employees}
+                            </p>
+                            <p className={`${isMobile ? 'text-xs' : 'text-xs'} text-gray-600 dark:text-gray-400`}>{t('employees')}</p>
+                          </div>
+                          <div className="text-center">
+                            <p className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold text-gray-900 dark:text-gray-100`}>
+                              {stats.shifts}
+                            </p>
+                            <p className={`${isMobile ? 'text-xs' : 'text-xs'} text-gray-600 dark:text-gray-400`}>{t('shifts')}</p>
+                          </div>
                         </div>
-                        <div className="text-center">
-                          <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                            {stats.shifts}
-                          </p>
-                          <p className="text-xs text-gray-600 dark:text-gray-400">{t('shifts')}</p>
-                        </div>
-                      </div>
 
-                      <button
-                        onClick={() => onStoreSelect(store.id)}
-                        className="w-full btn-primary"
-                      >
-                        {t('manageStore')}
-                      </button>
+                        <button
+                          onClick={() => onStoreSelect(store.id)}
+                          className={`w-full ${isMobile ? 'btn-primary text-sm py-2' : 'btn-primary'}`}
+                        >
+                          {t('manageStore')}
+                        </button>
+                      </div>
                     </div>
                   );
                 })}
@@ -358,8 +360,8 @@ export function StoreSelector({ onStoreSelect }: StoreSelectorProps) {
         {/* Modal Crear/Editar Tienda */}
         {(showCreateForm || editingStore) && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-gray-200 dark:bg-gray-800 p-6 rounded-lg shadow-xl w-full max-w-md">
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
+            <div className={`bg-gray-200 dark:bg-gray-800 rounded-lg shadow-xl w-full ${isMobile ? 'mx-4 p-4 max-w-sm' : 'p-6 max-w-md'}`}>
+              <h3 className={`${isMobile ? 'text-lg' : 'text-xl'} font-semibold text-gray-900 dark:text-gray-100 mb-4`}>
                 {editingStore ? t('editStoreTitle') : t('createStoreTitle')}
               </h3>
               
@@ -418,20 +420,20 @@ export function StoreSelector({ onStoreSelect }: StoreSelectorProps) {
                 </div>
               </div>
               
-              <div className="flex justify-end space-x-3 mt-6">
+              <div className={`${isMobile ? 'flex flex-col space-y-2 mt-6' : 'flex justify-end space-x-3 mt-6'}`}>
                 <button
                   onClick={() => {
                     setShowCreateForm(false);
                     setEditingStore(null);
                     setFormData({ name: '', address: '', phone: '', email: '' });
                   }}
-                  className="btn-secondary"
+                  className={`${isMobile ? 'btn-secondary text-sm py-2' : 'btn-secondary'}`}
                 >
                   {t('cancel')}
                 </button>
                 <button
                   onClick={editingStore ? () => handleEditStore(editingStore) : handleCreateStore}
-                  className="btn-primary"
+                  className={`${isMobile ? 'btn-primary text-sm py-2' : 'btn-primary'}`}
                 >
                   {editingStore ? t('save') : t('createStore')}
                 </button>
@@ -443,9 +445,9 @@ export function StoreSelector({ onStoreSelect }: StoreSelectorProps) {
         {/* Modal Generador de Datos de Prueba */}
         {showTestDataGenerator && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-gray-200 dark:bg-gray-800 p-6 rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <div className={`bg-gray-200 dark:bg-gray-800 rounded-lg shadow-xl w-full ${isMobile ? 'mx-4 p-4 max-h-[95vh]' : 'p-6 max-w-4xl max-h-[90vh]'} overflow-y-auto`}>
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                <h3 className={`${isMobile ? 'text-lg' : 'text-xl'} font-semibold text-gray-900 dark:text-gray-100`}>
                   Generador de Datos de Prueba
                 </h3>
                 <button
