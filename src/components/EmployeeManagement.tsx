@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useEmployees } from '../contexts/EmployeeContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useDateFormat } from '../contexts/DateFormatContext';
 import { useCompactMode } from '../contexts/CompactModeContext';
 import { useStore } from '../contexts/StoreContext';
+import { useSchedule } from '../contexts/ScheduleContext';
 import { Plus, Edit, Trash2, User, Clock, Calendar, Eye, EyeOff, ArrowRightLeft } from 'lucide-react';
 import { Employee, UnavailableTime, EmployeeTransfer } from '../types';
 import TimeInput from './TimeInput';
@@ -82,7 +83,7 @@ export function EmployeeManagement() {
   const { isCompactMode, isMobile } = useCompactMode();
   const { t } = useLanguage();
   const { formatDate, dateFormat } = useDateFormat();
-  
+  const { shifts, deleteShift } = useSchedule();
   
   // Función para obtener el placeholder dinámico según el formato de fecha
   const getDatePlaceholder = () => {
@@ -136,6 +137,20 @@ export function EmployeeManagement() {
   const [employeeToDelete, setEmployeeToDelete] = useState<Employee | null>(null);
   const [terminationDate, setTerminationDate] = useState<string>('');
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [shiftsToDeleteCount, setShiftsToDeleteCount] = useState(0);
+  
+  // Recalcular turnos a eliminar cuando cambie la fecha de baja
+  useEffect(() => {
+    if (employeeToDelete && terminationDate) {
+      const shiftsToDelete = shifts.filter(shift => 
+        shift.employeeId === employeeToDelete.id && 
+        shift.date >= terminationDate &&
+        shift.isPublished
+      );
+      setShiftsToDeleteCount(shiftsToDelete.length);
+    }
+  }, [terminationDate, employeeToDelete, shifts]);
+  
   const [formData, setFormData] = useState({
     name: '',
     username: '',
@@ -330,9 +345,18 @@ export function EmployeeManagement() {
 
   const handleDelete = (employee: Employee) => {
     setEmployeeToDelete(employee);
-    setTerminationDate(new Date().toISOString().split('T')[0]);
+    const today = new Date().toISOString().split('T')[0];
+    setTerminationDate(today);
     setShowDeleteModal(true);
     setShowDeleteConfirmation(false);
+    
+    // Calcular cuántos turnos se van a eliminar
+    const shiftsToDelete = shifts.filter(shift => 
+      shift.employeeId === employee.id && 
+      shift.date >= today &&
+      shift.isPublished
+    );
+    setShiftsToDeleteCount(shiftsToDelete.length);
   };
 
   const confirmDelete = () => {
@@ -359,11 +383,36 @@ export function EmployeeManagement() {
       
       updateEmployee(employeeToDelete.id, updatedEmployee);
       
+      // Eliminar turnos futuros del empleado
+      deleteFutureShifts(employeeToDelete.id, terminationDate);
+      
       // Limpiar modal
       setShowDeleteModal(false);
       setEmployeeToDelete(null);
       setTerminationDate('');
       setShowDeleteConfirmation(false);
+      setShiftsToDeleteCount(0);
+    }
+  };
+
+  // Función para eliminar turnos futuros de un empleado
+  const deleteFutureShifts = async (employeeId: string, terminationDate: string) => {
+    try {
+      // Filtrar turnos que deben eliminarse (desde la fecha de baja en adelante)
+      const shiftsToDelete = shifts.filter(shift => 
+        shift.employeeId === employeeId && 
+        shift.date >= terminationDate &&
+        shift.isPublished
+      );
+      
+      // Eliminar cada turno
+      for (const shift of shiftsToDelete) {
+        await deleteShift(shift.id);
+      }
+      
+      console.log(`Eliminados ${shiftsToDelete.length} turnos futuros para el empleado ${employeeId}`);
+    } catch (error) {
+      console.error('Error eliminando turnos futuros:', error);
     }
   };
 
@@ -959,6 +1008,14 @@ export function EmployeeManagement() {
                 <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
                   El empleado estará disponible hasta la fecha de baja especificada.
                 </p>
+                
+                {shiftsToDeleteCount > 0 && (
+                  <div className="mb-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md">
+                    <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                      ⚠️ Se eliminarán <strong>{shiftsToDeleteCount}</strong> turno{shiftsToDeleteCount > 1 ? 's' : ''} programado{shiftsToDeleteCount > 1 ? 's' : ''} desde esta fecha en adelante.
+                    </p>
+                  </div>
+                )}
 
                 <div className="flex justify-end space-x-3">
                   <button
@@ -967,6 +1024,7 @@ export function EmployeeManagement() {
                       setEmployeeToDelete(null);
                       setTerminationDate('');
                       setShowDeleteConfirmation(false);
+                      setShiftsToDeleteCount(0);
                     }}
                     className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-600 rounded-md hover:bg-gray-200 dark:hover:bg-gray-500 transition-colors"
                   >
@@ -990,6 +1048,11 @@ export function EmployeeManagement() {
                   <p className="text-sm text-red-700 dark:text-red-300">
                     Esta acción marcará a <strong>{employeeToDelete.name}</strong> como inactivo a partir del <strong>{formatDate(terminationDate)}</strong>.
                   </p>
+                  {shiftsToDeleteCount > 0 && (
+                    <p className="text-sm text-red-600 dark:text-red-400 mt-2">
+                      Se eliminarán <strong>{shiftsToDeleteCount}</strong> turno{shiftsToDeleteCount > 1 ? 's' : ''} programado{shiftsToDeleteCount > 1 ? 's' : ''}.
+                    </p>
+                  )}
                 </div>
 
                 <div className="flex justify-end space-x-3">
