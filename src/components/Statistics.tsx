@@ -5,9 +5,9 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { useDateFormat } from '../contexts/DateFormatContext';
 import { useEmployees } from '../contexts/EmployeeContext';
 import { useCompactMode } from '../contexts/CompactModeContext';
-import { BarChart3, TrendingUp, Users, ChevronLeft, ChevronRight, AlertTriangle } from 'lucide-react';
+import { BarChart3, TrendingUp, Users, ChevronLeft, ChevronRight, AlertTriangle, Calendar, CalendarDays } from 'lucide-react';
 import { Statistics as StatisticsType, Shift, Employee } from '../types';
-import { format, startOfWeek, endOfWeek, addWeeks, subWeeks, subDays } from 'date-fns';
+import { format, startOfWeek, endOfWeek, addWeeks, subWeeks, subDays, startOfYear, endOfYear, addYears, subYears, eachWeekOfInterval, eachMonthOfInterval } from 'date-fns';
 import { es } from 'date-fns/locale';
 
 // Función para formatear horas decimales a formato "Xh Ym"
@@ -46,7 +46,9 @@ export function Statistics() {
   const { t } = useLanguage();
   const { formatDate } = useDateFormat();
   
+  const [activeTab, setActiveTab] = useState<'weekly' | 'yearly'>('weekly');
   const [selectedWeek, setSelectedWeek] = useState(new Date());
+  const [selectedYear, setSelectedYear] = useState(new Date());
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [employeeOrder, setEmployeeOrder] = useState<string[]>(() => {
     const saved = (currentStore?.settings as any)?.employeeOrder as string[] | undefined;
@@ -75,11 +77,48 @@ export function Statistics() {
     }
   };
 
+  const navigateYear = (direction: 'prev' | 'next') => {
+    if (direction === 'prev') {
+      setSelectedYear(prev => subYears(prev, 1));
+    } else {
+      setSelectedYear(prev => addYears(prev, 1));
+    }
+  };
+
   const weeklyShifts = shifts.filter(shift => {
     const shiftDate = new Date(shift.date);
     return shiftDate >= weekStart && 
            shiftDate <= weekEnd &&
            shift.isPublished;
+  });
+
+  // Calcular estadísticas anuales
+  const yearStart = startOfYear(selectedYear);
+  const yearEnd = endOfYear(selectedYear);
+  
+  const yearlyShifts = shifts.filter(shift => {
+    const shiftDate = new Date(shift.date);
+    return shiftDate >= yearStart && 
+           shiftDate <= yearEnd &&
+           shift.isPublished;
+  });
+
+  // Estadísticas mensuales para el año seleccionado
+  const monthlyStats = eachMonthOfInterval({ start: yearStart, end: yearEnd }).map(month => {
+    const monthStart = month;
+    const monthEnd = new Date(month.getFullYear(), month.getMonth() + 1, 0);
+    
+    const monthShifts = yearlyShifts.filter(shift => {
+      const shiftDate = new Date(shift.date);
+      return shiftDate >= monthStart && shiftDate <= monthEnd;
+    });
+
+    return {
+      month: format(month, 'MMM yyyy', { locale: es }),
+      shifts: monthShifts.length,
+      totalHours: monthShifts.reduce((total, shift) => total + shift.hours, 0),
+      uniqueEmployees: new Set(monthShifts.map(shift => shift.employeeId)).size
+    };
   });
 
   // Función para reordenar empleados
@@ -262,8 +301,39 @@ export function Statistics() {
         <p className="text-gray-600 dark:text-gray-400">{t('coverageAndWorkloadMetrics')}</p>
       </div>
 
-      {/* Week Navigation */}
-      <div className="card">
+      {/* Tabs */}
+      <div className="border-b border-gray-200 dark:border-gray-700">
+        <nav className="-mb-px flex space-x-8">
+          <button
+            onClick={() => setActiveTab('weekly')}
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              activeTab === 'weekly'
+                ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
+            }`}
+          >
+            <Calendar className="w-4 h-4 inline mr-2" />
+            Vista Semanal
+          </button>
+          <button
+            onClick={() => setActiveTab('yearly')}
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              activeTab === 'yearly'
+                ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
+            }`}
+          >
+            <CalendarDays className="w-4 h-4 inline mr-2" />
+            Vista Anual
+          </button>
+        </nav>
+      </div>
+
+      {/* Weekly View */}
+      {activeTab === 'weekly' && (
+        <>
+          {/* Week Navigation */}
+          <div className="card">
         {/* Fecha centrada */}
         <div className="text-center mb-4">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 whitespace-nowrap">
@@ -430,6 +500,142 @@ export function Statistics() {
           </table>
         </div>
       </div>
+        </>
+      )}
+
+      {/* Yearly View */}
+      {activeTab === 'yearly' && (
+        <>
+          {/* Year Navigation */}
+          <div className="card">
+            <div className="text-center mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                {format(yearStart, 'yyyy', { locale: es })}
+              </h3>
+            </div>
+
+            <div className="flex justify-center items-center space-x-2">
+              <button
+                onClick={() => navigateYear('prev')}
+                className="px-3 py-1 bg-gray-200 hover:bg-gray-300 text-gray-800 text-sm rounded transition-colors dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200"
+              >
+                ← {t('previous')}
+              </button>
+              <button
+                onClick={() => navigateYear('next')}
+                className="px-3 py-1 bg-gray-200 hover:bg-gray-300 text-gray-800 text-sm rounded transition-colors dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200"
+              >
+                {t('next')} →
+              </button>
+              <button
+                onClick={() => setSelectedYear(new Date())}
+                className="px-3 py-1 bg-gray-200 hover:bg-gray-300 text-gray-800 text-sm rounded transition-colors dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200"
+              >
+                Este Año
+              </button>
+            </div>
+          </div>
+
+          {/* Yearly Summary Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="card">
+              <div className="flex items-center">
+                <Users className="w-8 h-8 text-primary-600 mr-3" />
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Empleados Activos</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                    {new Set(yearlyShifts.map(shift => shift.employeeId)).size}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="card">
+              <div className="flex items-center">
+                <BarChart3 className="w-8 h-8 text-green-600 mr-3" />
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Turnos del Año</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{yearlyShifts.length}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="card">
+              <div className="flex items-center">
+                <TrendingUp className="w-8 h-8 text-blue-600 mr-3" />
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Horas Totales</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                    {formatHours(yearlyShifts.reduce((total, shift) => total + shift.hours, 0))}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="card">
+              <div className="flex items-center">
+                <CalendarDays className="w-8 h-8 text-purple-600 mr-3" />
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Promedio Mensual</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                    {formatHours(yearlyShifts.reduce((total, shift) => total + shift.hours, 0) / 12)}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Monthly Breakdown */}
+          <div className="card">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-6">Desglose Mensual</h3>
+            
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50 dark:bg-gray-700">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      Mes
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      Turnos
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      Horas Totales
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      Empleados Activos
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      Promedio por Empleado
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-gray-200 dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                  {monthlyStats.map((stat, index) => (
+                    <tr key={index} className="hover:bg-gray-100 dark:hover:bg-gray-700">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
+                        {stat.month}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                        {stat.shifts}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                        {formatHours(stat.totalHours)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                        {stat.uniqueEmployees}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                        {stat.uniqueEmployees > 0 ? formatHours(stat.totalHours / stat.uniqueEmployees) : '0h'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </>
+      )}
 
     </div>
   );
