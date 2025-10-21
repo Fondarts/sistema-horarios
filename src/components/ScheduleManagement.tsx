@@ -1857,16 +1857,16 @@ export default function ScheduleManagement() {
                         const minLeft = dayColumnWidth + 2;
                         
                         // Asegurar que left esté dentro de los límites
-                        left = Math.max(minLeft, Math.min(left, maxLeft - 20)); // 20px mínimo de ancho
+                        left = Math.max(minLeft, Math.min(left, maxLeft - 40)); // 40px mínimo de ancho
                         
                         // Asegurar que width no exceda los límites
                         if (left + width > maxLeft) {
-                          width = Math.max(20, maxLeft - left); // Ancho mínimo de 20px
+                          width = Math.max(40, maxLeft - left); // Ancho mínimo de 40px
                         }
                         
                         // Validar ancho mínimo
-                        if (width < 20) {
-                          width = 20;
+                        if (width < 40) {
+                          width = 40;
                         }
                       } else {
                         // En móvil: calcular posición exacta basada en horas reales
@@ -1894,16 +1894,16 @@ export default function ScheduleManagement() {
                         const minLeft = dayColumnWidth + 2;
                         
                         // Asegurar que left esté dentro de los límites
-                        left = Math.max(minLeft, Math.min(left, maxLeft - 20)); // 20px mínimo de ancho
+                        left = Math.max(minLeft, Math.min(left, maxLeft - 40)); // 40px mínimo de ancho
                         
                         // Asegurar que width no exceda los límites
                         if (left + width > maxLeft) {
-                          width = Math.max(20, maxLeft - left); // Ancho mínimo de 20px
+                          width = Math.max(40, maxLeft - left); // Ancho mínimo de 40px
                         }
                         
                         // Validar ancho mínimo
-                        if (width < 20) {
-                          width = 20;
+                        if (width < 40) {
+                          width = 40;
                         }
                       }
                       
@@ -1992,10 +1992,17 @@ export default function ScheduleManagement() {
                               }
                               
                               // Simplificar contenido basado en el ancho de la barra
-                              if (currentWidth < 60) {
+                              if (currentWidth < 50) {
                                 return <div className="w-1 h-1 bg-white rounded-full"></div>;
-                              } else if (currentWidth < 100) {
-                                return <span>{employee?.name.split(' ').map(n => n[0]).join('')}</span>;
+                              } else if (currentWidth < 80) {
+                                return <span className="text-xs font-medium">{employee?.name.split(' ').map(n => n[0]).join('')}</span>;
+                              } else if (currentWidth < 120) {
+                                return (
+                                  <div className="text-left">
+                                    <div className="font-semibold text-xs">{employee?.name}</div>
+                                    <div className="text-xs opacity-90">{displayStartTime} - {displayEndTime}</div>
+                                  </div>
+                                );
                               } else {
                                     return (
                                       <>
