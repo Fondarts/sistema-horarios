@@ -134,7 +134,7 @@ export function ManagerDashboard() {
                   isOpen={true}
                   onClose={() => setShowConfig(false)}
                   isEmployeeDashboard={false}
-                  asPage={true}
+                  asPage={false}
                 />
               </div>
             </div>
