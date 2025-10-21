@@ -819,13 +819,13 @@ export function Statistics() {
           </div>
 
           {/* Monthly Summary Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+          <div className={`grid gap-4 ${isMobile ? 'grid-cols-3' : 'grid-cols-1 md:grid-cols-5'}`}>
             <div className="card">
-              <div className="flex items-center">
-                <Users className="w-8 h-8 text-primary-600 mr-3" />
+              <div className={`${isMobile ? 'text-center' : 'flex items-center'}`}>
+                <Users className={`${isMobile ? 'w-6 h-6 mx-auto mb-2' : 'w-8 h-8 mr-3'} text-primary-600`} />
                 <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Empleados Activos</p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                  <p className={`${isMobile ? 'text-xs' : 'text-sm'} text-gray-600 dark:text-gray-400 ${isMobile ? 'mb-1' : ''}`}>Empleados Activos</p>
+                  <p className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold text-gray-900 dark:text-gray-100`}>
                     {new Set(monthlyShifts.map(shift => shift.employeeId)).size}
                   </p>
                 </div>
@@ -833,21 +833,21 @@ export function Statistics() {
             </div>
 
             <div className="card">
-              <div className="flex items-center">
-                <BarChart3 className="w-8 h-8 text-green-600 mr-3" />
+              <div className={`${isMobile ? 'text-center' : 'flex items-center'}`}>
+                <BarChart3 className={`${isMobile ? 'w-6 h-6 mx-auto mb-2' : 'w-8 h-8 mr-3'} text-green-600`} />
                 <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Turnos del Mes</p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{monthlyShifts.length}</p>
+                  <p className={`${isMobile ? 'text-xs' : 'text-sm'} text-gray-600 dark:text-gray-400 ${isMobile ? 'mb-1' : ''}`}>Turnos del Mes</p>
+                  <p className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold text-gray-900 dark:text-gray-100`}>{monthlyShifts.length}</p>
                 </div>
               </div>
             </div>
 
             <div className="card">
-              <div className="flex items-center">
-                <TrendingUp className="w-8 h-8 text-blue-600 mr-3" />
+              <div className={`${isMobile ? 'text-center' : 'flex items-center'}`}>
+                <TrendingUp className={`${isMobile ? 'w-6 h-6 mx-auto mb-2' : 'w-8 h-8 mr-3'} text-blue-600`} />
                 <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Horas Totales</p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                  <p className={`${isMobile ? 'text-xs' : 'text-sm'} text-gray-600 dark:text-gray-400 ${isMobile ? 'mb-1' : ''}`}>Horas Totales</p>
+                  <p className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold text-gray-900 dark:text-gray-100`}>
                     {formatHours(monthlyShifts.reduce((total, shift) => total + shift.hours, 0))}
                   </p>
                 </div>
@@ -855,11 +855,11 @@ export function Statistics() {
             </div>
 
             <div className="card">
-              <div className="flex items-center">
-                <Calendar className="w-8 h-8 text-purple-600 mr-3" />
+              <div className={`${isMobile ? 'text-center' : 'flex items-center'}`}>
+                <Calendar className={`${isMobile ? 'w-6 h-6 mx-auto mb-2' : 'w-8 h-8 mr-3'} text-purple-600`} />
                 <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Promedio Semanal</p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                  <p className={`${isMobile ? 'text-xs' : 'text-sm'} text-gray-600 dark:text-gray-400 ${isMobile ? 'mb-1' : ''}`}>Promedio Semanal</p>
+                  <p className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold text-gray-900 dark:text-gray-100`}>
                     {formatHours(monthlyShifts.reduce((total, shift) => total + shift.hours, 0) / 4)}
                   </p>
                 </div>
@@ -867,11 +867,11 @@ export function Statistics() {
             </div>
 
             <div className="card">
-              <div className="flex items-center">
-                <AlertTriangle className="w-8 h-8 text-red-600 mr-3" />
+              <div className={`${isMobile ? 'text-center' : 'flex items-center'}`}>
+                <AlertTriangle className={`${isMobile ? 'w-6 h-6 mx-auto mb-2' : 'w-8 h-8 mr-3'} text-red-600`} />
                 <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Horas Extras</p>
-                  <p className="text-2xl font-bold text-red-600">
+                  <p className={`${isMobile ? 'text-xs' : 'text-sm'} text-gray-600 dark:text-gray-400 ${isMobile ? 'mb-1' : ''}`}>Horas Extras</p>
+                  <p className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold text-red-600`}>
                     {formatHours(monthlyShifts.reduce((total, shift) => {
                       const employee = employees.find(emp => emp.id === shift.employeeId);
                       if (!employee) return total;
