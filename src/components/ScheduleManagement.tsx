@@ -1469,14 +1469,14 @@ export default function ScheduleManagement() {
         </div>
 
         {/* Panel de navegación de semana mejorado */}
-        <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 mb-4">
+        <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 mb-3">
           {/* Navegación de semanas - Layout responsive */}
-          <div className={`flex ${isMobile ? 'flex-col space-y-3' : 'flex-row items-center justify-between'} mb-4`}>
+          <div className={`flex ${isMobile ? 'flex-col space-y-2' : 'flex-row items-center justify-between'} ${isMobile ? 'mb-2' : 'mb-3'}`}>
             {/* Navegación de semanas */}
             <div className={`flex items-center ${isMobile ? 'justify-center space-x-2' : 'space-x-3'}`}>
               <button
                 onClick={() => navigateWeek('prev')}
-                className="flex items-center px-3 py-2 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 text-sm font-medium rounded-lg transition-colors shadow-sm border border-gray-200 dark:border-gray-600"
+                className="flex items-center px-2.5 py-1.5 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 text-sm font-medium rounded-lg transition-colors shadow-sm border border-gray-200 dark:border-gray-600"
                 title="Semana anterior"
               >
                 <span className="text-lg">←</span>
@@ -1485,7 +1485,7 @@ export default function ScheduleManagement() {
               
               <button
                 onClick={() => setCurrentWeek(new Date())}
-                className="px-3 py-2 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 text-sm font-medium rounded-lg transition-colors shadow-sm border border-gray-200 dark:border-gray-600"
+                className="px-2.5 py-1.5 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 text-sm font-medium rounded-lg transition-colors shadow-sm border border-gray-200 dark:border-gray-600"
                 title="Ir a la semana actual"
               >
                 {t('thisWeek')}
@@ -1493,7 +1493,7 @@ export default function ScheduleManagement() {
               
               <button
                 onClick={() => navigateWeek('next')}
-                className="flex items-center px-3 py-2 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 text-sm font-medium rounded-lg transition-colors shadow-sm border border-gray-200 dark:border-gray-600"
+                className="flex items-center px-2.5 py-1.5 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 text-sm font-medium rounded-lg transition-colors shadow-sm border border-gray-200 dark:border-gray-600"
                 title="Semana siguiente"
               >
                 <span className="mr-1">{t('next')}</span>
@@ -1507,7 +1507,7 @@ export default function ScheduleManagement() {
                 <button
                   onClick={repeatPreviousWeek}
                   disabled={isCopyingShifts}
-                  className={`flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors shadow-sm ${
+                  className={`flex items-center px-3 py-1.5 text-sm font-medium rounded-lg transition-colors shadow-sm ${
                     isCopyingShifts 
                       ? 'bg-gray-300 dark:bg-gray-600 opacity-50 cursor-not-allowed text-gray-500 dark:text-gray-400' 
                       : 'bg-blue-600 hover:bg-blue-700 text-white'
@@ -1520,7 +1520,7 @@ export default function ScheduleManagement() {
                 
                 <button
                   onClick={deleteCurrentWeek}
-                  className="flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors bg-red-600 hover:bg-red-700 text-white shadow-sm"
+                  className="flex items-center px-3 py-1.5 text-sm font-medium rounded-lg transition-colors bg-red-600 hover:bg-red-700 text-white shadow-sm"
                   title="Borrar todos los turnos de la semana actual"
                 >
                   <Trash2 className="w-4 h-4 mr-2" />
@@ -1532,7 +1532,7 @@ export default function ScheduleManagement() {
             {/* Controles de vista */}
             <div className={`flex items-center ${isMobile ? 'justify-center space-x-2' : 'space-x-3'}`}>
               {/* 24h Toggle */}
-              <div className="flex items-center space-x-2 bg-white dark:bg-gray-700 rounded-lg px-3 py-2 shadow-sm border border-gray-200 dark:border-gray-600">
+              <div className="flex items-center space-x-2 bg-white dark:bg-gray-700 rounded-lg px-2.5 py-1.5 shadow-sm border border-gray-200 dark:border-gray-600">
                 <label className="flex items-center space-x-2 cursor-pointer">
                   <input
                     type="checkbox"
@@ -1549,7 +1549,7 @@ export default function ScheduleManagement() {
               {/* Botón de borrador */}
               <button
                 onClick={() => setShowUnpublished(!showUnpublished)}
-                className={`flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm border ${
+                className={`flex items-center px-2.5 py-1.5 rounded-lg text-sm font-medium transition-colors shadow-sm border ${
                   showUnpublished 
                     ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300 border-blue-200 dark:border-blue-800' 
                     : 'bg-white text-gray-700 dark:bg-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-600'
@@ -1564,11 +1564,11 @@ export default function ScheduleManagement() {
 
           {/* Botones de acción para móvil */}
           {isMobile && (
-            <div className="flex items-center justify-center space-x-3">
+            <div className="flex items-center justify-center space-x-2">
               <button
                 onClick={repeatPreviousWeek}
                 disabled={isCopyingShifts}
-                className={`flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors shadow-sm ${
+                className={`flex items-center px-2.5 py-1.5 text-sm font-medium rounded-lg transition-colors shadow-sm ${
                   isCopyingShifts 
                     ? 'bg-gray-300 dark:bg-gray-600 opacity-50 cursor-not-allowed text-gray-500 dark:text-gray-400' 
                     : 'bg-blue-600 hover:bg-blue-700 text-white'
@@ -1581,7 +1581,7 @@ export default function ScheduleManagement() {
               
               <button
                 onClick={deleteCurrentWeek}
-                className="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors bg-red-600 hover:bg-red-700 text-white shadow-sm"
+                className="flex items-center px-2.5 py-1.5 text-sm font-medium rounded-lg transition-colors bg-red-600 hover:bg-red-700 text-white shadow-sm"
                 title="Borrar todos los turnos de la semana actual"
               >
                 <Trash2 className="w-4 h-4 mr-2" />
