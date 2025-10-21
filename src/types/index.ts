@@ -27,8 +27,25 @@ export interface Employee {
   unavailableHours?: UnavailableTime[]; // horas no disponibles (alias para compatibilidad)
   vacationDaysPerYear?: number; // días de vacaciones por año
   startDate?: string; // fecha de inicio en la empresa (formato YYYY-MM-DD)
+  // Campos para traspasos
+  transferHistory?: EmployeeTransfer[]; // historial de traspasos
+  currentTransfer?: EmployeeTransfer; // traspaso actual si es temporal
   // Campos legacy para compatibilidad (se pueden remover después)
   pin?: string; // DEPRECATED: usar username/password
+}
+
+export interface EmployeeTransfer {
+  id: string;
+  employeeId: string;
+  fromStoreId: string;
+  toStoreId: string;
+  transferDate: string; // formato YYYY-MM-DD
+  returnDate?: string; // formato YYYY-MM-DD (solo para traspasos temporales)
+  isTemporary: boolean;
+  reason?: string; // motivo del traspaso (vacaciones, enfermedad, etc.)
+  status: 'active' | 'completed' | 'cancelled';
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface UnavailableTime {

@@ -150,7 +150,7 @@ export function Statistics() {
       return total;
     }, 0);
 
-    // Calcular rotación de personal (empleados nuevos y que se van)
+    // Calcular rotación de personal (contrataciones y desvinculaciones reales)
     const calculateStaffRotation = () => {
       // Obtener empleados del mes anterior
       const previousMonth = new Date(month.getFullYear(), month.getMonth() - 1, 1);
@@ -163,15 +163,31 @@ export function Statistics() {
       const currentMonthEmployees = new Set(monthShifts.map(shift => shift.employeeId));
       const previousMonthEmployees = new Set(previousMonthShifts.map(shift => shift.employeeId));
       
-      // Empleados nuevos (están en este mes pero no en el anterior)
-      const newEmployees = Array.from(currentMonthEmployees).filter(id => !previousMonthEmployees.has(id));
+      // Solo considerar como "nuevos" a empleados que nunca trabajaron antes
+      const allShiftsBeforeThisMonth = yearlyShifts.filter(shift => {
+        const shiftDate = new Date(shift.date);
+        return shiftDate < monthStart;
+      });
+      const employeesWhoWorkedBefore = new Set(allShiftsBeforeThisMonth.map(shift => shift.employeeId));
       
-      // Empleados que se fueron (estaban en el mes anterior pero no en este)
-      const departedEmployees = Array.from(previousMonthEmployees).filter(id => !currentMonthEmployees.has(id));
+      // Empleados realmente nuevos (nunca trabajaron antes)
+      const trulyNewEmployees = Array.from(currentMonthEmployees).filter(id => !employeesWhoWorkedBefore.has(id));
+      
+      // Empleados que se desvincularon (trabajaron antes pero no en este mes)
+      // Solo si no tienen turnos futuros programados
+      const allShiftsAfterThisMonth = yearlyShifts.filter(shift => {
+        const shiftDate = new Date(shift.date);
+        return shiftDate > monthEnd;
+      });
+      const employeesWhoWorkAfter = new Set(allShiftsAfterThisMonth.map(shift => shift.employeeId));
+      
+      const departedEmployees = Array.from(employeesWhoWorkedBefore).filter(id => 
+        !currentMonthEmployees.has(id) && !employeesWhoWorkAfter.has(id)
+      );
       
       const changes = [];
-      if (newEmployees.length > 0) {
-        changes.push(`+${newEmployees.length} nuevo${newEmployees.length > 1 ? 's' : ''}`);
+      if (trulyNewEmployees.length > 0) {
+        changes.push(`+${trulyNewEmployees.length} nuevo${trulyNewEmployees.length > 1 ? 's' : ''}`);
       }
       if (departedEmployees.length > 0) {
         changes.push(`-${departedEmployees.length} se fue${departedEmployees.length > 1 ? 'ron' : ''}`);
@@ -229,28 +245,50 @@ export function Statistics() {
       return total;
     }, 0);
 
-    // Calcular rotación de personal (empleados nuevos y que se van)
+    // Calcular rotación de personal (contrataciones y desvinculaciones reales)
     const calculateStaffRotation = () => {
       // Obtener empleados de la semana anterior
       const previousWeekStart = subDays(weekStart, 7);
       const previousWeekEnd = subDays(weekEnd, 7);
+      
+      // Buscar empleados que trabajaron en la semana anterior
       const previousWeekShifts = monthlyShifts.filter(shift => {
         const shiftDate = new Date(shift.date);
         return shiftDate >= previousWeekStart && shiftDate <= previousWeekEnd;
       });
       
-      const currentWeekEmployees = new Set(weekShifts.map(shift => shift.employeeId));
+      // Buscar empleados que trabajaron en esta semana
+      const currentWeekShifts = weekShifts;
+      
+      const currentWeekEmployees = new Set(currentWeekShifts.map(shift => shift.employeeId));
       const previousWeekEmployees = new Set(previousWeekShifts.map(shift => shift.employeeId));
       
-      // Empleados nuevos (están en esta semana pero no en la anterior)
-      const newEmployees = Array.from(currentWeekEmployees).filter(id => !previousWeekEmployees.has(id));
+      // Solo considerar como "nuevos" a empleados que nunca trabajaron antes (no solo en la semana anterior)
+      // Esto requiere verificar si el empleado tiene turnos en un período más amplio
+      const allShiftsBeforeThisWeek = monthlyShifts.filter(shift => {
+        const shiftDate = new Date(shift.date);
+        return shiftDate < weekStart;
+      });
+      const employeesWhoWorkedBefore = new Set(allShiftsBeforeThisWeek.map(shift => shift.employeeId));
       
-      // Empleados que se fueron (estaban en la semana anterior pero no en esta)
-      const departedEmployees = Array.from(previousWeekEmployees).filter(id => !currentWeekEmployees.has(id));
+      // Empleados realmente nuevos (nunca trabajaron antes)
+      const trulyNewEmployees = Array.from(currentWeekEmployees).filter(id => !employeesWhoWorkedBefore.has(id));
+      
+      // Empleados que se desvincularon (trabajaron antes pero no en esta semana)
+      // Solo si no tienen turnos futuros programados
+      const allShiftsAfterThisWeek = monthlyShifts.filter(shift => {
+        const shiftDate = new Date(shift.date);
+        return shiftDate > weekEnd;
+      });
+      const employeesWhoWorkAfter = new Set(allShiftsAfterThisWeek.map(shift => shift.employeeId));
+      
+      const departedEmployees = Array.from(employeesWhoWorkedBefore).filter(id => 
+        !currentWeekEmployees.has(id) && !employeesWhoWorkAfter.has(id)
+      );
       
       const changes = [];
-      if (newEmployees.length > 0) {
-        changes.push(`+${newEmployees.length} nuevo${newEmployees.length > 1 ? 's' : ''}`);
+      if (trulyNewEmployees.length > 0) {
+        changes.push(`+${trulyNewEmployees.length} nuevo${trulyNewEmployees.length > 1 ? 's' : ''}`);
       }
       if (departedEmployees.length > 0) {
         changes.push(`-${departedEmployees.length} se fue${departedEmployees.length > 1 ? 'ron' : ''}`);
