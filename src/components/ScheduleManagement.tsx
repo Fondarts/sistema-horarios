@@ -1469,9 +1469,9 @@ export default function ScheduleManagement() {
         </div>
 
         {/* Panel de navegación de semana mejorado */}
-        <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 mb-3">
+        <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 pb-2 mb-2">
           {/* Navegación de semanas - Layout responsive */}
-          <div className={`flex ${isMobile ? 'flex-col space-y-2' : 'flex-row items-center justify-between'} ${isMobile ? 'mb-2' : 'mb-3'}`}>
+          <div className={`flex ${isMobile ? 'flex-col space-y-2' : 'flex-row items-center justify-between'} ${isMobile ? 'mb-1' : 'mb-2'}`}>
             {/* Navegación de semanas */}
             <div className={`flex items-center ${isMobile ? 'justify-center space-x-2' : 'space-x-3'}`}>
               <button
