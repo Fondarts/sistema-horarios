@@ -107,7 +107,7 @@ export function EmployeeManagement() {
       if (employee.terminationDate <= today) {
         return { status: 'inactive', text: 'Inactivo' };
       } else {
-        return { status: 'active', text: 'Activo' };
+        return { status: 'active', text: `Activo hasta ${formatDate(employee.terminationDate)}` };
       }
     }
     
