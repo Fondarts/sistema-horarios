@@ -350,14 +350,14 @@ export const AbsenceManagement: React.FC<AbsenceManagementProps> = ({ isEmployee
               </div>
 
               {/* Filtros */}
-              <div className="bg-gray-200 dark:bg-gray-800 p-4 rounded-lg shadow border border-gray-200 dark:border-gray-700">
-                <div className={`flex gap-4 ${isMobile ? 'flex-col' : 'flex-wrap'}`}>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('type')}</label>
+              <div className="bg-gray-200 dark:bg-gray-800 p-3 rounded-lg shadow border border-gray-200 dark:border-gray-700">
+                <div className={`flex gap-3 ${isMobile ? 'flex-col' : 'flex-wrap'}`}>
+                  <div className="flex-1 min-w-0">
+                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">{t('type')}</label>
                     <select
                       value={selectedType}
                       onChange={(e) => setSelectedType(e.target.value as AbsenceType)}
-                      className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-50"
+                      className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-2 py-1.5 text-sm bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-50"
                     >
                       <option value="all">{t('allTypes')}</option>
                       {Object.entries(ABSENCE_TYPE_LABELS).map(([value, label]) => (
@@ -365,12 +365,12 @@ export const AbsenceManagement: React.FC<AbsenceManagementProps> = ({ isEmployee
                       ))}
                     </select>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('status')}</label>
+                  <div className="flex-1 min-w-0">
+                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">{t('status')}</label>
                     <select
                       value={selectedStatus}
                       onChange={(e) => setSelectedStatus(e.target.value as AbsenceStatus | 'all')}
-                      className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-50"
+                      className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-2 py-1.5 text-sm bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-50"
                     >
                       <option value="all">{t('allStatuses')}</option>
                       {Object.entries(ABSENCE_STATUS_LABELS).map(([value, label]) => (
@@ -380,12 +380,12 @@ export const AbsenceManagement: React.FC<AbsenceManagementProps> = ({ isEmployee
                   </div>
                   {/* Solo encargados y encargados de distrito pueden filtrar por empleado */}
                   {(currentEmployee?.role === 'encargado' || currentEmployee?.role === 'distrito') && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('employee')}</label>
+                    <div className="flex-1 min-w-0">
+                      <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">{t('employee')}</label>
                       <select
                         value={selectedEmployee}
                         onChange={(e) => setSelectedEmployee(e.target.value)}
-                        className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-50"
+                        className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-2 py-1.5 text-sm bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-50"
                       >
                         <option value="">{t('allEmployees')}</option>
                         {employees.map(employee => (
