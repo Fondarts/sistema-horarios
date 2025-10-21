@@ -122,11 +122,40 @@ export function Statistics() {
       return shiftDate >= monthStart && shiftDate <= monthEnd;
     });
 
+    // Calcular horas extras por empleado por semana en este mes
+    const employeeWeeklyHours = new Map<string, Map<string, number>>(); // employeeId -> weekKey -> hours
+    monthShifts.forEach(shift => {
+      const shiftDate = new Date(shift.date);
+      const weekStart = startOfWeek(shiftDate, { weekStartsOn: 1 });
+      const weekKey = format(weekStart, 'yyyy-MM-dd');
+      
+      if (!employeeWeeklyHours.has(shift.employeeId)) {
+        employeeWeeklyHours.set(shift.employeeId, new Map());
+      }
+      
+      const employeeWeeks = employeeWeeklyHours.get(shift.employeeId)!;
+      const current = employeeWeeks.get(weekKey) || 0;
+      employeeWeeks.set(weekKey, current + shift.hours);
+    });
+
+    const totalExtraHours = Array.from(employeeWeeklyHours.entries()).reduce((total, [employeeId, weeklyHoursMap]) => {
+      const employee = employees.find(emp => emp.id === employeeId);
+      if (employee) {
+        const monthlyExtraHours = Array.from(weeklyHoursMap.values()).reduce((weekTotal, weeklyHours) => {
+          const extraHours = Math.max(0, weeklyHours - employee.weeklyLimit);
+          return weekTotal + extraHours;
+        }, 0);
+        return total + monthlyExtraHours;
+      }
+      return total;
+    }, 0);
+
     return {
       month: format(month, 'MMM yyyy', { locale: es }),
       shifts: monthShifts.length,
       totalHours: monthShifts.reduce((total, shift) => total + shift.hours, 0),
-      uniqueEmployees: new Set(monthShifts.map(shift => shift.employeeId)).size
+      uniqueEmployees: new Set(monthShifts.map(shift => shift.employeeId)).size,
+      extraHours: totalExtraHours
     };
   });
 
@@ -151,11 +180,28 @@ export function Statistics() {
       return shiftDate >= weekStart && shiftDate <= weekEnd;
     });
 
+    // Calcular horas extras por empleado en esta semana
+    const employeeWeeklyHours = new Map<string, number>();
+    weekShifts.forEach(shift => {
+      const current = employeeWeeklyHours.get(shift.employeeId) || 0;
+      employeeWeeklyHours.set(shift.employeeId, current + shift.hours);
+    });
+
+    const totalExtraHours = Array.from(employeeWeeklyHours.entries()).reduce((total, [employeeId, weeklyHours]) => {
+      const employee = employees.find(emp => emp.id === employeeId);
+      if (employee) {
+        const extraHours = Math.max(0, weeklyHours - employee.weeklyLimit);
+        return total + extraHours;
+      }
+      return total;
+    }, 0);
+
     return {
       week: format(weekStart, 'd MMM', { locale: es }) + ' - ' + format(weekEnd, 'd MMM', { locale: es }),
       shifts: weekShifts.length,
       totalHours: weekShifts.reduce((total, shift) => total + shift.hours, 0),
-      uniqueEmployees: new Set(weekShifts.map(shift => shift.employeeId)).size
+      uniqueEmployees: new Set(weekShifts.map(shift => shift.employeeId)).size,
+      extraHours: totalExtraHours
     };
   });
 
@@ -669,8 +715,26 @@ export function Statistics() {
                   <p className="text-2xl font-bold text-red-600">
                     {formatHours(monthlyShifts.reduce((total, shift) => {
                       const employee = employees.find(emp => emp.id === shift.employeeId);
-                      const extraHours = employee ? Math.max(0, shift.hours - (employee.weeklyLimit / 7)) : 0;
-                      return total + extraHours;
+                      if (!employee) return total;
+                      
+                      // Calcular horas extras por semana, no por turno
+                      const shiftDate = new Date(shift.date);
+                      const weekStart = startOfWeek(shiftDate, { weekStartsOn: 1 });
+                      const weekEnd = endOfWeek(shiftDate, { weekStartsOn: 1 });
+                      
+                      // Obtener todos los turnos del empleado en esa semana
+                      const weekShifts = monthlyShifts.filter(s => {
+                        const sDate = new Date(s.date);
+                        return s.employeeId === shift.employeeId && 
+                               sDate >= weekStart && sDate <= weekEnd;
+                      });
+                      
+                      const weeklyHours = weekShifts.reduce((sum, s) => sum + s.hours, 0);
+                      const weeklyExtraHours = Math.max(0, weeklyHours - employee.weeklyLimit);
+                      
+                      // Solo contar las horas extras de la primera vez que procesamos esta semana
+                      const isFirstShiftOfWeek = weekShifts[0]?.id === shift.id;
+                      return total + (isFirstShiftOfWeek ? weeklyExtraHours : 0);
                     }, 0))}
                   </p>
                 </div>
@@ -701,6 +765,9 @@ export function Statistics() {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                       Promedio por Empleado
                     </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      Horas Extras
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-gray-200 dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
@@ -720,6 +787,9 @@ export function Statistics() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                         {stat.uniqueEmployees > 0 ? formatHours(stat.totalHours / stat.uniqueEmployees) : '0h'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                        {formatHours(stat.extraHours || 0)}
                       </td>
                     </tr>
                   ))}
@@ -819,8 +889,26 @@ export function Statistics() {
                   <p className="text-2xl font-bold text-red-600">
                     {formatHours(yearlyShifts.reduce((total, shift) => {
                       const employee = employees.find(emp => emp.id === shift.employeeId);
-                      const extraHours = employee ? Math.max(0, shift.hours - (employee.weeklyLimit / 7)) : 0;
-                      return total + extraHours;
+                      if (!employee) return total;
+                      
+                      // Calcular horas extras por semana, no por turno
+                      const shiftDate = new Date(shift.date);
+                      const weekStart = startOfWeek(shiftDate, { weekStartsOn: 1 });
+                      const weekEnd = endOfWeek(shiftDate, { weekStartsOn: 1 });
+                      
+                      // Obtener todos los turnos del empleado en esa semana
+                      const weekShifts = yearlyShifts.filter(s => {
+                        const sDate = new Date(s.date);
+                        return s.employeeId === shift.employeeId && 
+                               sDate >= weekStart && sDate <= weekEnd;
+                      });
+                      
+                      const weeklyHours = weekShifts.reduce((sum, s) => sum + s.hours, 0);
+                      const weeklyExtraHours = Math.max(0, weeklyHours - employee.weeklyLimit);
+                      
+                      // Solo contar las horas extras de la primera vez que procesamos esta semana
+                      const isFirstShiftOfWeek = weekShifts[0]?.id === shift.id;
+                      return total + (isFirstShiftOfWeek ? weeklyExtraHours : 0);
                     }, 0))}
                   </p>
                 </div>
@@ -851,6 +939,9 @@ export function Statistics() {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                       Promedio por Empleado
                     </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      Horas Extras
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-gray-200 dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
@@ -870,6 +961,9 @@ export function Statistics() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                         {stat.uniqueEmployees > 0 ? formatHours(stat.totalHours / stat.uniqueEmployees) : '0h'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                        {formatHours(stat.extraHours || 0)}
                       </td>
                     </tr>
                   ))}
