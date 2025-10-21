@@ -4,6 +4,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { useDateFormat } from '../contexts/DateFormatContext';
 import { useEmployees } from '../contexts/EmployeeContext';
 import { useAuth } from '../contexts/AuthContext';
+import { useCompactMode } from '../contexts/CompactModeContext';
 import { FileUpload } from './FileUpload';
 import { LocalFileStorage } from '../services/localFileStorage';
 import { 
@@ -65,6 +66,7 @@ interface AbsenceManagementProps {
 export const AbsenceManagement: React.FC<AbsenceManagementProps> = ({ isEmployeeDashboard = false }) => {
   const { t } = useLanguage();
   const { formatDate, parseDate, dateFormat } = useDateFormat();
+  const { isMobile } = useCompactMode();
   
   // Función para obtener el placeholder dinámico según el formato de fecha
   const getDatePlaceholder = () => {
@@ -279,9 +281,9 @@ export const AbsenceManagement: React.FC<AbsenceManagementProps> = ({ isEmployee
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className={`flex ${isMobile ? 'flex-col space-y-4' : 'justify-between items-center'}`}>
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">{t('absenceManagement')}</h2>
+          <h2 className={`font-bold text-gray-900 ${isMobile ? 'text-xl' : 'text-2xl'}`}>{t('absenceManagement')}</h2>
           <p className="text-gray-600">{t('manageAllAbsenceRequests')}</p>
         </div>
         <button
@@ -295,7 +297,7 @@ export const AbsenceManagement: React.FC<AbsenceManagementProps> = ({ isEmployee
             });
             setShowNewRequestForm(true);
           }}
-          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2"
+          className={`bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 ${isMobile ? 'w-full justify-center' : ''}`}
         >
           <Plus className="w-4 h-4" />
           {t('newRequest')}
@@ -303,7 +305,7 @@ export const AbsenceManagement: React.FC<AbsenceManagementProps> = ({ isEmployee
       </div>
 
               {/* Estadísticas */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className={`grid gap-4 ${isMobile ? 'grid-cols-2' : 'grid-cols-1 md:grid-cols-4'}`}>
                 <div className="bg-gray-200 dark:bg-gray-800 p-4 rounded-lg shadow border border-gray-200 dark:border-gray-700">
                   <div className="flex items-center">
                     <Calendar className="w-8 h-8 text-blue-500" />
@@ -349,7 +351,7 @@ export const AbsenceManagement: React.FC<AbsenceManagementProps> = ({ isEmployee
 
               {/* Filtros */}
               <div className="bg-gray-200 dark:bg-gray-800 p-4 rounded-lg shadow border border-gray-200 dark:border-gray-700">
-                <div className="flex flex-wrap gap-4">
+                <div className={`flex gap-4 ${isMobile ? 'flex-col' : 'flex-wrap'}`}>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('type')}</label>
                     <select
@@ -396,103 +398,190 @@ export const AbsenceManagement: React.FC<AbsenceManagementProps> = ({ isEmployee
               </div>
 
               {/* Lista de solicitudes */}
-              <div className="bg-gray-200 dark:bg-gray-800 rounded-lg shadow overflow-hidden border border-gray-200 dark:border-gray-700">
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                    <thead className="bg-gray-50 dark:bg-gray-700">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                          {t('employee')}
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                          {t('type')}
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                          {t('dates')}
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                          {t('days')}
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                          {t('status')}
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                          {t('actions')}
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                      {filteredRequests.map((request) => (
-                        <tr key={request.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center">
-                              <User className="w-4 h-4 text-gray-400 dark:text-gray-500 mr-2" />
-                              <div>
-                                <div className="text-sm font-medium text-gray-900 dark:text-gray-50">{request.employeeName}</div>
-                                <div className="text-sm text-gray-500 dark:text-gray-400">{request.employeeId}</div>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${ABSENCE_TYPE_COLORS[request.type]}`}>
-                              {t(request.type)}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-50">
-                            <div>{formatDateLocal(request.startDate)}</div>
-                            <div className="text-gray-500 dark:text-gray-400">al {formatDateLocal(request.endDate)}</div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-50">
+              {isMobile ? (
+                // Vista móvil con tarjetas
+                <div className="space-y-3">
+                  {filteredRequests.map((request) => (
+                    <div key={request.id} className="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-4">
+                      {/* Header de la tarjeta */}
+                      <div className="flex justify-between items-start mb-3">
+                        <div className="flex items-center">
+                          <User className="w-5 h-5 text-gray-400 dark:text-gray-500 mr-2" />
+                          <div>
+                            <div className="font-medium text-gray-900 dark:text-gray-50">{request.employeeName}</div>
+                            <div className="text-sm text-gray-500 dark:text-gray-400">{request.employeeId}</div>
+                          </div>
+                        </div>
+                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${ABSENCE_STATUS_COLORS[request.status]}`}>
+                          {t(request.status)}
+                        </span>
+                      </div>
+
+                      {/* Información principal */}
+                      <div className="space-y-2 mb-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-gray-500 dark:text-gray-400">Tipo:</span>
+                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${ABSENCE_TYPE_COLORS[request.type]}`}>
+                            {t(request.type)}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-gray-500 dark:text-gray-400">Fechas:</span>
+                          <span className="text-sm text-gray-900 dark:text-gray-50">
+                            {formatDateLocal(request.startDate)} - {formatDateLocal(request.endDate)}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-gray-500 dark:text-gray-400">Días:</span>
+                          <span className="text-sm font-medium text-gray-900 dark:text-gray-50">
                             {getDaysDifference(request.startDate, request.endDate)} {t('days')}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${ABSENCE_STATUS_COLORS[request.status]}`}>
-                              {t(request.status)}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <div className="flex space-x-2">
-                              <button
-                                onClick={() => setShowDetails(showDetails === request.id ? null : request.id)}
-                                className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
-                              >
-                                <Eye className="w-4 h-4" />
-                              </button>
-                              {/* Solo encargados y encargados de distrito pueden aprobar/rechazar/eliminar */}
-                              {(currentEmployee?.role === 'encargado' || currentEmployee?.role === 'distrito') && (
-                                <>
-                                  {request.status === 'pending' && (
-                                    <>
-                                      <button
-                                        onClick={() => handleApprove(request.id)}
-                                        className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300"
-                                      >
-                                        <CheckCircle className="w-4 h-4" />
-                                      </button>
-                                      <button
-                                        onClick={() => handleReject(request.id)}
-                                        className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
-                                      >
-                                        <XCircle className="w-4 h-4" />
-                                      </button>
-                                    </>
-                                  )}
-                                  <button
-                                    onClick={() => handleDelete(request.id)}
-                                    className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
-                                  >
-                                    <Trash2 className="w-4 h-4" />
-                                  </button>
-                                </>
-                              )}
-                            </div>
-                          </td>
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Acciones */}
+                      <div className="flex justify-end space-x-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+                        <button
+                          onClick={() => setShowDetails(showDetails === request.id ? null : request.id)}
+                          className="p-2 text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md"
+                          title={t('viewDetails')}
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
+                        {/* Solo encargados y encargados de distrito pueden aprobar/rechazar/eliminar */}
+                        {(currentEmployee?.role === 'encargado' || currentEmployee?.role === 'distrito') && (
+                          <>
+                            {request.status === 'pending' && (
+                              <>
+                                <button
+                                  onClick={() => handleApprove(request.id)}
+                                  className="p-2 text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-md"
+                                  title={t('approve')}
+                                >
+                                  <CheckCircle className="w-4 h-4" />
+                                </button>
+                                <button
+                                  onClick={() => handleReject(request.id)}
+                                  className="p-2 text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md"
+                                  title={t('reject')}
+                                >
+                                  <XCircle className="w-4 h-4" />
+                                </button>
+                              </>
+                            )}
+                            <button
+                              onClick={() => handleDelete(request.id)}
+                              className="p-2 text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md"
+                              title={t('delete')}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                // Vista de escritorio con tabla
+                <div className="bg-gray-200 dark:bg-gray-800 rounded-lg shadow overflow-hidden border border-gray-200 dark:border-gray-700">
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                      <thead className="bg-gray-50 dark:bg-gray-700">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            {t('employee')}
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            {t('type')}
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            {t('dates')}
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            {t('days')}
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            {t('status')}
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            {t('actions')}
+                          </th>
                         </tr>
-                      ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+                      </thead>
+                      <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                        {filteredRequests.map((request) => (
+                          <tr key={request.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="flex items-center">
+                                <User className="w-4 h-4 text-gray-400 dark:text-gray-500 mr-2" />
+                                <div>
+                                  <div className="text-sm font-medium text-gray-900 dark:text-gray-50">{request.employeeName}</div>
+                                  <div className="text-sm text-gray-500 dark:text-gray-400">{request.employeeId}</div>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${ABSENCE_TYPE_COLORS[request.type]}`}>
+                                {t(request.type)}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-50">
+                              <div>{formatDateLocal(request.startDate)}</div>
+                              <div className="text-gray-500 dark:text-gray-400">al {formatDateLocal(request.endDate)}</div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-50">
+                              {getDaysDifference(request.startDate, request.endDate)} {t('days')}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${ABSENCE_STATUS_COLORS[request.status]}`}>
+                                {t(request.status)}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                              <div className="flex space-x-2">
+                                <button
+                                  onClick={() => setShowDetails(showDetails === request.id ? null : request.id)}
+                                  className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
+                                >
+                                  <Eye className="w-4 h-4" />
+                                </button>
+                                {/* Solo encargados y encargados de distrito pueden aprobar/rechazar/eliminar */}
+                                {(currentEmployee?.role === 'encargado' || currentEmployee?.role === 'distrito') && (
+                                  <>
+                                    {request.status === 'pending' && (
+                                      <>
+                                        <button
+                                          onClick={() => handleApprove(request.id)}
+                                          className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300"
+                                        >
+                                          <CheckCircle className="w-4 h-4" />
+                                        </button>
+                                        <button
+                                          onClick={() => handleReject(request.id)}
+                                          className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                                        >
+                                          <XCircle className="w-4 h-4" />
+                                        </button>
+                                      </>
+                                    )}
+                                    <button
+                                      onClick={() => handleDelete(request.id)}
+                                      className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                                    >
+                                      <Trash2 className="w-4 h-4" />
+                                    </button>
+                                  </>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
 
               {/* Modal de nueva solicitud */}
               {showNewRequestForm && (
