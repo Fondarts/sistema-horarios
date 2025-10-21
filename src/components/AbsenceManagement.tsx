@@ -305,45 +305,31 @@ export const AbsenceManagement: React.FC<AbsenceManagementProps> = ({ isEmployee
       </div>
 
               {/* Estadísticas */}
-              <div className={`grid gap-4 ${isMobile ? 'grid-cols-2' : 'grid-cols-1 md:grid-cols-4'}`}>
-                <div className="bg-gray-200 dark:bg-gray-800 p-4 rounded-lg shadow border border-gray-200 dark:border-gray-700">
+              <div className={`grid gap-3 ${isMobile ? 'grid-cols-2' : 'grid-cols-1 md:grid-cols-3'}`}>
+                <div className="bg-gray-200 dark:bg-gray-800 p-3 rounded-lg shadow border border-gray-200 dark:border-gray-700">
                   <div className="flex items-center">
-                    <Calendar className="w-8 h-8 text-blue-500" />
-                    <div className="ml-3">
-                      <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('totalAbsences')}</p>
-                      <p className="text-2xl font-bold text-gray-900 dark:text-gray-50">{stats.totalAbsences}</p>
+                    <Calendar className="w-6 h-6 text-blue-500" />
+                    <div className="ml-2">
+                      <p className="text-xs font-medium text-gray-500 dark:text-gray-400">{t('totalAbsences')}</p>
+                      <p className="text-xl font-bold text-gray-900 dark:text-gray-50">{stats.totalAbsences}</p>
                     </div>
                   </div>
                 </div>
-                <div className="bg-gray-200 dark:bg-gray-800 p-4 rounded-lg shadow border border-gray-200 dark:border-gray-700">
+                <div className="bg-gray-200 dark:bg-gray-800 p-3 rounded-lg shadow border border-gray-200 dark:border-gray-700">
                   <div className="flex items-center">
-                    <Clock className="w-8 h-8 text-yellow-500" />
-                    <div className="ml-3">
-                      <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('pending')}</p>
-                      <p className="text-2xl font-bold text-gray-900 dark:text-gray-50">{stats.pendingApprovals}</p>
+                    <Clock className="w-6 h-6 text-yellow-500" />
+                    <div className="ml-2">
+                      <p className="text-xs font-medium text-gray-500 dark:text-gray-400">{t('pending')}</p>
+                      <p className="text-xl font-bold text-gray-900 dark:text-gray-50">{stats.pendingApprovals}</p>
                     </div>
                   </div>
                 </div>
-                <div className="bg-gray-200 dark:bg-gray-800 p-4 rounded-lg shadow border border-gray-200 dark:border-gray-700">
+                <div className="bg-gray-200 dark:bg-gray-800 p-3 rounded-lg shadow border border-gray-200 dark:border-gray-700">
                   <div className="flex items-center">
-                    <XCircle className="w-8 h-8 text-red-500" />
-                    <div className="ml-3">
-                      <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Ausencias No Justificadas</p>
-                      <p className="text-2xl font-bold text-gray-900 dark:text-gray-50">{stats.absencesByType.unjustified}</p>
-                    </div>
-                  </div>
-                </div>
-                <div className="bg-gray-200 dark:bg-gray-800 p-4 rounded-lg shadow border border-gray-200 dark:border-gray-700">
-                  <div className="flex items-center">
-                    <CheckCircle className="w-8 h-8 text-green-500" />
-                    <div className="ml-3">
-                      <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('remainingVacationDays')}</p>
-                      <p className="text-2xl font-bold text-gray-900 dark:text-gray-50">
-                        {currentEmployee?.vacationDaysPerYear ? 
-                          Math.max(0, currentEmployee.vacationDaysPerYear - stats.absencesByType.vacation) : 
-                          'N/A'
-                        }
-                      </p>
+                    <XCircle className="w-6 h-6 text-red-500" />
+                    <div className="ml-2">
+                      <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Ausencias No Justificadas</p>
+                      <p className="text-xl font-bold text-gray-900 dark:text-gray-50">{stats.absencesByType.unjustified}</p>
                     </div>
                   </div>
                 </div>
