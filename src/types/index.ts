@@ -101,6 +101,7 @@ export interface Statistics {
   employeeName: string;
   weeklyAssignedHours: number;
   weeklyLimit: number;
+  extraHours: number;
   daysSinceLastWeekendOff: number;
   busiestDayOfWeek: number;
   coverageIssues: CoverageIssue[];
