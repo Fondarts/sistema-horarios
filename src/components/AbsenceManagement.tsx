@@ -305,7 +305,7 @@ export const AbsenceManagement: React.FC<AbsenceManagementProps> = ({ isEmployee
       </div>
 
               {/* Estadísticas */}
-              <div className={`grid gap-3 ${isMobile ? 'grid-cols-2' : 'grid-cols-1 md:grid-cols-3'}`}>
+              <div className={`grid gap-3 ${isMobile ? 'grid-cols-2' : 'grid-cols-3'}`}>
                 <div className="bg-gray-200 dark:bg-gray-800 p-3 rounded-lg shadow border border-gray-200 dark:border-gray-700">
                   <div className="flex items-center">
                     <Calendar className="w-6 h-6 text-blue-500" />
