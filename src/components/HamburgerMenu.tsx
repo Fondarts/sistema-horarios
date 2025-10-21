@@ -30,7 +30,6 @@ export function HamburgerMenu({ activeTab, onTabChange, isManager = false, onSho
     { id: 'settings', label: 'Tienda', icon: Home },
     { id: 'statistics', label: 'Estadísticas', icon: BarChart3 },
     { id: 'export', label: 'Exportar', icon: FileText },
-    { id: 'configuration', label: 'Configuración', icon: Settings },
   ];
 
   const employeeTabs = [
@@ -158,6 +157,15 @@ export function HamburgerMenu({ activeTab, onTabChange, isManager = false, onSho
           
           {/* Botones de configuración */}
           <ul className="space-y-2">
+            <li>
+              <button
+                onClick={() => handleTabClick('configuration')}
+                className="w-full flex items-center px-4 py-3 rounded-lg text-left transition-colors text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
+              >
+                <Settings className="w-5 h-5" style={{ marginRight: '12px' }} />
+                Configuración
+              </button>
+            </li>
             <li>
               <button
                 onClick={handleThemeToggle}
