@@ -362,7 +362,7 @@ export function Statistics() {
 
     const extraHours = Math.max(0, assignedHours - employee.weeklyLimit);
 
-    // Calcular rotación de empleados (frecuencia de cambios en turnos)
+    // Calcular consistencia horaria (frecuencia de cambios en horarios de turnos)
     const calculateEmployeeRotation = () => {
       // Obtener todos los turnos del empleado en las últimas 4 semanas
       const fourWeeksAgo = subDays(new Date(), 28);
@@ -381,7 +381,8 @@ export function Statistics() {
         scheduleChanges.add(scheduleKey);
       });
 
-      // Calcular frecuencia de cambios (número de horarios únicos / total de turnos)
+      // Calcular consistencia horaria (número de horarios únicos / total de turnos)
+      // Menor porcentaje = mayor consistencia, mayor porcentaje = menor consistencia
       const rotationFrequency = (scheduleChanges.size / recentShifts.length) * 100;
       
       return Math.round(rotationFrequency);
@@ -540,7 +541,7 @@ export function Statistics() {
           <div className="flex items-center">
             <RefreshCw className="w-8 h-8 text-purple-600 mr-3" />
             <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Rotación Promedio</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Consistencia Promedio</p>
               <p className="text-2xl font-bold text-purple-600">
                 {employeeStats.length > 0 ? Math.round(employeeStats.reduce((total, stat) => total + stat.employeeRotation, 0) / employeeStats.length) : 0}%
               </p>
@@ -579,7 +580,7 @@ export function Statistics() {
                   {t('daysWithoutWeekend')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Rotación
+                  Consistencia Horaria
                 </th>
               </tr>
             </thead>
@@ -661,11 +662,11 @@ export function Statistics() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                       <div className="flex items-center">
-                        <span className={`text-sm ${stat.employeeRotation > 50 ? 'text-orange-600 font-semibold' : stat.employeeRotation > 30 ? 'text-yellow-600' : 'text-green-600'}`}>
+                        <span className={`text-sm ${stat.employeeRotation > 50 ? 'text-red-600 font-semibold' : stat.employeeRotation > 30 ? 'text-orange-600' : 'text-green-600'}`}>
                           {stat.employeeRotation}%
                         </span>
                         {stat.employeeRotation > 50 && (
-                          <AlertTriangle className="w-4 h-4 text-orange-500 ml-2" />
+                          <AlertTriangle className="w-4 h-4 text-red-500 ml-2" />
                         )}
                       </div>
                     </td>
