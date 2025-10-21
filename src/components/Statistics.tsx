@@ -314,11 +314,14 @@ export function Statistics() {
     });
     const busiestDay = dayCounts.indexOf(Math.max(...dayCounts));
 
+    const extraHours = Math.max(0, assignedHours - employee.weeklyLimit);
+
     return {
       employeeId: employee.id,
       employeeName: employee.name,
       weeklyAssignedHours: assignedHours,
       weeklyLimit: employee.weeklyLimit,
+      extraHours: extraHours,
       daysSinceLastWeekendOff: daysSinceLastWeekendOff,
       busiestDayOfWeek: busiestDay,
       coverageIssues: [] // Placeholder
@@ -414,7 +417,7 @@ export function Statistics() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="card">
           <div className="flex items-center">
             <Users className="w-8 h-8 text-primary-600 mr-3" />
@@ -446,6 +449,18 @@ export function Statistics() {
             </div>
           </div>
         </div>
+
+        <div className="card">
+          <div className="flex items-center">
+            <AlertTriangle className="w-8 h-8 text-red-600 mr-3" />
+            <div>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Horas Extras</p>
+              <p className="text-2xl font-bold text-red-600">
+                {formatHours(employeeStats.reduce((total, stat) => total + stat.extraHours, 0))}
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Employee Statistics */}
@@ -467,6 +482,9 @@ export function Statistics() {
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                   {t('utilization')}
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  Horas Extras
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                   {t('busiestDay')}
@@ -536,6 +554,16 @@ export function Statistics() {
                         </span>
                       </div>
                     </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <span className={`text-sm ${stat.extraHours > 0 ? 'text-red-600 font-semibold' : 'text-gray-900 dark:text-gray-100'}`}>
+                          {formatHours(stat.extraHours)}
+                        </span>
+                        {stat.extraHours > 0 && (
+                          <AlertTriangle className="w-4 h-4 text-red-500 ml-2" />
+                        )}
+                      </div>
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                       {daysOfWeek[stat.busiestDayOfWeek]}
                     </td>
@@ -586,7 +614,7 @@ export function Statistics() {
           </div>
 
           {/* Monthly Summary Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
             <div className="card">
               <div className="flex items-center">
                 <Users className="w-8 h-8 text-primary-600 mr-3" />
@@ -628,6 +656,22 @@ export function Statistics() {
                   <p className="text-sm text-gray-600 dark:text-gray-400">Promedio Semanal</p>
                   <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                     {formatHours(monthlyShifts.reduce((total, shift) => total + shift.hours, 0) / 4)}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="card">
+              <div className="flex items-center">
+                <AlertTriangle className="w-8 h-8 text-red-600 mr-3" />
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Horas Extras</p>
+                  <p className="text-2xl font-bold text-red-600">
+                    {formatHours(monthlyShifts.reduce((total, shift) => {
+                      const employee = employees.find(emp => emp.id === shift.employeeId);
+                      const extraHours = employee ? Math.max(0, shift.hours - (employee.weeklyLimit / 7)) : 0;
+                      return total + extraHours;
+                    }, 0))}
                   </p>
                 </div>
               </div>
@@ -720,7 +764,7 @@ export function Statistics() {
           </div>
 
           {/* Yearly Summary Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
             <div className="card">
               <div className="flex items-center">
                 <Users className="w-8 h-8 text-primary-600 mr-3" />
@@ -762,6 +806,22 @@ export function Statistics() {
                   <p className="text-sm text-gray-600 dark:text-gray-400">Promedio Mensual</p>
                   <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                     {formatHours(yearlyShifts.reduce((total, shift) => total + shift.hours, 0) / 12)}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="card">
+              <div className="flex items-center">
+                <AlertTriangle className="w-8 h-8 text-red-600 mr-3" />
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Horas Extras</p>
+                  <p className="text-2xl font-bold text-red-600">
+                    {formatHours(yearlyShifts.reduce((total, shift) => {
+                      const employee = employees.find(emp => emp.id === shift.employeeId);
+                      const extraHours = employee ? Math.max(0, shift.hours - (employee.weeklyLimit / 7)) : 0;
+                      return total + extraHours;
+                    }, 0))}
                   </p>
                 </div>
               </div>
