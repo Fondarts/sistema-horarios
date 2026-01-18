@@ -4,6 +4,7 @@ import { es } from 'date-fns/locale';
 import { Eye, EyeOff, Save, Copy, Trash2, AlertTriangle, Clock, X } from 'lucide-react';
 import { useSchedule } from '../contexts/ScheduleContext';
 import { useEmployees } from '../contexts/EmployeeContext';
+import { useStore } from '../contexts/StoreContext';
 import { useVacation } from '../contexts/VacationContext';
 import { useHolidays } from '../contexts/HolidayContext';
 import { useCompactMode } from '../contexts/CompactModeContext';
@@ -17,7 +18,8 @@ import { BirthdayNotification } from './BirthdayNotification';
 
 export default function ScheduleManagement() {
   const { shifts, addShift, updateShift, deleteShift, publishShifts, storeSchedule } = useSchedule();
-  const { employees } = useEmployees();
+  const { employees, getAllEmployees } = useEmployees();
+  const { currentStore, stores } = useStore();
   const { vacationRequests } = useVacation();
   const { isHoliday, getHolidayForDate } = useHolidays();
   const { isCompactMode, isMobile, toggleCompactMode } = useCompactMode();
@@ -2162,11 +2164,37 @@ export default function ScheduleManagement() {
                     required
                   >
                     <option value="">Seleccionar empleado</option>
-                    {employees.map(employee => (
-                      <option key={employee.id} value={employee.id}>
-                        {employee.name}
-                      </option>
-                    ))}
+                    {(() => {
+                      const allEmployees = getAllEmployees();
+                      const currentStoreEmployees = allEmployees.filter(emp => emp.storeId === currentStore?.id);
+                      const otherStoreEmployees = allEmployees.filter(emp => emp.storeId !== currentStore?.id && emp.isActive);
+                      
+                      return (
+                        <>
+                          {/* Empleados de la tienda actual */}
+                          {currentStoreEmployees.map(employee => (
+                            <option key={employee.id} value={employee.id}>
+                              {employee.name}
+                            </option>
+                          ))}
+                          
+                          {/* División y empleados de otras tiendas */}
+                          {otherStoreEmployees.length > 0 && (
+                            <>
+                              <option disabled>─────────────────</option>
+                              {otherStoreEmployees.map(employee => {
+                                const employeeStore = stores?.find(s => s.id === employee.storeId);
+                                return (
+                                  <option key={employee.id} value={employee.id}>
+                                    {employee.name} {employeeStore ? `(${employeeStore.name})` : ''}
+                                  </option>
+                                );
+                              })}
+                            </>
+                          )}
+                        </>
+                      );
+                    })()}
                   </select>
                 </div>
                 <div>
