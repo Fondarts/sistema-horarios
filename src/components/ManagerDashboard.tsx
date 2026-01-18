@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useEmployees } from '../contexts/EmployeeContext';
 import { useStore } from '../contexts/StoreContext';
-import { LogOut, Calendar, Users, Home, BarChart3, FileText, CalendarDays, Settings, Building2, UserX } from 'lucide-react';
+import { LogOut, Calendar, Users, Home, BarChart3, FileText, CalendarDays, Building2, UserX, User, Settings } from 'lucide-react';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { useCompactMode } from '../contexts/CompactModeContext';
 import { EmployeeManagement } from './EmployeeManagement';
@@ -18,10 +18,13 @@ import { NotificationCenter } from './NotificationCenter';
 import { KeyboardShortcuts } from './KeyboardShortcuts';
 import { Logo } from './Logo';
 import { HamburgerMenu } from './HamburgerMenu';
-import { ConfigurationModal } from './ConfigurationModal';
+import { UserMenu } from './UserMenu';
+import { UserAvatar } from './UserAvatar';
+import { CompanySettings } from './CompanySettings';
 import { useLanguage } from '../contexts/LanguageContext';
+import { isIT } from '../utils/rolePermissions';
 
-type TabType = 'schedule' | 'employees' | 'settings' | 'statistics' | 'export' | 'absences' | 'holidays' | 'configuration';
+type TabType = 'schedule' | 'employees' | 'settings' | 'statistics' | 'export' | 'absences' | 'holidays' | 'company';
 
 export function ManagerDashboard() {
   const { currentEmployee, logout, isDistrictManager } = useAuth();
@@ -32,6 +35,7 @@ export function ManagerDashboard() {
   const [activeTab, setActiveTab] = useState<TabType>('schedule');
   const [showBirthdayNotification, setShowBirthdayNotification] = useState(true);
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
 
   const tabs = [
     { id: 'schedule' as TabType, label: t('schedule'), icon: Calendar },
@@ -41,6 +45,11 @@ export function ManagerDashboard() {
     { id: 'settings' as TabType, label: t('store'), icon: Home },
     { id: 'statistics' as TabType, label: t('statistics'), icon: BarChart3 },
     { id: 'export' as TabType, label: t('export'), icon: FileText },
+    // Solo mostrar configuración de empresa para IT
+    ...(currentEmployee && isIT(currentEmployee.role) 
+      ? [{ id: 'company' as TabType, label: 'Configuración Empresa', icon: Settings }]
+      : []
+    ),
   ];
 
   // Función para volver al selector de tiendas (solo para encargados de distrito)
@@ -119,33 +128,8 @@ export function ManagerDashboard() {
         return <Statistics />;
       case 'export':
         return <ExportTools />;
-      case 'configuration':
-        return (
-          <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-            <div className="max-w-4xl mx-auto p-6">
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
-                {/* Header */}
-                <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
-                  <div className="flex items-center space-x-3">
-                    <Settings className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-                    <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                      {t('configuration')}
-                    </h2>
-                  </div>
-                </div>
-
-                {/* Content */}
-                <div className="p-6">
-                  <ConfigurationModal 
-                    isOpen={true}
-                    onClose={() => {}}
-                    isEmployeeDashboard={false}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        );
+      case 'company':
+        return <CompanySettings />;
       default:
         return <ScheduleManagement />;
     }
@@ -205,11 +189,11 @@ export function ManagerDashboard() {
                     isManager={true}
                   />
                   <button
-                    onClick={() => setActiveTab('configuration')}
+                    onClick={() => setShowUserMenu(true)}
                     className="flex items-center text-gray-600 hover:text-gray-900 transition-colors dark:text-gray-400 dark:hover:text-gray-100"
-                    title={t('configuration')}
+                    title="Usuario"
                   >
-                    <Settings className="w-5 h-5" />
+                    <UserAvatar size="sm" />
                   </button>
                   <ThemeToggle />
                 </>
@@ -250,6 +234,7 @@ export function ManagerDashboard() {
               onShowKeyboardHelp={() => setShowKeyboardHelp(true)}
               onLogout={logout}
               onBackToStoreSelector={isDistrictManager ? handleBackToStoreSelector : undefined}
+              onShowUserMenu={() => setShowUserMenu(true)}
             />
           </div>
         </div>
@@ -294,6 +279,26 @@ export function ManagerDashboard() {
           onClose={() => setShowBirthdayNotification(false)}
         />
       )}
+
+      {/* User Menu */}
+      <UserMenu 
+        isOpen={showUserMenu}
+        onClose={() => setShowUserMenu(false)}
+      />
+
+      {/* Powered by Tempo */}
+      <footer className="mt-12 py-6 border-t border-gray-200 dark:border-gray-700">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+            <span>Powered by</span>
+            <img 
+              src="/images/tempo.png" 
+              alt="Tempo" 
+              className="h-6 w-auto"
+            />
+          </div>
+        </div>
+      </footer>
 
     </div>
   );

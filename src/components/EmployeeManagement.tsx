@@ -5,8 +5,11 @@ import { useDateFormat } from '../contexts/DateFormatContext';
 import { useCompactMode } from '../contexts/CompactModeContext';
 import { useStore } from '../contexts/StoreContext';
 import { useSchedule } from '../contexts/ScheduleContext';
+import { useAuth } from '../contexts/AuthContext';
 import { Plus, Edit, Trash2, User, Clock, Calendar, Eye, EyeOff, ArrowRightLeft } from 'lucide-react';
-import { Employee, UnavailableTime, EmployeeTransfer } from '../types';
+import { Employee, UnavailableTime, EmployeeTransfer, EmployeeRole } from '../types';
+import { getAssignableRoles, canChangeRole, getRoleLabel, isIT } from '../utils/rolePermissions';
+import { createITUser } from '../utils/createITUser';
 import TimeInput from './TimeInput';
 
 // Función para formatear fecha de dd/mm/yyyy a formato legible
@@ -84,6 +87,7 @@ export function EmployeeManagement() {
   const { t } = useLanguage();
   const { formatDate, dateFormat } = useDateFormat();
   const { shifts, deleteShift } = useSchedule();
+  const { currentEmployee } = useAuth();
   
   // Función para obtener el placeholder dinámico según el formato de fecha
   const getDatePlaceholder = () => {
@@ -153,6 +157,7 @@ export function EmployeeManagement() {
   const [transferStartDate, setTransferStartDate] = useState<string>('');
   const [returnDate, setReturnDate] = useState<string>('');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isCreatingIT, setIsCreatingIT] = useState(false);
   const [employeeToDelete, setEmployeeToDelete] = useState<Employee | null>(null);
   const [terminationDate, setTerminationDate] = useState<string>('');
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
@@ -178,7 +183,7 @@ export function EmployeeManagement() {
     birthday: '',
     color: '#3B82F6',
     isActive: true,
-    role: 'empleado' as 'encargado' | 'empleado' | 'distrito',
+    role: 'empleado' as EmployeeRole,
     unavailableTimes: [] as UnavailableTime[],
     vacationDaysPerYear: 20,
     startDate: ''
@@ -451,9 +456,34 @@ export function EmployeeManagement() {
       return;
     }
     
+    const userRole = currentEmployee?.role || 'empleado';
+    
+    // Validar cambio de rol si se está editando un empleado
     if (editingEmployee) {
+      const oldRole = editingEmployee.role;
+      const newRole = formData.role;
+      
+      // Si el rol cambió, verificar permisos
+      if (oldRole !== newRole) {
+        if (!canChangeRole(userRole, oldRole)) {
+          alert(`No tienes permisos para cambiar el rol de un ${getRoleLabel(oldRole)}`);
+          return;
+        }
+        
+        if (!canChangeRole(userRole, newRole)) {
+          alert(`No tienes permisos para asignar el rol de ${getRoleLabel(newRole)}`);
+          return;
+        }
+      }
+      
       updateEmployee(editingEmployee.id, formData);
     } else {
+      // Al crear un nuevo empleado, verificar que se puede asignar ese rol
+      if (!canChangeRole(userRole, formData.role)) {
+        alert(`No tienes permisos para crear un empleado con el rol de ${getRoleLabel(formData.role)}`);
+        return;
+      }
+      
       addEmployee(formData);
     }
     
@@ -469,13 +499,33 @@ export function EmployeeManagement() {
       birthday: '',
       color: '#3B82F6',
       isActive: true,
-      role: 'empleado',
+      role: 'empleado' as EmployeeRole,
       unavailableTimes: [],
       vacationDaysPerYear: 20,
       startDate: ''
     });
     setEditingEmployee(null);
     setShowAddForm(false);
+  };
+
+  const handleCreateITUser = async () => {
+    if (!confirm('¿Crear usuario IT con credenciales por defecto?\n\nUsername: it.admin\nPassword: it123456')) {
+      return;
+    }
+
+    setIsCreatingIT(true);
+    try {
+      const result = await createITUser();
+      if (result.success && result.credentials) {
+        alert(`✅ Usuario IT creado exitosamente!\n\nCredenciales:\nUsername: ${result.credentials.username}\nPassword: ${result.credentials.password}\n\nGuarda estas credenciales de forma segura.`);
+      } else {
+        alert(`⚠️ ${result.message || 'Error desconocido'}`);
+      }
+    } catch (error) {
+      alert(`❌ Error: ${error instanceof Error ? error.message : 'Error desconocido'}`);
+    } finally {
+      setIsCreatingIT(false);
+    }
   };
 
   return (
@@ -487,6 +537,14 @@ export function EmployeeManagement() {
           <p className="text-gray-600 dark:text-gray-400">{t('manageEmployeeInfo')}</p>
         </div>
         <div className="flex gap-3">
+          <button
+            onClick={handleCreateITUser}
+            disabled={isCreatingIT}
+            className="btn-secondary flex items-center"
+            title="Crear usuario IT (solo para administradores)"
+          >
+            {isCreatingIT ? 'Creando...' : 'Crear Usuario IT'}
+          </button>
           <button
             onClick={() => setShowAddForm(true)}
             className="btn-primary flex items-center"
@@ -577,21 +635,48 @@ export function EmployeeManagement() {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   {t('role')}
                 </label>
-                <select
-                  value={formData.role}
-                  onChange={(e) => setFormData(prev => ({ ...prev, role: e.target.value as 'encargado' | 'empleado' }))}
-                  className="input-field"
-                  required
-                >
-                  <option value="empleado">{t('regularEmployee')}</option>
-                  <option value="encargado">{t('mainManager')}</option>
-                </select>
-                <p className="text-xs text-gray-500 mt-1">
-                  {formData.role === 'encargado' 
-                    ? 'Puede gestionar horarios, empleados y configuraciones'
-                    : 'Solo puede ver sus propios horarios'
+                {(() => {
+                  const userRole = currentEmployee?.role || 'empleado';
+                  const assignableRoles = getAssignableRoles(userRole);
+                  
+                  // Si no puede asignar roles (IT o empleado), deshabilitar el campo
+                  if (assignableRoles.length === 0) {
+                    return (
+                      <div>
+                        <input
+                          type="text"
+                          value={getRoleLabel(formData.role)}
+                          className="input-field bg-gray-100 dark:bg-gray-700 cursor-not-allowed"
+                          disabled
+                          readOnly
+                        />
+                        <p className="text-xs text-gray-500 mt-1">
+                          No tienes permisos para asignar roles
+                        </p>
+                      </div>
+                    );
                   }
-                </p>
+                  
+                  return (
+                    <>
+                      <select
+                        value={formData.role}
+                        onChange={(e) => setFormData(prev => ({ ...prev, role: e.target.value as EmployeeRole }))}
+                        className="input-field"
+                        required
+                      >
+                        {assignableRoles.map(role => (
+                          <option key={role} value={role}>
+                            {getRoleLabel(role)}
+                          </option>
+                        ))}
+                      </select>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Solo puedes asignar roles inferiores al tuyo
+                      </p>
+                    </>
+                  );
+                })()}
               </div>
               
               <div>
@@ -863,11 +948,13 @@ export function EmployeeManagement() {
                   </div>
                   <div className="flex items-center justify-end">
                     <span className={`text-xs px-2 py-1 rounded font-medium ${
-                      employee.role === 'encargado' 
-                        ? 'bg-blue-100 text-blue-800' 
-                        : 'bg-green-100 text-green-800'
+                      employee.role === 'encargado' || employee.role === 'distrito' || employee.role === 'region'
+                        ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' 
+                        : employee.role === 'it'
+                        ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
+                        : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
                     }`}>
-                      {employee.role === 'encargado' ? t('manager') : t('employee')}
+                      {getRoleLabel(employee.role)}
                     </span>
                   </div>
                   {employee.unavailableTimes.length > 0 && (

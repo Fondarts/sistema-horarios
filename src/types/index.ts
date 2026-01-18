@@ -1,6 +1,7 @@
 // Tipos principales del sistema
 
-export type UserRole = 'encargado' | 'empleado' | 'distrito';
+export type UserRole = 'encargado' | 'empleado' | 'distrito'; // DEPRECATED: usar EmployeeRole
+export type EmployeeRole = 'region' | 'distrito' | 'encargado' | 'empleado' | 'it';
 
 export interface User {
   id: string;
@@ -20,7 +21,7 @@ export interface Employee {
   birthday: string; // formato YYYY-MM-DD
   isActive: boolean;
   color: string; // color hexadecimal para las barras del empleado
-  role: 'encargado' | 'empleado' | 'distrito'; // rol del empleado
+  role: EmployeeRole; // rol del empleado (region | distrito | encargado | empleado | it)
   isManager?: boolean; // para compatibilidad con el sistema multitiendas
   storeId?: string; // ID de la tienda a la que pertenece el empleado
   monthlyHoursLimit?: number; // límite mensual de horas
@@ -152,6 +153,28 @@ export interface GanttConfig {
   zoomLevel: 'daily' | 'weekly';
   startDate: string;
   endDate: string;
+}
+
+// Configuración de empresa (solo modificable por IT)
+export interface CompanySettings {
+  id: string;
+  logoUrl?: string; // URL del logo de la empresa
+  // Colores para modo claro
+  primaryColorLight?: string; // Color principal de la paleta modo claro (hex)
+  secondaryColorLight?: string; // Color secundario de la paleta modo claro (hex)
+  accentColorLight?: string; // Color de acento de la paleta modo claro (hex)
+  // Colores para modo oscuro
+  primaryColorDark?: string; // Color principal de la paleta modo oscuro (hex)
+  secondaryColorDark?: string; // Color secundario de la paleta modo oscuro (hex)
+  accentColorDark?: string; // Color de acento de la paleta modo oscuro (hex)
+  // Compatibilidad con versiones anteriores
+  primaryColor?: string; // DEPRECATED: usar primaryColorLight/Dark
+  secondaryColor?: string; // DEPRECATED: usar secondaryColorLight/Dark
+  accentColor?: string; // DEPRECATED: usar accentColorLight/Dark
+  companyName?: string; // Nombre de la empresa
+  defaultTheme?: 'light' | 'dark'; // Tema por defecto de la aplicación
+  updatedAt: string;
+  updatedBy: string; // ID del usuario IT que lo actualizó
 }
 
 

@@ -13,6 +13,7 @@ import { StoreProvider } from './contexts/StoreContext';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { CountryProvider } from './contexts/CountryContext';
 import { DateFormatProvider } from './contexts/DateFormatContext';
+import { CompanySettingsProvider } from './contexts/CompanySettingsContext';
 import { AppRouter } from './components/AppRouter';
 import { NotificationStack } from './components/NotificationStack';
 
@@ -24,8 +25,9 @@ function App() {
           <ThemeProvider>
         <CompactModeProvider>
           <StoreProvider>
-            <EmployeeProvider>
-              <AuthProvider>
+            <CompanySettingsProvider>
+              <EmployeeProvider>
+                <AuthProvider>
                 <HolidayProvider>
                   <NotificationProvider>
                     <NotificationStackProvider>
@@ -40,8 +42,9 @@ function App() {
                     </NotificationStackProvider>
                   </NotificationProvider>
                 </HolidayProvider>
-              </AuthProvider>
-            </EmployeeProvider>
+                </AuthProvider>
+              </EmployeeProvider>
+            </CompanySettingsProvider>
           </StoreProvider>
         </CompactModeProvider>
       </ThemeProvider>

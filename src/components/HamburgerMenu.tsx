@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Menu, X, Calendar, Users, UserX, CalendarDays, Home, BarChart3, FileText, Sun, Moon, HelpCircle, LogOut, Building2, Settings } from 'lucide-react';
+import { Menu, X, Calendar, Users, UserX, CalendarDays, Home, BarChart3, FileText, Sun, Moon, HelpCircle, LogOut, Building2, User } from 'lucide-react';
 import { useCompactMode } from '../contexts/CompactModeContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -13,9 +13,10 @@ interface HamburgerMenuProps {
   onShowKeyboardHelp?: () => void;
   onLogout?: () => void;
   onBackToStoreSelector?: () => void;
+  onShowUserMenu?: () => void;
 }
 
-export function HamburgerMenu({ activeTab, onTabChange, isManager = false, onShowKeyboardHelp, onLogout, onBackToStoreSelector }: HamburgerMenuProps) {
+export function HamburgerMenu({ activeTab, onTabChange, isManager = false, onShowKeyboardHelp, onLogout, onBackToStoreSelector, onShowUserMenu }: HamburgerMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const { isMobile } = useCompactMode();
   const { theme, toggleTheme } = useTheme();
@@ -157,15 +158,22 @@ export function HamburgerMenu({ activeTab, onTabChange, isManager = false, onSho
           
           {/* Botones de configuración */}
           <ul className="space-y-2">
-            <li>
-              <button
-                onClick={() => handleTabClick('configuration')}
-                className="w-full flex items-center px-4 py-3 rounded-lg text-left transition-colors text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
-              >
-                <Settings className="w-5 h-5" style={{ marginRight: '12px' }} />
-                Configuración
-              </button>
-            </li>
+            {onShowUserMenu && (
+              <li>
+                <button
+                  onClick={() => {
+                    if (onShowUserMenu) {
+                      onShowUserMenu();
+                    }
+                    setIsOpen(false);
+                  }}
+                  className="w-full flex items-center px-4 py-3 rounded-lg text-left transition-colors text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
+                >
+                  <User className="w-5 h-5" style={{ marginRight: '12px' }} />
+                  Usuario
+                </button>
+              </li>
+            )}
             <li>
               <button
                 onClick={handleThemeToggle}

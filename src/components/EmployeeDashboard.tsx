@@ -6,10 +6,9 @@ import { useHolidays } from '../contexts/HolidayContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { format, startOfWeek, endOfWeek, eachDayOfInterval, addWeeks, subWeeks, startOfMonth, endOfMonth, addMonths, subMonths, isSameMonth, isSameDay } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
-import { ChevronLeft, ChevronRight, LogOut, Calendar, Clock, UserX, List, Grid3X3 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, LogOut, Calendar, Clock, UserX, List, Grid3X3, User } from 'lucide-react';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { useCompactMode } from '../contexts/CompactModeContext';
-import { Settings } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { BirthdayNotification } from './BirthdayNotification';
 import { NotificationCenter } from './NotificationCenter';
@@ -17,7 +16,8 @@ import { KeyboardShortcuts } from './KeyboardShortcuts';
 import { Logo } from './Logo';
 import { AbsenceManagement } from './AbsenceManagement';
 import { HamburgerMenu } from './HamburgerMenu';
-import { ConfigurationModal } from './ConfigurationModal';
+import { UserMenu } from './UserMenu';
+import { UserAvatar } from './UserAvatar';
 
 export default function EmployeeDashboard() {
   const { currentEmployee, logout } = useAuth();
@@ -50,7 +50,7 @@ export default function EmployeeDashboard() {
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
   const [activeTab, setActiveTab] = useState<'schedule' | 'vacations'>('schedule');
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
-  const [showConfig, setShowConfig] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
 
   // Atajos de teclado para empleados
   useKeyboardShortcuts([
@@ -207,11 +207,11 @@ export default function EmployeeDashboard() {
                     isManager={false}
                   />
                   <button
-                    onClick={() => setShowConfig(true)}
+                    onClick={() => setShowUserMenu(true)}
                     className="flex items-center text-gray-600 hover:text-gray-900 transition-colors dark:text-gray-400 dark:hover:text-gray-100"
-                    title={t('configuration')}
+                    title="Usuario"
                   >
-                    <Settings className="w-5 h-5" />
+                    <UserAvatar size="sm" />
                   </button>
                   <ThemeToggle />
                 </>
@@ -237,6 +237,7 @@ export default function EmployeeDashboard() {
               isManager={false}
               onShowKeyboardHelp={() => setShowKeyboardHelp(true)}
               onLogout={logout}
+              onShowUserMenu={() => setShowUserMenu(true)}
             />
           </div>
         </div>
@@ -551,12 +552,25 @@ export default function EmployeeDashboard() {
         />
       )}
 
-      {/* Configuration Modal */}
-      <ConfigurationModal 
-        isOpen={showConfig}
-        onClose={() => setShowConfig(false)}
-        isEmployeeDashboard={true}
+      {/* User Menu */}
+      <UserMenu 
+        isOpen={showUserMenu}
+        onClose={() => setShowUserMenu(false)}
       />
+
+      {/* Powered by Tempo */}
+      <footer className="mt-12 py-6 border-t border-gray-200 dark:border-gray-700">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+            <span>Powered by</span>
+            <img 
+              src="/images/tempo.png" 
+              alt="Tempo" 
+              className="h-6 w-auto"
+            />
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

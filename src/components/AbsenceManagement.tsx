@@ -359,7 +359,7 @@ export const AbsenceManagement: React.FC<AbsenceManagementProps> = ({ isEmployee
                     </select>
                   </div>
                   {/* Solo encargados y encargados de distrito pueden filtrar por empleado */}
-                  {(currentEmployee?.role === 'encargado' || currentEmployee?.role === 'distrito') && (
+                  {(currentEmployee?.role === 'encargado' || currentEmployee?.role === 'distrito' || currentEmployee?.role === 'region') && (
                     <div className="flex-1 min-w-0">
                       <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">{t('employee')}</label>
                       <select
@@ -429,7 +429,7 @@ export const AbsenceManagement: React.FC<AbsenceManagementProps> = ({ isEmployee
                           <Eye className="w-4 h-4" />
                         </button>
                         {/* Solo encargados y encargados de distrito pueden aprobar/rechazar/eliminar */}
-                        {(currentEmployee?.role === 'encargado' || currentEmployee?.role === 'distrito') && (
+                        {(currentEmployee?.role === 'encargado' || currentEmployee?.role === 'distrito' || currentEmployee?.role === 'region') && (
                           <>
                             {request.status === 'pending' && (
                               <>
@@ -527,7 +527,7 @@ export const AbsenceManagement: React.FC<AbsenceManagementProps> = ({ isEmployee
                                   <Eye className="w-4 h-4" />
                                 </button>
                                 {/* Solo encargados y encargados de distrito pueden aprobar/rechazar/eliminar */}
-                                {(currentEmployee?.role === 'encargado' || currentEmployee?.role === 'distrito') && (
+                                {(currentEmployee?.role === 'encargado' || currentEmployee?.role === 'distrito' || currentEmployee?.role === 'region') && (
                                   <>
                                     {request.status === 'pending' && (
                                       <>

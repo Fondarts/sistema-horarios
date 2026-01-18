@@ -83,9 +83,9 @@ export function ConfigurationModal({ isOpen, onClose, isEmployeeDashboard = fals
         console.log('ConfigurationModal Debug:', {
           isEmployeeDashboard,
           currentEmployeeRole: currentEmployee?.role,
-          shouldShowCountry: !isEmployeeDashboard && (currentEmployee?.role === 'encargado' || currentEmployee?.role === 'distrito')
+          shouldShowCountry: !isEmployeeDashboard && (currentEmployee?.role === 'encargado' || currentEmployee?.role === 'distrito' || currentEmployee?.role === 'region')
         });
-        return !isEmployeeDashboard && (currentEmployee?.role === 'encargado' || currentEmployee?.role === 'distrito');
+        return !isEmployeeDashboard && (currentEmployee?.role === 'encargado' || currentEmployee?.role === 'distrito' || currentEmployee?.role === 'region');
       })() && (
         <div>
           <label className="flex items-center space-x-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
