@@ -160,6 +160,7 @@ export default function ScheduleManagement() {
   const [startX, setStartX] = useState(0);
   const [startLeft, setStartLeft] = useState(0);
   const [startWidth, setStartWidth] = useState(0);
+  const [startDuration, setStartDuration] = useState<number>(0); // Duración original en minutos
   const [containerRect, setContainerRect] = useState<DOMRect | null>(null);
   const [isResizingLeft, setIsResizingLeft] = useState(false);
   const [isCopyingShifts, setIsCopyingShifts] = useState(false);
@@ -450,9 +451,9 @@ export default function ScheduleManagement() {
     const totalHours = endHour - startHour + 1;
     const timeInHours = startHour + (relativePosition * totalHours);
     
-    // Redondear a incrementos de 1 minuto para mayor precisión visual
+    // Redondear a incrementos de 5 minutos
     const timeInMinutes = timeInHours * 60;
-    const roundedMinutes = roundToIncrement(timeInMinutes, 1);
+    const roundedMinutes = roundToIncrement(timeInMinutes, 5);
     
     return minutesToTime(roundedMinutes);
   };
@@ -518,6 +519,14 @@ export default function ScheduleManagement() {
     setContainerRect(target.parentElement?.getBoundingClientRect() || null);
     setStartX(e.clientX);
     setStartLeft(target.offsetLeft);
+    
+    // Guardar la duración original en minutos
+    const [startHour, startMin] = shift.startTime.split(':').map(Number);
+    const [endHour, endMin] = shift.endTime.split(':').map(Number);
+    const startMinutes = startHour * 60 + startMin;
+    const endMinutes = endHour * 60 + endMin;
+    const durationMinutes = endMinutes - startMinutes;
+    setStartDuration(durationMinutes);
     
     target.style.opacity = '0.7';
     target.style.zIndex = '1000';
@@ -1177,16 +1186,35 @@ export default function ScheduleManagement() {
       
       draggedElement.style.left = newLeft + 'px';
       
-      // Calcular tiempos en tiempo real - usar horarios redondeados para consistencia
+      // Calcular tiempo de inicio redondeado a 5 minutos
       const { startHour, endHour } = getStoreHoursRange();
       const newStartTime = positionToTime(newLeft, startHour, endHour);
-      const newEndTime = positionToTime(newLeft + draggedElement.offsetWidth, startHour, endHour);
-      const newHours = calculateExactDuration(newStartTime, newEndTime);
       
-      setTempStartTime(newStartTime);
-      setTempEndTime(newEndTime);
-      setTempHours(newHours);
-      setTempWidth(draggedElement.offsetWidth);
+      // Calcular tiempo de fin manteniendo la duración original
+      const [startHourValue, startMinValue] = newStartTime.split(':').map(Number);
+      const startMinutes = startHourValue * 60 + startMinValue;
+      const endMinutes = startMinutes + startDuration;
+      const endHourValue = Math.floor(endMinutes / 60);
+      const endMinValue = endMinutes % 60;
+      const newEndTime = `${endHourValue.toString().padStart(2, '0')}:${endMinValue.toString().padStart(2, '0')}`;
+      
+      // Calcular el ancho basado en la nueva posición de fin
+      const endTimeInHours = endHourValue + (endMinValue / 60);
+      const newRight = timeToPosition(endTimeInHours, startHour, endHour);
+      const newWidth = newRight - newLeft;
+      
+      // Actualizar el ancho de la barra para mantener la duración correcta
+      draggedElement.style.width = newWidth + 'px';
+      
+      const newHours = startDuration / 60;
+      
+      // Usar requestAnimationFrame para asegurar que React re-renderice
+      requestAnimationFrame(() => {
+        setTempStartTime(newStartTime);
+        setTempEndTime(newEndTime);
+        setTempHours(newHours);
+        setTempWidth(newWidth);
+      });
     };
 
     const stopDrag = () => {
@@ -1197,9 +1225,32 @@ export default function ScheduleManagement() {
           const currentShift = shifts.find(s => s.id === shiftId);
           if (currentShift) {
             const { startHour, endHour } = getStoreHoursRange();
+            
+            // Calcular tiempo de inicio redondeado a 5 minutos
             const newStartTime = positionToTime(draggedElement.offsetLeft, startHour, endHour);
-            const newEndTime = positionToTime(draggedElement.offsetLeft + draggedElement.offsetWidth, startHour, endHour);
-            const newHours = calculateExactDuration(newStartTime, newEndTime);
+            
+            // Calcular tiempo de fin manteniendo la duración original
+            const [startHourValue, startMinValue] = newStartTime.split(':').map(Number);
+            const startMinutes = startHourValue * 60 + startMinValue;
+            const endMinutes = startMinutes + startDuration;
+            const endHourValue = Math.floor(endMinutes / 60);
+            const endMinValue = endMinutes % 60;
+            const newEndTime = `${endHourValue.toString().padStart(2, '0')}:${endMinValue.toString().padStart(2, '0')}`;
+            
+            // Convertir tiempos redondeados de vuelta a posiciones para ajustar la barra
+            const startTimeInHours = startHourValue + (startMinValue / 60);
+            const endTimeInHours = endHourValue + (endMinValue / 60);
+            
+            // Calcular nuevas posiciones basadas en los tiempos redondeados
+            const newLeft = timeToPosition(startTimeInHours, startHour, endHour);
+            const newRight = timeToPosition(endTimeInHours, startHour, endHour);
+            const newWidth = newRight - newLeft;
+            
+            // Ajustar la posición de la barra al tiempo redondeado
+            draggedElement.style.left = newLeft + 'px';
+            draggedElement.style.width = newWidth + 'px';
+            
+            const newHours = startDuration / 60;
 
             updateShift(shiftId, {
               ...currentShift,
@@ -1220,6 +1271,7 @@ export default function ScheduleManagement() {
         setTempEndTime(null);
         setTempHours(null);
         setTempWidth(null);
+        setStartDuration(0);
       }
     };
 
@@ -1248,10 +1300,13 @@ export default function ScheduleManagement() {
           const newEndTime = positionToTime(newLeft + newWidth, startHour, endHour);
           const newHours = calculateExactDuration(newStartTime, newEndTime);
           
-          setTempStartTime(newStartTime);
-          setTempEndTime(newEndTime);
-          setTempHours(newHours);
-          setTempWidth(newWidth);
+          // Usar requestAnimationFrame para asegurar que React re-renderice
+          requestAnimationFrame(() => {
+            setTempStartTime(newStartTime);
+            setTempEndTime(newEndTime);
+            setTempHours(newHours);
+            setTempWidth(newWidth);
+          });
         }
       } else {
         // Redimensionar desde la derecha
@@ -1272,10 +1327,13 @@ export default function ScheduleManagement() {
         const newEndTime = positionToTime(resizingElement.offsetLeft + newWidth, startHour, endHour);
         const newHours = calculateExactDuration(newStartTime, newEndTime);
         
-        setTempStartTime(newStartTime);
-        setTempEndTime(newEndTime);
-        setTempHours(newHours);
-        setTempWidth(newWidth);
+        // Usar requestAnimationFrame para asegurar que React re-renderice
+        requestAnimationFrame(() => {
+          setTempStartTime(newStartTime);
+          setTempEndTime(newEndTime);
+          setTempHours(newHours);
+          setTempWidth(newWidth);
+        });
       }
     };
 
@@ -1287,8 +1345,26 @@ export default function ScheduleManagement() {
           const currentShift = shifts.find(s => s.id === shiftId);
           if (currentShift) {
             const { startHour, endHour } = getStoreHoursRange();
+            
+            // Calcular tiempos redondeados a 5 minutos
             const newStartTime = positionToTime(resizingElement.offsetLeft, startHour, endHour);
             const newEndTime = positionToTime(resizingElement.offsetLeft + resizingElement.offsetWidth, startHour, endHour);
+            
+            // Convertir tiempos redondeados de vuelta a posiciones para ajustar la barra
+            const [startHourValue, startMinValue] = newStartTime.split(':').map(Number);
+            const [endHourValue, endMinValue] = newEndTime.split(':').map(Number);
+            const startTimeInHours = startHourValue + (startMinValue / 60);
+            const endTimeInHours = endHourValue + (endMinValue / 60);
+            
+            // Calcular nuevas posiciones basadas en los tiempos redondeados
+            const newLeft = timeToPosition(startTimeInHours, startHour, endHour);
+            const newRight = timeToPosition(endTimeInHours, startHour, endHour);
+            const newWidth = newRight - newLeft;
+            
+            // Ajustar la posición de la barra al tiempo redondeado
+            resizingElement.style.left = newLeft + 'px';
+            resizingElement.style.width = newWidth + 'px';
+            
             const newHours = calculateExactDuration(newStartTime, newEndTime);
 
             updateShift(shiftId, {
@@ -1329,7 +1405,7 @@ export default function ScheduleManagement() {
       document.removeEventListener('mousemove', resize);
       document.removeEventListener('mouseup', stopResize);
     };
-  }, [draggedElement, resizingElement, startX, startLeft, startWidth, containerRect, isResizingLeft]);
+  }, [draggedElement, resizingElement, startX, startLeft, startWidth, startDuration, containerRect, isResizingLeft]);
 
   // Configurar event listeners en los elementos gantt-bar, exactamente como en el ejemplo HTML
   useEffect(() => {
@@ -1969,21 +2045,25 @@ export default function ScheduleManagement() {
                             <div className="flex items-center justify-between h-full text-white font-medium text-xs overflow-hidden px-1">
                                   {(() => {
                               // Usar valores temporales si estamos en drag/resize, sino usar valores originales
-                              const currentStartTime = (draggedElement?.dataset.shiftId === shift.id || resizingElement?.dataset.shiftId === shift.id) 
-                                ? (tempStartTime || shift.startTime) 
+                              const isDragging = draggedElement?.dataset.shiftId === shift.id;
+                              const isResizing = resizingElement?.dataset.shiftId === shift.id;
+                              const isBeingModified = isDragging || isResizing;
+                              
+                              const currentStartTime = isBeingModified && tempStartTime 
+                                ? tempStartTime 
                                 : shift.startTime;
-                              const currentEndTime = (draggedElement?.dataset.shiftId === shift.id || resizingElement?.dataset.shiftId === shift.id) 
-                                ? (tempEndTime || shift.endTime) 
+                              const currentEndTime = isBeingModified && tempEndTime 
+                                ? tempEndTime 
                                 : shift.endTime;
                               
-                              // Redondear tiempos para visualización
-                              const displayStartTime = roundTimeForDisplay(currentStartTime);
-                              const displayEndTime = roundTimeForDisplay(currentEndTime);
-                              const currentHours = (draggedElement?.dataset.shiftId === shift.id || resizingElement?.dataset.shiftId === shift.id) 
-                                ? (tempHours || shift.hours) 
+                              // Mostrar los tiempos exactos del turno (sin redondear)
+                              const displayStartTime = currentStartTime;
+                              const displayEndTime = currentEndTime;
+                              const currentHours = isBeingModified && tempHours !== null 
+                                ? tempHours 
                                 : shift.hours;
-                              const currentWidth = (draggedElement?.dataset.shiftId === shift.id || resizingElement?.dataset.shiftId === shift.id) 
-                                ? (tempWidth || width) 
+                              const currentWidth = isBeingModified && tempWidth !== null 
+                                ? tempWidth 
                                 : width;
                               
                               // Si el día está colapsado, mostrar solo barra finita

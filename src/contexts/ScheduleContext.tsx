@@ -149,6 +149,14 @@ const timeToMinutes = (time: string): number => {
   return hours * 60 + minutes;
 };
 
+// Función para validar que los minutos sean múltiplos de 5
+const validateMinutesAreMultipleOf5 = (time: string): boolean => {
+  const [, minutes] = time.split(':');
+  if (!minutes) return false;
+  const m = parseInt(minutes, 10);
+  return m % 5 === 0;
+};
+
 // Función para detectar conflictos entre turnos del mismo empleado
 const checkShiftConflict = (newShift: { employeeId: string; date: string; startTime: string; endTime: string }, existingShifts: Shift[], excludeId?: string): boolean => {
   const newStartMinutes = timeToMinutes(newShift.startTime);
@@ -444,6 +452,15 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
       errors.push({ type: 'schedule', message: 'La hora de fin debe estar entre 00:00 y 23:59' });
     }
     
+    // Validar que los minutos sean múltiplos de 5
+    if (!validateMinutesAreMultipleOf5(shiftData.startTime)) {
+      errors.push({ type: 'schedule', message: 'Los minutos de inicio deben ser múltiplos de 5 (00, 05, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55)' });
+    }
+    
+    if (!validateMinutesAreMultipleOf5(shiftData.endTime)) {
+      errors.push({ type: 'schedule', message: 'Los minutos de fin deben ser múltiplos de 5 (00, 05, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55)' });
+    }
+    
     // Validar que la hora de fin sea posterior a la de inicio
     if (startHour > endHour || (startHour === endHour && parseInt(shiftData.startTime.split(':')[1]) >= parseInt(shiftData.endTime.split(':')[1]))) {
       errors.push({ type: 'schedule', message: 'La hora de fin debe ser posterior a la hora de inicio' });
@@ -504,12 +521,20 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
       if (startHour < 0 || startHour > 23) {
         errors.push({ type: 'schedule', message: 'La hora de inicio debe estar entre 00:00 y 23:59' });
       }
+      // Validar que los minutos sean múltiplos de 5
+      if (!validateMinutesAreMultipleOf5(updates.startTime)) {
+        errors.push({ type: 'schedule', message: 'Los minutos de inicio deben ser múltiplos de 5 (00, 05, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55)' });
+      }
     }
     
     if (updates.endTime) {
       const endHour = parseInt(updates.endTime.split(':')[0]);
       if (endHour < 0 || endHour > 23) {
         errors.push({ type: 'schedule', message: 'La hora de fin debe estar entre 00:00 y 23:59' });
+      }
+      // Validar que los minutos sean múltiplos de 5
+      if (!validateMinutesAreMultipleOf5(updates.endTime)) {
+        errors.push({ type: 'schedule', message: 'Los minutos de fin deben ser múltiplos de 5 (00, 05, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55)' });
       }
     }
     

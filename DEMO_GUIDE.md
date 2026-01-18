@@ -118,7 +118,7 @@ npm start
 - [ ] Sincronización en la nube
 - [ ] Reportes avanzados con gráficos
 - [ ] API REST para integraciones externas
-- [ ] Modo oscuro
+- [x] Modo oscuro
 - [ ] Mejoras de accesibilidad
 - [ ] Tests automatizados
 - [ ] PWA (Progressive Web App)

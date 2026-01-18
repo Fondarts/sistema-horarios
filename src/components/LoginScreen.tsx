@@ -161,6 +161,18 @@ export default function LoginScreen() {
           </div>
         </div>
       </div>
+
+      {/* Powered by Tempo */}
+      <div className="mt-8 flex flex-col items-center justify-center">
+        <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+          <span>Powered by</span>
+          <img 
+            src="/images/tempo.png" 
+            alt="Tempo" 
+            className="h-8 w-auto"
+          />
+        </div>
+      </div>
     </div>
   );
 }

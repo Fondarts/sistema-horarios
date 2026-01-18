@@ -35,6 +35,11 @@ const TimeInput: React.FC<TimeInputProps> = ({
     return cleaned;
   };
 
+  // Redondear minutos al múltiplo de 5 más cercano
+  const roundToNearest5Minutes = (minutes: number): number => {
+    return Math.round(minutes / 5) * 5;
+  };
+
   const validateTime = (time: string): boolean => {
     if (!time || time.length < 5) return false;
     
@@ -44,7 +49,11 @@ const TimeInput: React.FC<TimeInputProps> = ({
     const h = parseInt(hours, 10);
     const m = parseInt(minutes, 10);
     
-    return h >= 0 && h <= 23 && m >= 0 && m <= 59;
+    // Validar horas y minutos básicos
+    if (h < 0 || h > 23 || m < 0 || m > 59) return false;
+    
+    // Validar que los minutos sean múltiplos de 5
+    return m % 5 === 0;
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -53,9 +62,27 @@ const TimeInput: React.FC<TimeInputProps> = ({
     
     setDisplayValue(formatted);
     
-    // Solo llamar onChange si el tiempo es válido
-    if (validateTime(formatted)) {
-      onChange(formatted);
+    // Validar formato básico y redondear minutos a múltiplos de 5
+    if (formatted && formatted.length >= 5) {
+      const [hours, minutes] = formatted.split(':');
+      if (hours && minutes) {
+        const h = parseInt(hours, 10);
+        const m = parseInt(minutes, 10);
+        
+        if (h >= 0 && h <= 23 && m >= 0 && m <= 59) {
+          // Redondear minutos al múltiplo de 5 más cercano
+          const roundedMinutes = roundToNearest5Minutes(m);
+          const roundedTime = `${h.toString().padStart(2, '0')}:${roundedMinutes.toString().padStart(2, '0')}`;
+          
+          // Solo actualizar si cambió
+          if (roundedTime !== formatted) {
+            setDisplayValue(roundedTime);
+            onChange(roundedTime);
+          } else if (validateTime(formatted)) {
+            onChange(formatted);
+          }
+        }
+      }
     }
   };
 
@@ -77,17 +104,32 @@ const TimeInput: React.FC<TimeInputProps> = ({
 
   const handleBlur = () => {
     // Validar y corregir al perder el foco
-    if (displayValue && !validateTime(displayValue)) {
+    if (displayValue) {
       const [hours, minutes] = displayValue.split(':');
-      let correctedHours = hours ? Math.min(23, Math.max(0, parseInt(hours, 10))) : '00';
-      let correctedMinutes = minutes ? Math.min(59, Math.max(0, parseInt(minutes, 10))) : '00';
-      
-      correctedHours = correctedHours.toString().padStart(2, '0');
-      correctedMinutes = correctedMinutes.toString().padStart(2, '0');
-      
-      const corrected = `${correctedHours}:${correctedMinutes}`;
-      setDisplayValue(corrected);
-      onChange(corrected);
+      if (hours && minutes) {
+        let correctedHours = Math.min(23, Math.max(0, parseInt(hours, 10) || 0));
+        let correctedMinutes = Math.min(59, Math.max(0, parseInt(minutes, 10) || 0));
+        
+        // Redondear minutos al múltiplo de 5 más cercano
+        correctedMinutes = roundToNearest5Minutes(correctedMinutes);
+        
+        const corrected = `${correctedHours.toString().padStart(2, '0')}:${correctedMinutes.toString().padStart(2, '0')}`;
+        
+        // Actualizar si cambió
+        if (corrected !== displayValue) {
+          setDisplayValue(corrected);
+          onChange(corrected);
+        } else if (!validateTime(displayValue)) {
+          // Si no es válido, forzar corrección
+          setDisplayValue(corrected);
+          onChange(corrected);
+        }
+      } else {
+        // Si no tiene formato válido, establecer un valor por defecto
+        const corrected = '00:00';
+        setDisplayValue(corrected);
+        onChange(corrected);
+      }
     }
   };
 
@@ -104,7 +146,7 @@ const TimeInput: React.FC<TimeInputProps> = ({
       disabled={disabled}
       maxLength={5}
       pattern="[0-9]{2}:[0-9]{2}"
-      title="Formato: HH:MM (24 horas, ej: 14:30, 23:59)"
+      title="Formato: HH:MM (24 horas, solo múltiplos de 5 minutos: 00, 05, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55)"
     />
   );
 };
