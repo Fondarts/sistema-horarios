@@ -8,7 +8,91 @@
   }
   
   body {
-    @apply bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-gray-50;
+    background-color: var(--color-bg-primary, #F9FAFB) !important;
+    color: var(--color-text-primary, #1F2937) !important;
+  }
+  
+  .dark body {
+    background-color: var(--color-bg-primary, #1F2937) !important;
+    color: var(--color-text-primary, #F9FAFB) !important;
+  }
+  
+  /* Aplicar colores personalizados a elementos comunes */
+  * {
+    --tw-text-opacity: 1;
+  }
+  
+  /* Sobrescribir colores de texto */
+  .text-gray-50,
+  .text-gray-100,
+  .text-gray-200,
+  .text-gray-300,
+  .text-gray-400,
+  .text-gray-500,
+  .text-gray-600,
+  .text-gray-700,
+  .text-gray-800,
+  .text-gray-900 {
+    color: var(--color-text-primary) !important;
+  }
+  
+  .dark .text-gray-50,
+  .dark .text-gray-100,
+  .dark .text-gray-200,
+  .dark .text-gray-300,
+  .dark .text-gray-400,
+  .dark .text-gray-500,
+  .dark .text-gray-600,
+  .dark .text-gray-700,
+  .dark .text-gray-800,
+  .dark .text-gray-900 {
+    color: var(--color-text-primary) !important;
+  }
+  
+  /* Sobrescribir colores de fondo - usar variaciones del color principal */
+  .bg-gray-50 {
+    background-color: var(--color-bg-primary-lighter, #FFFFFF) !important;
+  }
+  
+  .bg-gray-100,
+  .bg-gray-200 {
+    background-color: var(--color-bg-primary-light, #F3F4F6) !important;
+  }
+  
+  .bg-gray-300,
+  .bg-gray-400,
+  .bg-gray-500,
+  .bg-gray-600 {
+    background-color: var(--color-bg-primary, #E5E7EB) !important;
+  }
+  
+  .bg-gray-700,
+  .bg-gray-800,
+  .bg-gray-900 {
+    background-color: var(--color-bg-primary-dark, #1F2937) !important;
+  }
+  
+  /* Para modo oscuro, invertir las tonalidades */
+  .dark .bg-gray-50,
+  .dark .bg-gray-100 {
+    background-color: var(--color-bg-primary-lighter, #374151) !important;
+  }
+  
+  .dark .bg-gray-200,
+  .dark .bg-gray-300 {
+    background-color: var(--color-bg-primary-light, #4B5563) !important;
+  }
+  
+  .dark .bg-gray-400,
+  .dark .bg-gray-500,
+  .dark .bg-gray-600,
+  .dark .bg-gray-700,
+  .dark .bg-gray-800 {
+    background-color: var(--color-bg-primary, #1F2937) !important;
+  }
+  
+  .dark .bg-gray-900 {
+    background-color: var(--color-bg-primary-dark, #111827) !important;
   }
 }
 

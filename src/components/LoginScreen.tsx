@@ -153,6 +153,7 @@ export default function LoginScreen() {
             </div>
 
             <div className="mt-4 text-xs text-gray-500 space-y-1">
+              <p><strong>IT:</strong> it.admin / it123456</p>
               <p><strong>{t('districtManager')}:</strong> admin / admin123</p>
               <p><strong>{t('manager')}:</strong> ana.perez / 12345</p>
               <p><strong>{t('employees')}:</strong> luis.gomez / 23456</p>

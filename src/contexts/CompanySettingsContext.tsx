@@ -58,10 +58,15 @@ export function CompanySettingsProvider({ children }: { children: ReactNode }) {
       const settingsRef = doc(db, 'companySettings', 'main');
       const currentData = await getDoc(settingsRef);
       
+      // Filtrar campos undefined ya que Firestore no los acepta
+      const filteredUpdates = Object.fromEntries(
+        Object.entries(updates).filter(([_, value]) => value !== undefined)
+      );
+      
       const updatedSettings: CompanySettings = {
         id: 'main',
         ...(currentData.exists() ? currentData.data() : {}),
-        ...updates,
+        ...filteredUpdates,
         updatedAt: new Date().toISOString()
       } as CompanySettings;
 

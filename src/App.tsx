@@ -16,6 +16,7 @@ import { DateFormatProvider } from './contexts/DateFormatContext';
 import { CompanySettingsProvider } from './contexts/CompanySettingsContext';
 import { AppRouter } from './components/AppRouter';
 import { NotificationStack } from './components/NotificationStack';
+import { ThemeColorInjector } from './components/ThemeColorInjector';
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
         <CompactModeProvider>
           <StoreProvider>
             <CompanySettingsProvider>
+              <ThemeColorInjector />
               <EmployeeProvider>
                 <AuthProvider>
                 <HolidayProvider>

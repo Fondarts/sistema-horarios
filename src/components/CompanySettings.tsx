@@ -5,6 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { isIT } from '../utils/rolePermissions';
 import { useLanguage } from '../contexts/LanguageContext';
+import { CompanySettings as CompanySettingsType } from '../types';
 
 export function CompanySettings() {
   const { settings, updateSettings, isLoading } = useCompanySettings();
@@ -14,19 +15,63 @@ export function CompanySettings() {
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   
+  // Estado para los colores realmente aplicados en la página
+  const [appliedColors, setAppliedColors] = useState({
+    primaryLight: '#3B82F6',
+    secondaryLight: '#10B981',
+    accentLight: '#F59E0B',
+    primaryDark: '#60A5FA',
+    secondaryDark: '#34D399',
+    accentDark: '#FBBF24'
+  });
+
+  // Obtener colores realmente aplicados desde CSS variables
+  React.useEffect(() => {
+    const root = document.documentElement;
+    const getComputedColor = (varName: string, fallback: string) => {
+      const computed = getComputedStyle(root).getPropertyValue(varName).trim();
+      return computed || fallback;
+    };
+
+    // Obtener colores del modo claro
+    // Color Principal = Fondo
+    const primaryLight = getComputedColor('--color-bg-primary', settings?.primaryColorLight ?? settings?.primaryColor ?? '#F9FAFB');
+    // Color Secundario = Texto
+    const secondaryLight = getComputedColor('--color-text-primary', settings?.secondaryColorLight ?? settings?.secondaryColor ?? '#1F2937');
+    // Color de Acento = Hover/Selecciones
+    const accentLight = getComputedColor('--color-accent', settings?.accentColorLight ?? settings?.accentColor ?? '#3B82F6');
+
+    // Obtener colores del modo oscuro
+    // Color Principal = Fondo
+    const primaryDark = getComputedColor('--color-bg-primary', settings?.primaryColorDark ?? settings?.primaryColor ?? '#1F2937');
+    // Color Secundario = Texto
+    const secondaryDark = getComputedColor('--color-text-primary', settings?.secondaryColorDark ?? settings?.secondaryColor ?? '#F9FAFB');
+    // Color de Acento = Hover/Selecciones
+    const accentDark = getComputedColor('--color-accent', settings?.accentColorDark ?? settings?.accentColor ?? '#FBBF24');
+
+    setAppliedColors({
+      primaryLight,
+      secondaryLight,
+      accentLight,
+      primaryDark,
+      secondaryDark,
+      accentDark
+    });
+  }, [settings, theme]);
+
   // Obtener colores según el tema actual
   const getCurrentColors = () => {
     if (theme === 'dark') {
       return {
-        primary: settings?.primaryColorDark || settings?.primaryColor || '#3B82F6',
-        secondary: settings?.secondaryColorDark || settings?.secondaryColor || '#10B981',
-        accent: settings?.accentColorDark || settings?.accentColor || '#F59E0B'
+        primary: appliedColors.primaryDark,
+        secondary: appliedColors.secondaryDark,
+        accent: appliedColors.accentDark
       };
     } else {
       return {
-        primary: settings?.primaryColorLight || settings?.primaryColor || '#3B82F6',
-        secondary: settings?.secondaryColorLight || settings?.secondaryColor || '#10B981',
-        accent: settings?.accentColorLight || settings?.accentColor || '#F59E0B'
+        primary: appliedColors.primaryLight,
+        secondary: appliedColors.secondaryLight,
+        accent: appliedColors.accentLight
       };
     }
   };
@@ -51,18 +96,22 @@ export function CompanySettings() {
 
   React.useEffect(() => {
     if (settings) {
+      // Usar los valores guardados directamente, sin fallback a valores por defecto
+      // para que se muestren los colores reales guardados
       setFormData({
-        primaryColorLight: settings.primaryColorLight || settings.primaryColor || '#3B82F6',
-        secondaryColorLight: settings.secondaryColorLight || settings.secondaryColor || '#10B981',
-        accentColorLight: settings.accentColorLight || settings.accentColor || '#F59E0B',
-        primaryColorDark: settings.primaryColorDark || settings.primaryColor || '#60A5FA',
-        secondaryColorDark: settings.secondaryColorDark || settings.secondaryColor || '#34D399',
-        accentColorDark: settings.accentColorDark || settings.accentColor || '#FBBF24',
-        companyName: settings.companyName || '',
-        defaultTheme: settings.defaultTheme || theme
+        primaryColorLight: settings.primaryColorLight ?? settings.primaryColor ?? '#3B82F6',
+        secondaryColorLight: settings.secondaryColorLight ?? settings.secondaryColor ?? '#10B981',
+        accentColorLight: settings.accentColorLight ?? settings.accentColor ?? '#F59E0B',
+        primaryColorDark: settings.primaryColorDark ?? settings.primaryColor ?? '#60A5FA',
+        secondaryColorDark: settings.secondaryColorDark ?? settings.secondaryColor ?? '#34D399',
+        accentColorDark: settings.accentColorDark ?? settings.accentColor ?? '#FBBF24',
+        companyName: settings.companyName ?? '',
+        defaultTheme: settings.defaultTheme ?? theme
       });
       if (settings.logoUrl) {
         setLogoPreview(settings.logoUrl);
+      } else {
+        setLogoPreview(null);
       }
     }
   }, [settings, theme]);
@@ -110,18 +159,32 @@ export function CompanySettings() {
       }
       // Si no hay cambios en el logo, mantener el existente (logoUrl ya tiene el valor correcto)
 
-      const updates: Partial<CompanySettings> = {
-        logoUrl: logoUrl,
-        primaryColorLight: formData.primaryColorLight,
-        secondaryColorLight: formData.secondaryColorLight,
-        accentColorLight: formData.accentColorLight,
-        primaryColorDark: formData.primaryColorDark,
-        secondaryColorDark: formData.secondaryColorDark,
-        accentColorDark: formData.accentColorDark,
-        companyName: formData.companyName || undefined,
-        defaultTheme: formData.defaultTheme,
+      // Construir updates sin campos undefined o vacíos
+      const updates: Partial<CompanySettingsType> = {
         updatedBy: currentEmployee!.id
       };
+      
+      // Solo agregar logoUrl si tiene un valor
+      if (logoUrl !== undefined && logoUrl) {
+        updates.logoUrl = logoUrl;
+      }
+      
+      // Agregar colores (siempre deben tener valor)
+      updates.primaryColorLight = formData.primaryColorLight;
+      updates.secondaryColorLight = formData.secondaryColorLight;
+      updates.accentColorLight = formData.accentColorLight;
+      updates.primaryColorDark = formData.primaryColorDark;
+      updates.secondaryColorDark = formData.secondaryColorDark;
+      updates.accentColorDark = formData.accentColorDark;
+      
+      // Agregar companyName solo si tiene valor
+      if (formData.companyName && formData.companyName.trim()) {
+        updates.companyName = formData.companyName.trim();
+      }
+      // Si companyName está vacío, no lo incluimos en updates (se mantendrá el valor anterior o undefined)
+      
+      // Agregar defaultTheme
+      updates.defaultTheme = formData.defaultTheme;
 
       await updateSettings(updates);
 
@@ -204,24 +267,24 @@ export function CompanySettings() {
                       </label>
                       <div className="grid grid-cols-3 gap-4">
                         <div>
-                          <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Principal</label>
+                          <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Principal (Fondo)</label>
                           <div
                             className="w-full h-12 rounded-lg border-2 border-gray-300 dark:border-gray-600"
-                            style={{ backgroundColor: settings?.primaryColorLight || settings?.primaryColor || '#3B82F6' }}
+                            style={{ backgroundColor: appliedColors.primaryLight }}
                           />
                         </div>
                         <div>
-                          <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Secundario</label>
+                          <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Secundario (Texto)</label>
                           <div
                             className="w-full h-12 rounded-lg border-2 border-gray-300 dark:border-gray-600"
-                            style={{ backgroundColor: settings?.secondaryColorLight || settings?.secondaryColor || '#10B981' }}
+                            style={{ backgroundColor: appliedColors.secondaryLight }}
                           />
                         </div>
                         <div>
-                          <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Acento</label>
+                          <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Acento (Hover/Selección)</label>
                           <div
                             className="w-full h-12 rounded-lg border-2 border-gray-300 dark:border-gray-600"
-                            style={{ backgroundColor: settings?.accentColorLight || settings?.accentColor || '#F59E0B' }}
+                            style={{ backgroundColor: appliedColors.accentLight }}
                           />
                         </div>
                       </div>
@@ -232,24 +295,24 @@ export function CompanySettings() {
                       </label>
                       <div className="grid grid-cols-3 gap-4">
                         <div>
-                          <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Principal</label>
+                          <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Principal (Fondo)</label>
                           <div
                             className="w-full h-12 rounded-lg border-2 border-gray-300 dark:border-gray-600"
-                            style={{ backgroundColor: settings?.primaryColorDark || settings?.primaryColor || '#60A5FA' }}
+                            style={{ backgroundColor: appliedColors.primaryDark }}
                           />
                         </div>
                         <div>
-                          <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Secundario</label>
+                          <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Secundario (Texto)</label>
                           <div
                             className="w-full h-12 rounded-lg border-2 border-gray-300 dark:border-gray-600"
-                            style={{ backgroundColor: settings?.secondaryColorDark || settings?.secondaryColor || '#34D399' }}
+                            style={{ backgroundColor: appliedColors.secondaryDark }}
                           />
                         </div>
                         <div>
-                          <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Acento</label>
+                          <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Acento (Hover/Selección)</label>
                           <div
                             className="w-full h-12 rounded-lg border-2 border-gray-300 dark:border-gray-600"
-                            style={{ backgroundColor: settings?.accentColorDark || settings?.accentColor || '#FBBF24' }}
+                            style={{ backgroundColor: appliedColors.accentDark }}
                           />
                         </div>
                       </div>
@@ -369,7 +432,7 @@ export function CompanySettings() {
                   <div className="grid grid-cols-3 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Color Principal
+                        Color Principal (Fondo)
                       </label>
                       <input
                         type="color"
@@ -380,7 +443,7 @@ export function CompanySettings() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Color Secundario
+                        Color Secundario (Texto)
                       </label>
                       <input
                         type="color"
@@ -391,7 +454,7 @@ export function CompanySettings() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Color de Acento
+                        Color de Acento (Hover/Selección)
                       </label>
                       <input
                         type="color"
@@ -413,7 +476,7 @@ export function CompanySettings() {
                   <div className="grid grid-cols-3 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Color Principal
+                        Color Principal (Fondo)
                       </label>
                       <input
                         type="color"
@@ -424,7 +487,7 @@ export function CompanySettings() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Color Secundario
+                        Color Secundario (Texto)
                       </label>
                       <input
                         type="color"
@@ -435,7 +498,7 @@ export function CompanySettings() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Color de Acento
+                        Color de Acento (Hover/Selección)
                       </label>
                       <input
                         type="color"
