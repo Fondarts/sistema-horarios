@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useStore } from '../contexts/StoreContext';
 import { usePermissions } from '../hooks/usePermissions';
+import { isIT } from '../utils/rolePermissions';
 import LoginScreen from './LoginScreen';
 import { ManagerDashboard } from './ManagerDashboard';
 import EmployeeDashboard from './EmployeeDashboard';
@@ -19,6 +20,11 @@ export function AppRouter() {
 
   if (!currentEmployee) {
     return <LoginScreen />;
+  }
+
+  // Usuarios IT siempre ven el ManagerDashboard, independientemente de permisos de tienda
+  if (currentEmployee && isIT(currentEmployee.role)) {
+    return <ManagerDashboard />;
   }
 
   // Si tiene permiso de tiendas y no ha seleccionado una tienda, mostrar selector
