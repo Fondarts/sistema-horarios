@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Settings, Upload, Image as ImageIcon, Palette, Building2, Sun, Moon } from 'lucide-react';
+import { Settings, Upload, Image as ImageIcon, Palette, Building2, Sun, Moon, CheckCircle, X } from 'lucide-react';
 import { useCompanySettings } from '../contexts/CompanySettingsContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
@@ -12,8 +12,11 @@ export function CompanySettings() {
   const { currentEmployee } = useAuth();
   const { theme, setTheme } = useTheme();
   const { t } = useLanguage();
-  const [logoFile, setLogoFile] = useState<File | null>(null);
-  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [logoFileLight, setLogoFileLight] = useState<File | null>(null);
+  const [logoPreviewLight, setLogoPreviewLight] = useState<string | null>(null);
+  const [logoFileDark, setLogoFileDark] = useState<File | null>(null);
+  const [logoPreviewDark, setLogoPreviewDark] = useState<string | null>(null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   
   // Estado para los colores realmente aplicados en la página
   const [appliedColors, setAppliedColors] = useState({
@@ -87,8 +90,7 @@ export function CompanySettings() {
     primaryColorDark: settings?.primaryColorDark || settings?.primaryColor || '#60A5FA',
     secondaryColorDark: settings?.secondaryColorDark || settings?.secondaryColor || '#34D399',
     accentColorDark: settings?.accentColorDark || settings?.accentColor || '#FBBF24',
-    companyName: settings?.companyName || '',
-    defaultTheme: settings?.defaultTheme || theme
+    companyName: settings?.companyName || ''
   });
 
   // Verificar permisos
@@ -105,18 +107,36 @@ export function CompanySettings() {
         primaryColorDark: settings.primaryColorDark ?? settings.primaryColor ?? '#60A5FA',
         secondaryColorDark: settings.secondaryColorDark ?? settings.secondaryColor ?? '#34D399',
         accentColorDark: settings.accentColorDark ?? settings.accentColor ?? '#FBBF24',
-        companyName: settings.companyName ?? '',
-        defaultTheme: settings.defaultTheme ?? theme
+        companyName: settings.companyName ?? ''
       });
-      if (settings.logoUrl) {
-        setLogoPreview(settings.logoUrl);
-      } else {
-        setLogoPreview(null);
+      // Actualizar logoPreview solo si no hay un logoFile pendiente (para no sobrescribir cambios no guardados)
+      if (!logoFileLight) {
+        // Solo restaurar el logo guardado si no se ha marcado explícitamente para eliminar
+        if (logoPreviewLight === undefined) {
+          if (settings.logoUrlLight || settings.logoUrl) {
+            setLogoPreviewLight(settings.logoUrlLight || settings.logoUrl || null);
+          } else {
+            setLogoPreviewLight(null);
+          }
+        }
+        // Si logoPreviewLight es null, mantenerlo así (marcado para eliminación)
+      }
+      if (!logoFileDark) {
+        // Solo restaurar el logo guardado si no se ha marcado explícitamente para eliminar
+        // Si logoPreviewDark es null, significa que se marcó para eliminar, no restaurar
+        if (logoPreviewDark === undefined) {
+          if (settings.logoUrlDark) {
+            setLogoPreviewDark(settings.logoUrlDark);
+          } else {
+            setLogoPreviewDark(null);
+          }
+        }
+        // Si logoPreviewDark es null, mantenerlo así (marcado para eliminación)
       }
     }
   }, [settings, theme]);
 
-  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>, mode: 'light' | 'dark') => {
     const file = e.target.files?.[0];
     if (file) {
       if (!file.type.startsWith('image/')) {
@@ -129,13 +149,107 @@ export function CompanySettings() {
         return;
       }
 
-      setLogoFile(file);
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        setLogoPreview(event.target?.result as string);
-      };
-      reader.readAsDataURL(file);
+      if (mode === 'light') {
+        setLogoFileLight(file);
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          setLogoPreviewLight(event.target?.result as string);
+        };
+        reader.readAsDataURL(file);
+      } else {
+        setLogoFileDark(file);
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          setLogoPreviewDark(event.target?.result as string);
+        };
+        reader.readAsDataURL(file);
+      }
     }
+  };
+
+  // Función para comprimir imagen (más agresiva para que quepa en Firestore)
+  const compressImage = (file: File, maxWidth: number = 400, quality: number = 0.6): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+
+          // Redimensionar si es necesario
+          if (width > maxWidth) {
+            height = (height * maxWidth) / width;
+            width = maxWidth;
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            reject(new Error('No se pudo crear el contexto del canvas'));
+            return;
+          }
+
+          ctx.drawImage(img, 0, 0, width, height);
+
+          canvas.toBlob(
+            (blob) => {
+              if (!blob) {
+                reject(new Error('Error al comprimir la imagen'));
+                return;
+              }
+              // Convertir a base64 para guardar en Firestore
+              const reader = new FileReader();
+              reader.onload = () => {
+                const base64 = reader.result as string;
+                // Verificar que el tamaño sea menor a 1MB (límite de Firestore)
+                if (base64.length > 1000000) {
+                  // Si aún es muy grande, comprimir más
+                  const smallerCanvas = document.createElement('canvas');
+                  smallerCanvas.width = Math.max(200, width * 0.7);
+                  smallerCanvas.height = Math.max(200, height * 0.7);
+                  const smallerCtx = smallerCanvas.getContext('2d');
+                  if (smallerCtx) {
+                    smallerCtx.drawImage(img, 0, 0, smallerCanvas.width, smallerCanvas.height);
+                    smallerCanvas.toBlob(
+                      (smallerBlob) => {
+                        if (!smallerBlob) {
+                          reject(new Error('Error al comprimir la imagen'));
+                          return;
+                        }
+                        const smallerReader = new FileReader();
+                        smallerReader.onload = () => {
+                          resolve(smallerReader.result as string);
+                        };
+                        smallerReader.onerror = () => reject(new Error('Error al leer la imagen comprimida'));
+                        smallerReader.readAsDataURL(smallerBlob);
+                      },
+                      file.type,
+                      0.5
+                    );
+                  } else {
+                    reject(new Error('No se pudo crear el contexto del canvas'));
+                  }
+                } else {
+                  resolve(base64);
+                }
+              };
+              reader.onerror = () => reject(new Error('Error al leer la imagen comprimida'));
+              reader.readAsDataURL(blob);
+            },
+            file.type,
+            quality
+          );
+        };
+        img.onerror = () => reject(new Error('Error al cargar la imagen'));
+        img.src = e.target?.result as string;
+      };
+      reader.onerror = () => reject(new Error('Error al leer el archivo'));
+      reader.readAsDataURL(file);
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -146,16 +260,59 @@ export function CompanySettings() {
       return;
     }
 
+    // Verificar que el usuario esté autenticado
+    if (!currentEmployee) {
+      alert('Debes estar autenticado para guardar la configuración');
+      return;
+    }
+
     try {
-      // Determinar qué logo usar: si hay un nuevo logo, usar ese; si no, mantener el existente
-      let logoUrl: string | undefined = settings?.logoUrl;
+      // Determinar qué logos usar: si hay nuevos logos, comprimirlos; si no, mantener los existentes
+      let logoUrlLight: string | undefined = settings?.logoUrlLight || settings?.logoUrl;
+      let logoUrlDark: string | undefined = settings?.logoUrlDark;
       
-      if (logoFile && logoPreview) {
-        // Si hay un nuevo logo seleccionado, usar ese
-        logoUrl = logoPreview; // Guardamos como base64
-      } else if (!logoPreview && !settings?.logoUrl) {
-        // Si se eliminó el preview y no había logo guardado, eliminar el logo
-        logoUrl = undefined;
+      // Procesar logo para modo claro
+      if (logoFileLight) {
+        try {
+          const compressedBase64 = await compressImage(logoFileLight);
+          if (compressedBase64.length > 1000000) {
+            throw new Error('La imagen del logo claro es demasiado grande incluso después de comprimirla. Por favor, usa una imagen más pequeña.');
+          }
+          console.log('Logo claro comprimido exitosamente:', { size: compressedBase64.length });
+          logoUrlLight = compressedBase64;
+        } catch (compressError: any) {
+          console.error('Error al comprimir el logo claro:', compressError);
+          const errorMessage = compressError?.message || 'Error desconocido';
+          throw new Error(`Error al procesar el logo claro: ${errorMessage}. Por favor, intenta con una imagen más pequeña.`);
+        }
+      } else if (!logoPreviewLight && (settings?.logoUrlLight || settings?.logoUrl)) {
+        // Si se eliminó el preview (logoPreviewLight es null) y había un logo guardado, eliminarlo
+        logoUrlLight = undefined;
+      } else if (!logoPreviewLight && !settings?.logoUrlLight && !settings?.logoUrl) {
+        // Si no hay preview ni logo guardado, mantener undefined
+        logoUrlLight = undefined;
+      }
+      
+      // Procesar logo para modo oscuro
+      if (logoFileDark) {
+        try {
+          const compressedBase64 = await compressImage(logoFileDark);
+          if (compressedBase64.length > 1000000) {
+            throw new Error('La imagen del logo oscuro es demasiado grande incluso después de comprimirla. Por favor, usa una imagen más pequeña.');
+          }
+          console.log('Logo oscuro comprimido exitosamente:', { size: compressedBase64.length });
+          logoUrlDark = compressedBase64;
+        } catch (compressError: any) {
+          console.error('Error al comprimir el logo oscuro:', compressError);
+          const errorMessage = compressError?.message || 'Error desconocido';
+          throw new Error(`Error al procesar el logo oscuro: ${errorMessage}. Por favor, intenta con una imagen más pequeña.`);
+        }
+      } else if (!logoPreviewDark && settings?.logoUrlDark) {
+        // Si se eliminó el preview y había un logo guardado, eliminarlo
+        logoUrlDark = undefined;
+      } else if (!logoPreviewDark && !settings?.logoUrlDark) {
+        // Si no hay preview ni logo guardado, mantener undefined
+        logoUrlDark = undefined;
       }
       // Si no hay cambios en el logo, mantener el existente (logoUrl ya tiene el valor correcto)
 
@@ -164,9 +321,14 @@ export function CompanySettings() {
         updatedBy: currentEmployee!.id
       };
       
-      // Solo agregar logoUrl si tiene un valor
-      if (logoUrl !== undefined && logoUrl) {
-        updates.logoUrl = logoUrl;
+      // Manejar logos: si tienen valor, guardarlos; si son undefined, eliminarlos del documento
+      // Siempre actualizar logoUrlLight si hay cambios
+      if (logoUrlLight !== (settings?.logoUrlLight || settings?.logoUrl)) {
+        updates.logoUrlLight = logoUrlLight; // Puede ser string o undefined
+      }
+      // Siempre actualizar logoUrlDark si hay cambios o si se eliminó
+      if (logoUrlDark !== settings?.logoUrlDark) {
+        updates.logoUrlDark = logoUrlDark; // Puede ser string o undefined (undefined elimina el campo)
       }
       
       // Agregar colores (siempre deben tener valor)
@@ -183,19 +345,23 @@ export function CompanySettings() {
       }
       // Si companyName está vacío, no lo incluimos en updates (se mantendrá el valor anterior o undefined)
       
-      // Agregar defaultTheme
-      updates.defaultTheme = formData.defaultTheme;
-
       await updateSettings(updates);
 
-      // Aplicar el tema por defecto si cambió
-      if (formData.defaultTheme !== theme) {
-        setTheme(formData.defaultTheme);
+      // Actualizar los previews de los logos después de guardar
+      if (logoUrlLight) {
+        setLogoPreviewLight(logoUrlLight);
+      } else {
+        setLogoPreviewLight(null);
       }
-
-      alert('Configuración guardada exitosamente');
-      setLogoFile(null);
-      // Mantener logoPreview para que se muestre después de guardar
+      if (logoUrlDark) {
+        setLogoPreviewDark(logoUrlDark);
+      } else {
+        setLogoPreviewDark(null);
+      }
+      
+      setLogoFileLight(null);
+      setLogoFileDark(null);
+      setShowSuccessModal(true);
     } catch (error) {
       console.error('Error saving company settings:', error);
       const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
@@ -213,6 +379,41 @@ export function CompanySettings() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      {/* Modal de éxito */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center space-x-3">
+                <div className="bg-green-100 dark:bg-green-900/30 rounded-full p-2">
+                  <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                  Configuración guardada
+                </h3>
+              </div>
+              <button
+                onClick={() => setShowSuccessModal(false)}
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">
+              La configuración se ha guardado exitosamente.
+            </p>
+            <div className="flex justify-end">
+              <button
+                onClick={() => setShowSuccessModal(false)}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+              >
+                Aceptar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="max-w-4xl mx-auto p-6">
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
           {/* Header */}
@@ -256,11 +457,6 @@ export function CompanySettings() {
                     </div>
                   )}
                   <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Tema por Defecto: {settings?.defaultTheme === 'dark' ? 'Modo Oscuro' : 'Modo Claro'}
-                      </label>
-                    </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Colores - Modo Claro
@@ -322,52 +518,111 @@ export function CompanySettings() {
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Logo */}
+                {/* Logo Modo Claro */}
                 <div>
                   <label className="flex items-center space-x-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
                     <ImageIcon className="w-4 h-4" />
-                    <span>Logo de la Empresa</span>
+                    <Sun className="w-4 h-4" />
+                    <span>Logo de la Empresa - Modo Claro</span>
                   </label>
                   <div className="flex items-center space-x-4">
-                    {(logoPreview || settings?.logoUrl) && (
+                    {/* Mostrar preview si hay logoPreviewLight (string) o si hay logo guardado Y no se ha marcado para eliminar */}
+                    {(logoPreviewLight || (settings?.logoUrlLight && logoPreviewLight !== null) || (settings?.logoUrl && logoPreviewLight !== null)) && (
                       <div className="relative">
                         <img
-                          src={logoPreview || settings?.logoUrl}
-                          alt="Preview del logo"
-                          className="h-20 w-auto border-2 border-gray-300 dark:border-gray-600 rounded-lg"
+                          src={logoPreviewLight || settings?.logoUrlLight || settings?.logoUrl || ''}
+                          alt="Preview del logo modo claro"
+                          className="h-20 w-auto border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white p-2"
+                          onError={(e) => {
+                            console.error('Error loading logo image');
+                            setLogoPreviewLight(null);
+                          }}
                         />
-                        {logoPreview && (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setLogoPreview(null);
-                              setLogoFile(null);
-                              // Limpiar el input file
-                              const fileInput = document.getElementById('logo-upload') as HTMLInputElement;
-                              if (fileInput) fileInput.value = '';
-                            }}
-                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
-                            title="Eliminar logo"
-                          >
-                            ×
-                          </button>
-                        )}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            // Establecer a null para marcar para eliminación
+                            setLogoPreviewLight(null);
+                            setLogoFileLight(null);
+                            const fileInput = document.getElementById('logo-upload-light') as HTMLInputElement;
+                            if (fileInput) fileInput.value = '';
+                          }}
+                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
+                          title="Eliminar logo"
+                        >
+                          ×
+                        </button>
                       </div>
                     )}
                     <div className="flex flex-col space-y-2">
                       <input
                         type="file"
                         accept="image/*"
-                        onChange={handleLogoChange}
+                        onChange={(e) => handleLogoChange(e, 'light')}
                         className="hidden"
-                        id="logo-upload"
+                        id="logo-upload-light"
                       />
                       <label
-                        htmlFor="logo-upload"
+                        htmlFor="logo-upload-light"
                         className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors cursor-pointer inline-flex items-center space-x-2"
                       >
                         <Upload className="w-4 h-4" />
-                        <span>{(logoPreview || settings?.logoUrl) ? 'Cambiar Logo' : 'Subir Logo'}</span>
+                        <span>Cargar Logo</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Logo Modo Oscuro */}
+                <div>
+                  <label className="flex items-center space-x-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                    <ImageIcon className="w-4 h-4" />
+                    <Moon className="w-4 h-4" />
+                    <span>Logo de la Empresa - Modo Oscuro</span>
+                  </label>
+                  <div className="flex items-center space-x-4">
+                    {/* Mostrar preview si hay logoPreviewDark (string) o si hay logo guardado Y no se ha marcado para eliminar (logoPreviewDark !== null) */}
+                    {(logoPreviewDark || (settings?.logoUrlDark && logoPreviewDark !== null)) && (
+                      <div className="relative">
+                        <img
+                          src={logoPreviewDark || settings?.logoUrlDark || ''}
+                          alt="Preview del logo modo oscuro"
+                          className="h-20 w-auto border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-gray-800 p-2"
+                          onError={(e) => {
+                            console.error('Error loading logo image');
+                            setLogoPreviewDark(null);
+                          }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            // Establecer a null para marcar para eliminación (el preview desaparecerá)
+                            setLogoPreviewDark(null);
+                            setLogoFileDark(null);
+                            const fileInput = document.getElementById('logo-upload-dark') as HTMLInputElement;
+                            if (fileInput) fileInput.value = '';
+                          }}
+                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
+                          title="Eliminar logo"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    )}
+                    <div className="flex flex-col space-y-2">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => handleLogoChange(e, 'dark')}
+                        className="hidden"
+                        id="logo-upload-dark"
+                      />
+                      <label
+                        htmlFor="logo-upload-dark"
+                        className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors cursor-pointer inline-flex items-center space-x-2"
+                      >
+                        <Upload className="w-4 h-4" />
+                        <span>Cargar Logo</span>
                       </label>
                     </div>
                   </div>
@@ -388,39 +643,6 @@ export function CompanySettings() {
                   />
                 </div>
 
-                {/* Tema por Defecto */}
-                <div>
-                  <label className="flex items-center space-x-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                    {formData.defaultTheme === 'dark' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
-                    <span>Tema por Defecto</span>
-                  </label>
-                  <div className="flex gap-4">
-                    <button
-                      type="button"
-                      onClick={() => setFormData(prev => ({ ...prev, defaultTheme: 'light' }))}
-                      className={`flex items-center space-x-2 px-4 py-2 rounded-lg border-2 transition-colors ${
-                        formData.defaultTheme === 'light'
-                          ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
-                          : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:border-gray-400'
-                      }`}
-                    >
-                      <Sun className="w-4 h-4" />
-                      <span>Modo Claro</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setFormData(prev => ({ ...prev, defaultTheme: 'dark' }))}
-                      className={`flex items-center space-x-2 px-4 py-2 rounded-lg border-2 transition-colors ${
-                        formData.defaultTheme === 'dark'
-                          ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
-                          : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:border-gray-400'
-                      }`}
-                    >
-                      <Moon className="w-4 h-4" />
-                      <span>Modo Oscuro</span>
-                    </button>
-                  </div>
-                </div>
 
                 {/* Paleta de Colores - Modo Claro */}
                 <div>

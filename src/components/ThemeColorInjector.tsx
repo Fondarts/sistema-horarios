@@ -47,7 +47,7 @@ export function ThemeColorInjector() {
       root.style.setProperty('--color-bg-primary', bgColor);
       // Para recuadros/cards, usar una versión más clara del color principal
       root.style.setProperty('--color-bg-primary-light', lightenColor(bgColor, 0.25));
-      root.style.setProperty('--color-bg-primary-lighter', lightenColor(bgColor, 0.35));
+      root.style.setProperty('--color-bg-primary-lighter', lightenColor(bgColor, 0.7));
       root.style.setProperty('--color-bg-primary-dark', darkenColor(bgColor, 0.1));
       
       // Variables para texto (tonalidades del color secundario)
@@ -77,7 +77,7 @@ export function ThemeColorInjector() {
       root.style.setProperty('--color-bg-primary', bgColor);
       // Para recuadros/cards, usar una versión más clara del color principal
       root.style.setProperty('--color-bg-primary-light', lightenColor(bgColor, 0.2));
-      root.style.setProperty('--color-bg-primary-lighter', lightenColor(bgColor, 0.3));
+      root.style.setProperty('--color-bg-primary-lighter', lightenColor(bgColor, 0.65));
       root.style.setProperty('--color-bg-primary-dark', darkenColor(bgColor, 0.05));
       
       // Variables para texto (tonalidades del color secundario)

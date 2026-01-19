@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { CompanySettings } from '../types';
 import { db } from '../firebase';
-import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
+import { doc, getDoc, setDoc, onSnapshot, deleteField } from 'firebase/firestore';
 
 interface CompanySettingsContextType {
   settings: CompanySettings | null;
@@ -29,6 +29,8 @@ export function CompanySettingsProvider({ children }: { children: ReactNode }) {
           const defaultSettings: CompanySettings = {
             id: 'main',
             logoUrl: undefined,
+            logoUrlLight: undefined,
+            logoUrlDark: undefined,
             primaryColorLight: '#3B82F6', // Azul por defecto modo claro
             secondaryColorLight: '#10B981', // Verde por defecto modo claro
             accentColorLight: '#F59E0B', // Amarillo por defecto modo claro
@@ -58,19 +60,23 @@ export function CompanySettingsProvider({ children }: { children: ReactNode }) {
       const settingsRef = doc(db, 'companySettings', 'main');
       const currentData = await getDoc(settingsRef);
       
-      // Filtrar campos undefined ya que Firestore no los acepta
-      const filteredUpdates = Object.fromEntries(
-        Object.entries(updates).filter(([_, value]) => value !== undefined)
-      );
-      
-      const updatedSettings: CompanySettings = {
-        id: 'main',
-        ...(currentData.exists() ? currentData.data() : {}),
-        ...filteredUpdates,
+      // Preparar updates: usar deleteField() para campos undefined que queremos eliminar
+      const firestoreUpdates: any = {
         updatedAt: new Date().toISOString()
-      } as CompanySettings;
-
-      await setDoc(settingsRef, updatedSettings, { merge: true });
+      };
+      
+      // Procesar cada campo del update
+      Object.entries(updates).forEach(([key, value]) => {
+        if (value === undefined && key === 'logoUrl') {
+          // Si logoUrl es undefined, eliminarlo explícitamente
+          firestoreUpdates[key] = deleteField();
+        } else if (value !== undefined) {
+          // Solo agregar campos con valor definido
+          firestoreUpdates[key] = value;
+        }
+      });
+      
+      await setDoc(settingsRef, firestoreUpdates, { merge: true });
     } catch (error) {
       console.error('Error updating company settings:', error);
       throw error;

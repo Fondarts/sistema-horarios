@@ -13,16 +13,40 @@ export class FileUploadService {
       // Crear referencia al archivo
       const fileRef = ref(storage, path);
       
-      // Subir el archivo
-      const snapshot = await uploadBytes(fileRef, file);
+      console.log('Iniciando subida de archivo:', { path, size: file.size, type: file.type });
+      
+      // Subir el archivo con metadata
+      const metadata = {
+        contentType: file.type,
+        cacheControl: 'public, max-age=31536000',
+      };
+      
+      const snapshot = await uploadBytes(fileRef, file, metadata);
+      console.log('Archivo subido exitosamente:', snapshot.metadata.fullPath);
       
       // Obtener URL de descarga
       const downloadURL = await getDownloadURL(snapshot.ref);
+      console.log('URL de descarga obtenida:', downloadURL);
       
       return downloadURL;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error uploading file:', error);
-      throw new Error('Error al subir el archivo');
+      console.error('Error details:', {
+        code: error?.code,
+        message: error?.message,
+        serverResponse: error?.serverResponse
+      });
+      
+      // Re-lanzar el error con más información
+      if (error?.code === 'storage/unauthorized') {
+        throw new Error('No tienes permisos para subir archivos. Verifica tu autenticación.');
+      } else if (error?.code === 'storage/canceled') {
+        throw new Error('La subida fue cancelada.');
+      } else if (error?.code === 'storage/unknown') {
+        throw new Error('Error desconocido al subir el archivo. Verifica tu conexión.');
+      }
+      
+      throw error;
     }
   }
 

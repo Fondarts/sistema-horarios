@@ -158,7 +158,9 @@ export interface GanttConfig {
 // Configuración de empresa (solo modificable por IT)
 export interface CompanySettings {
   id: string;
-  logoUrl?: string; // URL del logo de la empresa
+  logoUrl?: string; // DEPRECATED: usar logoUrlLight/logoUrlDark
+  logoUrlLight?: string; // URL del logo para modo claro
+  logoUrlDark?: string; // URL del logo para modo oscuro
   // Colores para modo claro
   primaryColorLight?: string; // Color principal de la paleta modo claro (hex)
   secondaryColorLight?: string; // Color secundario de la paleta modo claro (hex)
