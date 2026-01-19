@@ -1,7 +1,9 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Employee, UnavailableTime } from '../types';
 import { useStore } from './StoreContext';
+import { useAuth } from './AuthContext';
 import { db } from '../firebase';
+import { HistoryService } from '../services/historyService';
 import { 
   collection, 
   doc, 
@@ -224,6 +226,7 @@ export function EmployeeProvider({ children }: { children: ReactNode }) {
   const [allEmployees, setAllEmployees] = useState<Employee[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { currentStore } = useStore();
+  const { currentEmployee } = useAuth();
 
   // Cargar todos los empleados para estadísticas globales
   useEffect(() => {
@@ -276,7 +279,12 @@ export function EmployeeProvider({ children }: { children: ReactNode }) {
         role: employeeData.role || 'empleado'
       };
 
-      await addDoc(collection(db, 'employees'), newEmployee);
+      const docRef = await addDoc(collection(db, 'employees'), newEmployee);
+      
+      // Registrar en historial
+      if (currentEmployee) {
+        await HistoryService.logEmployeeCreated(docRef.id, currentEmployee.id, employeeData.name);
+      }
     } catch (error) {
       console.error('Error adding employee:', error);
       throw error;
@@ -285,8 +293,29 @@ export function EmployeeProvider({ children }: { children: ReactNode }) {
 
   const updateEmployee = async (id: string, updates: Partial<Employee>) => {
     try {
+      const employee = allEmployees.find(emp => emp.id === id);
+      if (!employee) {
+        throw new Error('Empleado no encontrado');
+      }
+
+      // Preparar cambios para el historial
+      const changes: Record<string, { old: any; new: any }> = {};
+      Object.keys(updates).forEach(key => {
+        if (key !== 'updatedAt' && key !== 'createdAt' && key !== 'id') {
+          changes[key] = {
+            old: employee[key as keyof Employee],
+            new: updates[key as keyof Employee]
+          };
+        }
+      });
+
       const employeeRef = doc(db, 'employees', id);
       await updateDoc(employeeRef, updates);
+      
+      // Registrar en historial
+      if (currentEmployee && Object.keys(changes).length > 0) {
+        await HistoryService.logEmployeeUpdated(id, currentEmployee.id, changes, employee.name);
+      }
     } catch (error) {
       console.error('Error updating employee:', error);
       throw error;
@@ -295,7 +324,13 @@ export function EmployeeProvider({ children }: { children: ReactNode }) {
 
   const deleteEmployee = async (id: string) => {
     try {
+      const employee = allEmployees.find(emp => emp.id === id);
       await deleteDoc(doc(db, 'employees', id));
+      
+      // Registrar en historial
+      if (currentEmployee && employee) {
+        await HistoryService.logEmployeeDeleted(id, currentEmployee.id, employee.name);
+      }
     } catch (error) {
       console.error('Error deleting employee:', error);
       throw error;

@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Employee, EmployeeRole } from '../types';
-import { useEmployees } from './EmployeeContext';
+import { db } from '../firebase';
+import { collection, getDocs } from 'firebase/firestore';
 
 export type UserRole = 'employee' | 'manager' | 'district-manager'; // DEPRECATED: usar EmployeeRole
 
@@ -23,19 +24,39 @@ interface AuthProviderProps {
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  const { employees, getAllEmployees } = useEmployees();
   const [currentEmployee, setCurrentEmployee] = useState<Employee | null>(null);
   const [userRole, setUserRole] = useState<UserRole | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [allEmployees, setAllEmployees] = useState<Employee[]>([]);
+
+  // Cargar todos los empleados desde Firebase
+  useEffect(() => {
+    const loadEmployees = async () => {
+      try {
+        const employeesRef = collection(db, 'employees');
+        const snapshot = await getDocs(employeesRef);
+        const employeesData: Employee[] = [];
+        snapshot.forEach((doc) => {
+          employeesData.push({ id: doc.id, ...doc.data() } as Employee);
+        });
+        setAllEmployees(employeesData);
+      } catch (error) {
+        console.error('Error loading employees:', error);
+      }
+    };
+    loadEmployees();
+  }, []);
 
   // Cargar empleado logueado desde localStorage al iniciar
   useEffect(() => {
+    if (allEmployees.length === 0) return; // Esperar a que se carguen los empleados
+    
     const savedEmployee = localStorage.getItem('currentEmployee');
     if (savedEmployee) {
       try {
         const employee = JSON.parse(savedEmployee);
         // Verificar que el empleado aún existe en la lista actual
-        const existingEmployee = employees.find(emp => emp.id === employee.id);
+        const existingEmployee = allEmployees.find(emp => emp.id === employee.id);
         if (existingEmployee) {
           setCurrentEmployee(existingEmployee);
         } else {
@@ -48,7 +69,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
     }
     setIsLoading(false);
-  }, [employees]);
+  }, [allEmployees]);
 
   // Guardar empleado logueado en localStorage
   useEffect(() => {
@@ -109,8 +130,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
 
       // Buscar empleado en Firebase por username y password
-      // Usar getAllEmployees() para incluir usuarios IT y otros que no tienen storeId
-      const allEmployees = getAllEmployees();
+      // Usar allEmployees para incluir usuarios IT y otros que no tienen storeId
       const employee = allEmployees.find(emp => 
         emp.username.toLowerCase().trim() === username.toLowerCase().trim() && 
         emp.password === password &&

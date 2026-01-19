@@ -21,10 +21,14 @@ import { HamburgerMenu } from './HamburgerMenu';
 import { UserMenu } from './UserMenu';
 import { UserAvatar } from './UserAvatar';
 import { CompanySettings } from './CompanySettings';
+import { PermissionsManagement } from './PermissionsManagement';
+import { HistoryManagement } from './HistoryManagement';
 import { useLanguage } from '../contexts/LanguageContext';
 import { isIT } from '../utils/rolePermissions';
+import { Shield, History } from 'lucide-react';
+import { usePermissions } from '../hooks/usePermissions';
 
-type TabType = 'schedule' | 'employees' | 'settings' | 'statistics' | 'export' | 'absences' | 'holidays' | 'company';
+type TabType = 'schedule' | 'employees' | 'settings' | 'statistics' | 'export' | 'absences' | 'holidays' | 'company' | 'permissions' | 'history';
 
 export function ManagerDashboard() {
   const { currentEmployee, logout, isDistrictManager } = useAuth();
@@ -32,25 +36,32 @@ export function ManagerDashboard() {
   const { currentStore, setCurrentStore } = useStore();
   const { isCompactMode, toggleCompactMode, isMobile } = useCompactMode();
   const { t } = useLanguage();
-  const [activeTab, setActiveTab] = useState<TabType>('schedule');
+  const permissions = usePermissions();
+  // Si es IT, iniciar en Configuración Empresa, sino en schedule
+  const [activeTab, setActiveTab] = useState<TabType>(
+    currentEmployee && isIT(currentEmployee.role) ? 'company' : 'schedule'
+  );
   const [showBirthdayNotification, setShowBirthdayNotification] = useState(true);
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
 
-  const tabs = [
-    { id: 'schedule' as TabType, label: t('schedule'), icon: Calendar },
-    { id: 'employees' as TabType, label: t('employees'), icon: Users },
-    { id: 'absences' as TabType, label: t('vacations'), icon: UserX },
-    { id: 'holidays' as TabType, label: t('holidays'), icon: CalendarDays },
-    { id: 'settings' as TabType, label: t('store'), icon: Home },
-    { id: 'statistics' as TabType, label: t('statistics'), icon: BarChart3 },
-    { id: 'export' as TabType, label: t('export'), icon: FileText },
-    // Solo mostrar configuración de empresa para IT
-    ...(currentEmployee && isIT(currentEmployee.role) 
-      ? [{ id: 'company' as TabType, label: 'Configuración Empresa', icon: Settings }]
-      : []
-    ),
-  ];
+  // Si es IT, solo mostrar Configuración Empresa, Permisos e Historial
+  const tabs = currentEmployee && isIT(currentEmployee.role)
+    ? [
+        { id: 'company' as TabType, label: 'Configuración Empresa', icon: Settings },
+        { id: 'permissions' as TabType, label: 'Permisos', icon: Shield },
+        ...(permissions.history?.read ? [{ id: 'history' as TabType, label: 'Historial', icon: History }] : [])
+      ]
+    : [
+        ...(permissions.schedule?.read ? [{ id: 'schedule' as TabType, label: t('schedule'), icon: Calendar }] : []),
+        ...(permissions.employees?.read ? [{ id: 'employees' as TabType, label: t('employees'), icon: Users }] : []),
+        ...(permissions.absences?.read ? [{ id: 'absences' as TabType, label: t('vacations'), icon: UserX }] : []),
+        ...(permissions.holidays?.read ? [{ id: 'holidays' as TabType, label: t('holidays'), icon: CalendarDays }] : []),
+        ...(permissions.storeSchedule?.read ? [{ id: 'settings' as TabType, label: t('store'), icon: Home }] : []),
+        ...(permissions.statistics?.read ? [{ id: 'statistics' as TabType, label: t('statistics'), icon: BarChart3 }] : []),
+        ...(permissions.export?.read ? [{ id: 'export' as TabType, label: t('export'), icon: FileText }] : []),
+        ...(permissions.history?.read ? [{ id: 'history' as TabType, label: 'Historial', icon: History }] : [])
+      ];
 
   // Función para volver al selector de tiendas (solo para encargados de distrito)
   const handleBackToStoreSelector = () => {
@@ -130,7 +141,15 @@ export function ManagerDashboard() {
         return <ExportTools />;
       case 'company':
         return <CompanySettings />;
+      case 'permissions':
+        return <PermissionsManagement />;
+      case 'history':
+        return <HistoryManagement />;
       default:
+        // Si es IT, mostrar Configuración Empresa por defecto
+        if (currentEmployee && isIT(currentEmployee.role)) {
+          return <CompanySettings />;
+        }
         return <ScheduleManagement />;
     }
   };
@@ -152,7 +171,7 @@ export function ManagerDashboard() {
                     </h1>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
                       {t('welcome')}, {currentEmployee?.name}
-                      {isDistrictManager && currentStore && (
+                      {currentStore && !(currentEmployee && isIT(currentEmployee.role) && !currentEmployee.storeId) && (
                         <span className="ml-2 text-blue-600 dark:text-blue-400">
                           • {currentStore.name}
                         </span>
@@ -166,7 +185,7 @@ export function ManagerDashboard() {
                   <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                     {t('welcome')}, {currentEmployee?.name}
                   </h1>
-                  {isDistrictManager && currentStore && (
+                  {currentStore && !(currentEmployee && isIT(currentEmployee.role) && !currentEmployee.storeId) && (
                     <p className="text-sm text-blue-600 dark:text-blue-400">
                       {currentStore.name}
                     </p>
@@ -199,8 +218,8 @@ export function ManagerDashboard() {
                 </>
               )}
               
-              {/* Botón de volver al selector de tiendas - solo para encargados de distrito */}
-              {isDistrictManager && !isMobile && (
+              {/* Botón de volver al selector de tiendas - según permiso stores */}
+              {permissions.storeSchedule?.read && !isMobile && (
                 <button
                   onClick={handleBackToStoreSelector}
                   className="flex items-center px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-md transition-colors dark:text-blue-400 dark:hover:text-blue-300 dark:hover:bg-blue-900/20"
@@ -233,7 +252,7 @@ export function ManagerDashboard() {
               isManager={true}
               onShowKeyboardHelp={() => setShowKeyboardHelp(true)}
               onLogout={logout}
-              onBackToStoreSelector={isDistrictManager ? handleBackToStoreSelector : undefined}
+              onBackToStoreSelector={permissions.storeSchedule?.read ? handleBackToStoreSelector : undefined}
               onShowUserMenu={() => setShowUserMenu(true)}
             />
           </div>

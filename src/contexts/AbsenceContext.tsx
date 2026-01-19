@@ -13,8 +13,10 @@ import {
 } from 'firebase/firestore';
 import { useNotifications } from './NotificationContext';
 import { useStore } from './StoreContext';
+import { useAuth } from './AuthContext';
 import { AbsenceRequest, AbsenceType, AbsenceStatus, AbsenceStats, EmployeeAbsenceStats } from '../types/absence';
 import { LocalFileStorage } from '../services/localFileStorage';
+import { HistoryService } from '../services/historyService';
 
 interface AbsenceContextType {
   absenceRequests: AbsenceRequest[];
@@ -38,6 +40,7 @@ export function AbsenceProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const { addNotification } = useNotifications();
   const { currentStore } = useStore();
+  const { currentEmployee } = useAuth();
 
   // Cargar solicitudes de ausencias desde Firebase
   useEffect(() => {
@@ -110,6 +113,11 @@ export function AbsenceProvider({ children }: { children: ReactNode }) {
       const docRef = await addDoc(collection(db, 'absenceRequests'), newRequest);
       console.log('Documento creado con ID:', docRef.id);
       
+      // Registrar en historial
+      if (currentEmployee) {
+        await HistoryService.logAbsenceCreated(docRef.id, currentEmployee.id, requestData.employeeName);
+      }
+      
       // Actualizar el archivo con el ID real de la ausencia
       if (file && medicalCertificateUrl && medicalCertificateUrl.startsWith('local-file:')) {
         console.log('Actualizando archivo con ID real de ausencia');
@@ -175,6 +183,11 @@ export function AbsenceProvider({ children }: { children: ReactNode }) {
     try {
       const request = absenceRequests.find(r => r.id === id);
       
+      // Registrar en historial antes de eliminar
+      if (currentEmployee && request) {
+        await HistoryService.logAbsenceDeleted(id, currentEmployee.id, request.employeeName);
+      }
+      
       // Eliminar archivo médico si existe
       if (request?.medicalCertificate && request.medicalCertificate.startsWith('local-file:')) {
         const fileId = request.medicalCertificate.replace('local-file:', '');
@@ -234,6 +247,11 @@ export function AbsenceProvider({ children }: { children: ReactNode }) {
         rejectionReason,
         updatedAt: new Date()
       });
+
+      // Registrar en historial
+      if (currentEmployee && request) {
+        await HistoryService.logAbsenceRejected(id, currentEmployee.id, request.employeeName);
+      }
 
       // Enviar notificación al empleado
       if (request) {

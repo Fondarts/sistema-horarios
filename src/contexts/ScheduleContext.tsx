@@ -2,7 +2,9 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { Shift, StoreSchedule, StoreException, ValidationError, Template } from '../types';
 import { useStore } from './StoreContext';
 import { useEmployees } from './EmployeeContext';
+import { useAuth } from './AuthContext';
 import { db } from '../firebase';
+import { HistoryService } from '../services/historyService';
 import { VacationRequest } from './VacationContext';
 import { 
   collection, 
@@ -192,8 +194,10 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
   const [storeExceptions, setStoreExceptions] = useState<StoreException[]>([]);
   const [templates, setTemplates] = useState<Template[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [publishedShiftsState, setPublishedShiftsState] = useState<Map<string, Partial<Shift>>>(new Map());
   const { currentStore } = useStore();
   const { employees } = useEmployees();
+  const { currentEmployee } = useAuth();
 
   // Cargar todos los turnos para estadísticas globales
   useEffect(() => {
@@ -241,6 +245,23 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
         // Filtrar shifts de la tienda actual desde allShifts
         const storeShifts = allShifts.filter(shift => shift.storeId === currentStore.id);
         setShifts(storeShifts);
+        
+        // Inicializar el estado de turnos publicados para rastrear cambios
+        setPublishedShiftsState(prev => {
+          const newMap = new Map(prev);
+          storeShifts.forEach(shift => {
+            if (shift.isPublished) {
+              newMap.set(shift.id, {
+                employeeId: shift.employeeId,
+                date: shift.date,
+                startTime: shift.startTime,
+                endTime: shift.endTime,
+                hours: shift.hours
+              });
+            }
+          });
+          return newMap;
+        });
 
         // Cargar store schedule
         const storeScheduleRef = collection(db, 'storeSchedule');
@@ -503,6 +524,8 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
       console.log('ScheduleContext: Adding shift to Firebase:', newShift);
       const docRef = await addDoc(collection(db, 'shifts'), newShift);
       console.log('ScheduleContext: Shift added with ID:', docRef.id);
+      
+      // NO registrar en historial aquí - solo cuando se publique
     } catch (error) {
       console.error('Error adding shift:', error);
       errors.push({ type: 'schedule', message: 'Error al crear el turno' });
@@ -589,16 +612,30 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
     try {
       const shiftRef = doc(db, 'shifts', id);
       
+      const currentShift = shifts.find(s => s.id === id);
+      if (!currentShift) {
+        errors.push({ type: 'schedule', message: 'Turno no encontrado' });
+        return errors;
+      }
+
       // Si se actualiza startTime o endTime, recalcular hours
       if (updates.startTime || updates.endTime) {
-        const currentShift = shifts.find(s => s.id === id);
-        if (currentShift) {
-          const startTime = updates.startTime || currentShift.startTime;
-          const endTime = updates.endTime || currentShift.endTime;
-          updates.hours = calculateHours(startTime, endTime);
-        }
+        const startTime = updates.startTime || currentShift.startTime;
+        const endTime = updates.endTime || currentShift.endTime;
+        updates.hours = calculateHours(startTime, endTime);
       }
-      
+
+      // Preparar cambios para el historial
+      const changes: Record<string, { old: any; new: any }> = {};
+      Object.keys(updates).forEach(key => {
+        if (key !== 'updatedAt' && key !== 'createdAt' && key !== 'id' && key !== 'hours') {
+          changes[key] = {
+            old: currentShift[key as keyof Shift],
+            new: updates[key as keyof Shift]
+          };
+        }
+      });
+
       const updateData = {
         ...updates,
         isPublished: false, // Marcar como no publicado cuando se modifica
@@ -606,6 +643,8 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
       };
       
       await updateDoc(shiftRef, updateData);
+      
+      // NO registrar en historial aquí - solo cuando se publique
     } catch (error) {
       console.error('Error updating shift:', error);
       errors.push({ type: 'schedule', message: 'Error al actualizar el turno' });
@@ -616,7 +655,14 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
 
   const deleteShift = async (id: string) => {
     try {
+      const shift = shifts.find(s => s.id === id);
       await deleteDoc(doc(db, 'shifts', id));
+      
+      // Registrar en historial solo si el turno estaba publicado
+      if (currentEmployee && shift && shift.isPublished) {
+        const employee = employees.find(emp => emp.id === shift.employeeId);
+        await HistoryService.logShiftDeleted(id, currentEmployee.id, employee?.name);
+      }
     } catch (error) {
       console.error('Error deleting shift:', error);
     }
@@ -624,12 +670,60 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
 
   const publishShifts = async (shiftIds: string[]) => {
     try {
-      const updatePromises = shiftIds.map(id => {
+      const updatePromises = shiftIds.map(async (id) => {
         const shiftRef = doc(db, 'shifts', id);
-        return updateDoc(shiftRef, { 
+        const shift = shifts.find(s => s.id === id);
+        if (!shift) return;
+        
+        const wasPublished = shift.isPublished || false;
+        const lastPublishedState = publishedShiftsState.get(id);
+        
+        await updateDoc(shiftRef, { 
           isPublished: true,
           updatedAt: new Date()
         });
+        
+        // Guardar el estado actual como el último estado publicado
+        setPublishedShiftsState(prev => {
+          const newMap = new Map(prev);
+          newMap.set(id, {
+            employeeId: shift.employeeId,
+            date: shift.date,
+            startTime: shift.startTime,
+            endTime: shift.endTime,
+            hours: shift.hours
+          });
+          return newMap;
+        });
+        
+        // Registrar en historial
+        if (currentEmployee) {
+          const employee = employees.find(emp => emp.id === shift.employeeId);
+          
+          if (!wasPublished) {
+            // Turno nuevo - registrar como creado
+            await HistoryService.logShiftCreated(id, currentEmployee.id, employee?.name);
+          } else if (lastPublishedState) {
+            // Turno modificado - registrar cambios desde la última publicación
+            const changes: Record<string, { old: any; new: any }> = {};
+            if (lastPublishedState.employeeId !== shift.employeeId) {
+              changes.employeeId = { old: lastPublishedState.employeeId, new: shift.employeeId };
+            }
+            if (lastPublishedState.date !== shift.date) {
+              changes.date = { old: lastPublishedState.date, new: shift.date };
+            }
+            if (lastPublishedState.startTime !== shift.startTime) {
+              changes.startTime = { old: lastPublishedState.startTime, new: shift.startTime };
+            }
+            if (lastPublishedState.endTime !== shift.endTime) {
+              changes.endTime = { old: lastPublishedState.endTime, new: shift.endTime };
+            }
+            
+            if (Object.keys(changes).length > 0) {
+              await HistoryService.logShiftUpdated(id, currentEmployee.id, changes, employee?.name);
+            }
+          }
+        }
       });
       
       await Promise.all(updatePromises);
@@ -649,6 +743,10 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
   };
 
   const updateStoreSchedule = async (id: string, updates: Partial<StoreSchedule>) => {
+    // Registrar en historial antes de actualizar
+    if (currentEmployee && currentStore) {
+      await HistoryService.logStoreScheduleUpdated(currentStore.id, currentEmployee.id, currentStore.name);
+    }
     try {
       console.log('ScheduleContext: updateStoreSchedule called with:', { id, updates });
       await updateDoc(doc(db, 'storeSchedule', id), updates);

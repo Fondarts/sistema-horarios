@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { Menu, X, Calendar, Users, UserX, CalendarDays, Home, BarChart3, FileText, Sun, Moon, HelpCircle, LogOut, Building2, User } from 'lucide-react';
+import { Menu, X, Calendar, Users, UserX, CalendarDays, Home, BarChart3, FileText, Sun, Moon, HelpCircle, LogOut, Building2, User, Settings, Shield, History } from 'lucide-react';
 import { useCompactMode } from '../contexts/CompactModeContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { Logo } from './Logo';
+import { usePermissions } from '../hooks/usePermissions';
+import { isIT } from '../utils/rolePermissions';
 
 interface HamburgerMenuProps {
   activeTab: string;
@@ -20,17 +22,19 @@ export function HamburgerMenu({ activeTab, onTabChange, isManager = false, onSho
   const [isOpen, setIsOpen] = useState(false);
   const { isMobile } = useCompactMode();
   const { theme, toggleTheme } = useTheme();
-  const { isDistrictManager } = useAuth();
+  const { isDistrictManager, currentEmployee } = useAuth();
   const { t } = useLanguage();
+  const permissions = usePermissions();
 
   const managerTabs = [
-    { id: 'schedule', label: 'Horarios', icon: Calendar },
-    { id: 'employees', label: 'Empleados', icon: Users },
-    { id: 'absences', label: 'Vacaciones y Ausencias', icon: UserX },
-    { id: 'holidays', label: 'Feriados', icon: CalendarDays },
-    { id: 'settings', label: 'Tienda', icon: Home },
-    { id: 'statistics', label: 'Estadísticas', icon: BarChart3 },
-    { id: 'export', label: 'Exportar', icon: FileText },
+    ...(permissions.schedule?.read ? [{ id: 'schedule', label: 'Horarios', icon: Calendar }] : []),
+    ...(permissions.employees?.read ? [{ id: 'employees', label: 'Empleados', icon: Users }] : []),
+    ...(permissions.absences?.read ? [{ id: 'absences', label: 'Vacaciones y Ausencias', icon: UserX }] : []),
+    ...(permissions.holidays?.read ? [{ id: 'holidays', label: 'Feriados', icon: CalendarDays }] : []),
+    ...(permissions.storeSchedule?.read ? [{ id: 'settings', label: 'Tienda', icon: Home }] : []),
+    ...(permissions.statistics?.read ? [{ id: 'statistics', label: 'Estadísticas', icon: BarChart3 }] : []),
+    ...(permissions.export?.read ? [{ id: 'export', label: 'Exportar', icon: FileText }] : []),
+    ...(permissions.history?.read ? [{ id: 'history', label: 'Historial', icon: History }] : [])
   ];
 
   const employeeTabs = [
@@ -38,7 +42,16 @@ export function HamburgerMenu({ activeTab, onTabChange, isManager = false, onSho
     { id: 'vacations', label: 'Vacaciones y Ausencias', icon: UserX },
   ];
 
-  const tabs = isManager ? managerTabs : employeeTabs;
+  // Si es IT, solo mostrar Configuración Empresa, Permisos e Historial
+  const itTabs = [
+    { id: 'company', label: 'Configuración Empresa', icon: Settings },
+    { id: 'permissions', label: 'Permisos', icon: Shield },
+    ...(permissions.history?.read ? [{ id: 'history', label: 'Historial', icon: History }] : [])
+  ];
+
+  const tabs = currentEmployee && isIT(currentEmployee.role)
+    ? itTabs
+    : (isManager ? managerTabs : employeeTabs);
 
   const handleTabClick = (tabId: string) => {
     onTabChange(tabId);
@@ -194,7 +207,7 @@ export function HamburgerMenu({ activeTab, onTabChange, isManager = false, onSho
                 </button>
               </li>
             )}
-            {isDistrictManager && onBackToStoreSelector && (
+            {permissions.storeSchedule?.read && onBackToStoreSelector && (
               <li>
                 <button
                   onClick={handleBackToStoreSelector}

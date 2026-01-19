@@ -25,29 +25,29 @@ function App() {
         <DateFormatProvider>
           <ThemeProvider>
         <CompactModeProvider>
-          <StoreProvider>
-            <CompanySettingsProvider>
-              <ThemeColorInjector />
-              <EmployeeProvider>
-                <AuthProvider>
-                <HolidayProvider>
-                  <NotificationProvider>
-                    <NotificationStackProvider>
-                      <ScheduleProvider>
-                        <VacationProvider>
-                          <AbsenceProvider>
-                            <AppRouter />
-                            <NotificationStack />
-                          </AbsenceProvider>
-                        </VacationProvider>
-                      </ScheduleProvider>
-                    </NotificationStackProvider>
-                  </NotificationProvider>
-                </HolidayProvider>
-                </AuthProvider>
-              </EmployeeProvider>
-            </CompanySettingsProvider>
-          </StoreProvider>
+          <AuthProvider>
+            <StoreProvider>
+              <CompanySettingsProvider>
+                <ThemeColorInjector />
+                <EmployeeProvider>
+                  <HolidayProvider>
+                    <NotificationProvider>
+                      <NotificationStackProvider>
+                        <ScheduleProvider>
+                          <VacationProvider>
+                            <AbsenceProvider>
+                              <AppRouter />
+                              <NotificationStack />
+                            </AbsenceProvider>
+                          </VacationProvider>
+                        </ScheduleProvider>
+                      </NotificationStackProvider>
+                    </NotificationProvider>
+                  </HolidayProvider>
+                </EmployeeProvider>
+              </CompanySettingsProvider>
+            </StoreProvider>
+          </AuthProvider>
         </CompactModeProvider>
       </ThemeProvider>
       </DateFormatProvider>

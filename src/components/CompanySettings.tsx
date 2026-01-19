@@ -6,6 +6,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { isIT } from '../utils/rolePermissions';
 import { useLanguage } from '../contexts/LanguageContext';
 import { CompanySettings as CompanySettingsType } from '../types';
+import { HistoryService } from '../services/historyService';
 
 export function CompanySettings() {
   const { settings, updateSettings, isLoading } = useCompanySettings();
@@ -346,6 +347,9 @@ export function CompanySettings() {
       // Si companyName está vacío, no lo incluimos en updates (se mantendrá el valor anterior o undefined)
       
       await updateSettings(updates);
+      
+      // Registrar en historial
+      await HistoryService.logCompanySettingsUpdated(currentEmployee!.id);
 
       // Actualizar los previews de los logos después de guardar
       if (logoUrlLight) {

@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { Store } from '../types';
 import { v4 as uuidv4 } from 'uuid';
 import { db } from '../firebase';
+import { useAuth } from './AuthContext';
 import { 
   collection, 
   doc, 
@@ -35,6 +36,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [listenersPaused, setListenersPaused] = useState(false);
   const [unsubscribeFunction, setUnsubscribeFunction] = useState<(() => void) | null>(null);
+  const { currentEmployee } = useAuth();
 
   useEffect(() => {
     console.log('StoreContext: useEffect ejecutándose, listenersPaused:', listenersPaused);
@@ -88,26 +90,28 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           }
           */
           
-          // Verificar si es district manager desde localStorage
-          const currentEmployee = localStorage.getItem('currentEmployee');
+          // Verificar si es district manager desde el empleado actual
           let isDistrictManager = false;
           
           if (currentEmployee) {
-            try {
-              const employee = JSON.parse(currentEmployee);
-              isDistrictManager = employee.username === 'admin' || employee.username === 'distrito';
-            } catch (error) {
-              console.error('Error parsing currentEmployee:', error);
-            }
+            isDistrictManager = currentEmployee.role === 'distrito' || currentEmployee.role === 'region' || 
+                                currentEmployee.username === 'admin' || currentEmployee.username === 'distrito';
           }
           
           if (!isDistrictManager) {
-            // Solo para usuarios normales (empleados/encargados), usar la tienda guardada
+            // Solo para usuarios normales (empleados/encargados), usar la tienda guardada o la del empleado
             const savedCurrentStoreId = localStorage.getItem('horarios_current_store_id');
             if (savedCurrentStoreId) {
               const foundStore = storesData.find((s: Store) => s.id === savedCurrentStoreId);
               if (foundStore) {
                 setCurrentStoreState(foundStore);
+              }
+            } else if (currentEmployee?.storeId) {
+              // Si no hay tienda guardada, usar la tienda del empleado actual
+              const employeeStore = storesData.find((s: Store) => s.id === currentEmployee.storeId);
+              if (employeeStore) {
+                setCurrentStoreState(employeeStore);
+                localStorage.setItem('horarios_current_store_id', employeeStore.id);
               }
             }
           }
@@ -128,7 +132,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     };
     
     loadStores();
-  }, [listenersPaused]);
+  }, [listenersPaused, currentEmployee]);
 
   // Ya no necesitamos sincronizar con localStorage, Firebase maneja todo
 
