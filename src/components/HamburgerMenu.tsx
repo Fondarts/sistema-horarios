@@ -30,8 +30,7 @@ export function HamburgerMenu({ activeTab, onTabChange, isManager = false, onSho
     ...(permissions.schedule?.read ? [{ id: 'schedule', label: 'Horarios', icon: Calendar }] : []),
     ...(permissions.employees?.read ? [{ id: 'employees', label: 'Empleados', icon: Users }] : []),
     ...(permissions.absences?.read ? [{ id: 'absences', label: 'Vacaciones y Ausencias', icon: UserX }] : []),
-    ...(permissions.holidays?.read ? [{ id: 'holidays', label: 'Feriados', icon: CalendarDays }] : []),
-    ...(permissions.storeSchedule?.read ? [{ id: 'settings', label: 'Tienda', icon: Home }] : []),
+    ...(permissions.storeSchedule?.read ? [{ id: 'settings', label: 'Horarios Tienda', icon: Home }] : []),
     ...(permissions.statistics?.read ? [{ id: 'statistics', label: 'Estadísticas', icon: BarChart3 }] : []),
     ...(permissions.export?.read ? [{ id: 'export', label: 'Exportar', icon: FileText }] : []),
     ...(permissions.history?.read ? [{ id: 'history', label: 'Historial', icon: History }] : [])

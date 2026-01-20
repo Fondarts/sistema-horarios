@@ -882,7 +882,34 @@ export function EmployeeManagement() {
           </div>
         ) : (
           <div className={`grid gap-4 ${isCompactMode ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'}`}>
-            {employees.map((employee) => {
+            {[...employees].sort((a, b) => {
+              // Función para obtener la prioridad del rol (menor número = mayor prioridad)
+              const getRolePriority = (role: EmployeeRole): number => {
+                switch (role) {
+                  case 'region':
+                    return 1;
+                  case 'distrito':
+                    return 2;
+                  case 'encargado':
+                    return 3;
+                  case 'it':
+                    return 4;
+                  case 'empleado':
+                  default:
+                    return 5;
+                }
+              };
+              
+              const priorityA = getRolePriority(a.role);
+              const priorityB = getRolePriority(b.role);
+              
+              // Si tienen la misma prioridad, ordenar alfabéticamente por nombre
+              if (priorityA === priorityB) {
+                return a.name.localeCompare(b.name);
+              }
+              
+              return priorityA - priorityB;
+            }).map((employee) => {
               const displayStatus = getEmployeeDisplayStatus(employee);
               return (
               <div key={employee.id} className={`bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg hover:shadow-sm transition-shadow ${isCompactMode ? 'p-3' : 'p-4'} ${displayStatus.status === 'inactive' ? 'opacity-60 bg-gray-50 dark:bg-gray-800' : ''}`}>

@@ -45,8 +45,9 @@ export function ManagerDashboard() {
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
 
-  // Si es IT, solo mostrar Configuración Empresa, Permisos e Historial
-  const tabs = currentEmployee && isIT(currentEmployee.role)
+  // Si es IT, siempre mostrar Configuración Empresa, Permisos e Historial (si tiene permiso)
+  const isITUser = currentEmployee ? isIT(currentEmployee.role) : false;
+  const tabs = isITUser
     ? [
         { id: 'company' as TabType, label: 'Configuración Empresa', icon: Settings },
         { id: 'permissions' as TabType, label: 'Permisos', icon: Shield },
@@ -56,8 +57,7 @@ export function ManagerDashboard() {
         ...(permissions.schedule?.read ? [{ id: 'schedule' as TabType, label: t('schedule'), icon: Calendar }] : []),
         ...(permissions.employees?.read ? [{ id: 'employees' as TabType, label: t('employees'), icon: Users }] : []),
         ...(permissions.absences?.read ? [{ id: 'absences' as TabType, label: t('vacations'), icon: UserX }] : []),
-        ...(permissions.holidays?.read ? [{ id: 'holidays' as TabType, label: t('holidays'), icon: CalendarDays }] : []),
-        ...(permissions.storeSchedule?.read ? [{ id: 'settings' as TabType, label: t('store'), icon: Home }] : []),
+        ...(permissions.storeSchedule?.read ? [{ id: 'settings' as TabType, label: 'Horarios Tienda', icon: Home }] : []),
         ...(permissions.statistics?.read ? [{ id: 'statistics' as TabType, label: t('statistics'), icon: BarChart3 }] : []),
         ...(permissions.export?.read ? [{ id: 'export' as TabType, label: t('export'), icon: FileText }] : []),
         ...(permissions.history?.read ? [{ id: 'history' as TabType, label: 'Historial', icon: History }] : [])

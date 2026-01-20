@@ -2,11 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useSchedule } from '../contexts/ScheduleContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useCompactMode } from '../contexts/CompactModeContext';
-import { Settings, Clock, Calendar, Plus, Trash2, Edit, X } from 'lucide-react';
+import { Settings, Clock, Calendar, Plus, Trash2, Edit, X, CalendarDays } from 'lucide-react';
 import { StoreSchedule, StoreException, TimeRange } from '../types';
 import TimeInput from './TimeInput';
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { HolidayIntegration } from './HolidayIntegration';
+
+type SubTabType = 'horarios' | 'feriados';
 
 export function StoreSettings() {
   const { t } = useLanguage();
@@ -20,6 +23,7 @@ export function StoreSettings() {
     deleteStoreException
   } = useSchedule();
   const { isCompactMode, isMobile } = useCompactMode();
+  const [activeSubTab, setActiveSubTab] = useState<SubTabType>('horarios');
 
   // Horario de tienda por defecto (Lunes a Domingo + Feriados)
   const defaultStoreSchedule = [
@@ -212,20 +216,57 @@ export function StoreSettings() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{t('storeSettings')}</h2>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Horarios Tienda</h2>
         <p className="text-gray-600 dark:text-gray-400">{t('defineOpeningHoursAndExceptions')}</p>
       </div>
 
+      {/* Sub-pestañas */}
+      <div className="border-b border-gray-200 dark:border-gray-700">
+        <nav className="flex space-x-8">
+          <button
+            onClick={() => setActiveSubTab('horarios')}
+            className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+              activeSubTab === 'horarios'
+                ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
+            }`}
+          >
+            <div className="flex items-center">
+              <Clock className="w-5 h-5 mr-2" />
+              Horarios
+            </div>
+          </button>
+          <button
+            onClick={() => setActiveSubTab('feriados')}
+            className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+              activeSubTab === 'feriados'
+                ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
+            }`}
+          >
+            <div className="flex items-center">
+              <CalendarDays className="w-5 h-5 mr-2" />
+              Feriados
+            </div>
+          </button>
+        </nav>
+      </div>
+
+      {/* Contenido según sub-pestaña activa */}
+      {activeSubTab === 'feriados' ? (
+        <HolidayIntegration />
+      ) : (
+        <>
       {/* Store Schedule */}
       <div className="card">
-        <div className="flex items-center mb-4">
+        <div className="flex items-center mb-2">
           <Clock className="w-6 h-6 text-primary-600 mr-3" />
           <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{t('weeklySchedule')}</h3>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-2">
           {storeSchedule.map((schedule) => (
-            <div key={schedule.id} className={`p-4 bg-gray-50 dark:bg-gray-700 rounded-lg ${isMobile ? 'space-y-3' : 'flex items-center space-x-4'}`}>
+            <div key={schedule.id} className={`p-2 bg-gray-50 dark:bg-gray-700 rounded-lg ${isMobile ? 'space-y-2' : 'flex items-center space-x-4'}`}>
               {/* Día y checkbox */}
               <div className={`${isMobile ? 'flex items-center justify-between' : 'w-24'}`}>
                 <span className="font-medium text-gray-900 dark:text-gray-100">
@@ -253,10 +294,10 @@ export function StoreSettings() {
               {/* Horarios */}
               {schedule.isOpen && (
                 <div className="flex-1">
-                  <div className={`${isMobile ? 'space-y-3' : 'flex items-center space-x-4'}`}>
+                  <div className={`${isMobile ? 'space-y-2' : 'flex items-center space-x-3'}`}>
                     {/* Rangos de horarios existentes */}
                     {(schedule.timeRanges || []).map((timeRange, index) => (
-                      <div key={timeRange.id} className={`${isMobile ? 'space-y-2' : 'flex items-center space-x-3'}`}>
+                      <div key={timeRange.id} className={`${isMobile ? 'space-y-1' : 'flex items-center space-x-2'}`}>
                         {isMobile ? (
                           // Layout móvil: vertical
                           <div className="space-y-2">
@@ -603,6 +644,8 @@ export function StoreSettings() {
             </form>
           </div>
         </div>
+      )}
+        </>
       )}
     </div>
   );
