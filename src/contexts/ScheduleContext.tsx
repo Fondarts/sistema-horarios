@@ -135,14 +135,21 @@ const migrateStoreSchedule = (schedule: StoreSchedule): StoreSchedule => {
 };
 
 // Función para calcular horas entre dos tiempos
-const calculateHours = (startTime: string, endTime: string): number => {
+const calculateHours = (startTime: string, endTime: string, breakDuration?: number): number => {
   const [startHour, startMin] = startTime.split(':').map(Number);
   const [endHour, endMin] = endTime.split(':').map(Number);
   
   const startMinutes = startHour * 60 + startMin;
   const endMinutes = endHour * 60 + endMin;
   
-  return (endMinutes - startMinutes) / 60;
+  let totalHours = (endMinutes - startMinutes) / 60;
+  
+  // Restar el tiempo de descanso si existe (breakDuration está en minutos)
+  if (breakDuration && breakDuration > 0) {
+    totalHours -= (breakDuration / 60);
+  }
+  
+  return totalHours;
 };
 
 // Función para convertir tiempo a minutos
@@ -510,8 +517,12 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
     }
     
     try {
-      // Calcular horas automáticamente
-      const hours = calculateHours(shiftData.startTime, shiftData.endTime);
+      // Calcular horas automáticamente (considerando descanso si existe)
+      const hours = calculateHours(
+        shiftData.startTime, 
+        shiftData.endTime, 
+        shiftData.breakDuration
+      );
       
       const newShift = {
         ...shiftData,
@@ -618,11 +629,12 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
         return errors;
       }
 
-      // Si se actualiza startTime o endTime, recalcular hours
-      if (updates.startTime || updates.endTime) {
+      // Si se actualiza startTime, endTime o descanso, recalcular hours
+      if (updates.startTime || updates.endTime || updates.breakDuration !== undefined) {
         const startTime = updates.startTime || currentShift.startTime;
         const endTime = updates.endTime || currentShift.endTime;
-        updates.hours = calculateHours(startTime, endTime);
+        const breakDuration = updates.breakDuration !== undefined ? updates.breakDuration : currentShift.breakDuration;
+        updates.hours = calculateHours(startTime, endTime, breakDuration);
       }
 
       // Preparar cambios para el historial

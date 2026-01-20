@@ -144,7 +144,8 @@ export default function ScheduleManagement() {
     date: '',
     startTime: '09:00',
     endTime: '17:00',
-    employeeId: ''
+    employeeId: '',
+    breakDuration: 0 // duración en minutos
   });
   const [zoomLevel, setZoomLevel] = useState(() => {
     // Calculate initial zoom to show all 24 hours
@@ -579,7 +580,8 @@ export default function ScheduleManagement() {
       date: format(currentWeek, 'yyyy-MM-dd'), // Usar la fecha de la semana actual
       startTime: '09:00',
       endTime: '17:00',
-      employeeId: employee.id
+      employeeId: employee.id,
+      breakDuration: 0
     });
     setShowShiftModal(true);
   };
@@ -591,7 +593,8 @@ export default function ScheduleManagement() {
       date: shift.date,
       startTime: shift.startTime,
       endTime: shift.endTime,
-      employeeId: shift.employeeId
+      employeeId: shift.employeeId,
+      breakDuration: shift.breakDuration || 0
     });
     setShowShiftModal(true);
   };
@@ -604,7 +607,8 @@ export default function ScheduleManagement() {
       date: '',
       startTime: '09:00',
       endTime: '17:00',
-      employeeId: ''
+      employeeId: '',
+      breakDuration: 0
     });
   };
 
@@ -624,6 +628,12 @@ export default function ScheduleManagement() {
     const endHour = parseInt(shiftForm.endTime.split(':')[0]);
     const hours = endHour - startHour;
 
+    // Calcular horas considerando el descanso si existe
+    let calculatedHours = hours;
+    if (shiftForm.breakDuration > 0) {
+      calculatedHours = hours - (shiftForm.breakDuration / 60);
+    }
+
     if (editingShift) {
       // Actualizar turno existente
       await updateShift(editingShift.id, {
@@ -631,7 +641,8 @@ export default function ScheduleManagement() {
         date: shiftForm.date,
         startTime: shiftForm.startTime,
         endTime: shiftForm.endTime,
-        hours: hours
+        hours: calculatedHours,
+        breakDuration: shiftForm.breakDuration > 0 ? shiftForm.breakDuration : undefined
       });
       setHasUnpublishedChanges(true);
     } else {
@@ -643,8 +654,9 @@ export default function ScheduleManagement() {
         date: shiftForm.date,
         startTime: shiftForm.startTime,
         endTime: shiftForm.endTime,
-        hours: hours,
-        isPublished: false
+        hours: calculatedHours,
+        isPublished: false,
+        breakDuration: shiftForm.breakDuration > 0 ? shiftForm.breakDuration : undefined
       });
 
       console.log('ScheduleManagement: Form shift creation errors:', errors);
@@ -1120,6 +1132,43 @@ export default function ScheduleManagement() {
     } else {
       return `${wholeHours}h ${minutes}m`;
     }
+  };
+
+  // Format hours with break duration (e.g., "8h 00m + 30m")
+  const formatHoursWithBreak = (shift: Shift): string => {
+    if (!shift.breakDuration || shift.breakDuration === 0) {
+      return formatHours(shift.hours);
+    }
+    
+    // Calcular la duración total del turno (horas trabajadas + descanso)
+    const totalDurationHours = shift.hours + (shift.breakDuration / 60);
+    const totalWholeHours = Math.floor(totalDurationHours);
+    const totalMinutes = Math.round((totalDurationHours - totalWholeHours) * 60);
+    
+    // Formatear descanso
+    const breakMinutes = shift.breakDuration;
+    const breakHours = Math.floor(breakMinutes / 60);
+    const breakMins = breakMinutes % 60;
+    
+    let totalStr = '';
+    if (totalMinutes === 0) {
+      totalStr = `${totalWholeHours}h`;
+    } else {
+      totalStr = `${totalWholeHours}h ${totalMinutes.toString().padStart(2, '0')}m`;
+    }
+    
+    let breakStr = '';
+    if (breakHours > 0) {
+      if (breakMins === 0) {
+        breakStr = `${breakHours}h`;
+      } else {
+        breakStr = `${breakHours}h ${breakMins}m`;
+      }
+    } else {
+      breakStr = `${breakMins}m`;
+    }
+    
+    return `${totalStr} + ${breakStr}`;
   };
 
   const navigateWeek = (direction: 'prev' | 'next') => {
@@ -2017,6 +2066,30 @@ export default function ScheduleManagement() {
                       }
                       const top = baseTop;
                       
+                      // Calcular el ancho del descanso si existe
+                      const breakWidth = shift.breakDuration && shift.breakDuration > 0
+                        ? (shift.breakDuration / 60) * (width / durationInHours)
+                        : 0;
+                      
+                      // Función para oscurecer un color hexadecimal
+                      const darkenColor = (color: string, percent: number): string => {
+                        // Remover el # si existe
+                        const hex = color.replace('#', '');
+                        // Convertir a RGB
+                        const r = parseInt(hex.substring(0, 2), 16);
+                        const g = parseInt(hex.substring(2, 4), 16);
+                        const b = parseInt(hex.substring(4, 6), 16);
+                        // Oscurecer
+                        const newR = Math.max(0, Math.floor(r * (1 - percent)));
+                        const newG = Math.max(0, Math.floor(g * (1 - percent)));
+                        const newB = Math.max(0, Math.floor(b * (1 - percent)));
+                        // Convertir de vuelta a hex
+                        return `#${newR.toString(16).padStart(2, '0')}${newG.toString(16).padStart(2, '0')}${newB.toString(16).padStart(2, '0')}`;
+                      };
+                      
+                      const baseColor = employee?.color || '#3B82F6';
+                      const breakColor = darkenColor(baseColor, 0.3); // 30% más oscuro
+
                       return (
                               <div
                                 key={shift.id}
@@ -2028,14 +2101,14 @@ export default function ScheduleManagement() {
                             top: `${top}px`,
                             height: `${barHeight}px`, // Altura calculada dinámicamente
                             zIndex: 5,
-                            backgroundColor: employee?.color || '#3B82F6',
+                            backgroundColor: 'transparent',
                             touchAction: 'none',
                             opacity: opacity,
                             // Borde punteado para turnos en borrador
                             border: !shift.isPublished ? '2px dashed' : 'none',
                             borderColor: !shift.isPublished ? (theme === 'dark' ? 'white' : 'black') : 'transparent'
                           }}
-                          title={`${employee?.name} - ${shift.startTime} a ${shift.endTime} (${formatHours(shift.hours)})${!shift.isPublished ? ' - Sin publicar' : ''}${hasConflict ? ` - CONFLICTO: ${conflictType}` : ''}`}
+                          title={`${employee?.name} - ${shift.startTime} a ${shift.endTime} (${formatHoursWithBreak(shift)})${!shift.isPublished ? ' - Sin publicar' : ''}${hasConflict ? ` - CONFLICTO: ${conflictType}` : ''}`}
                           onMouseDown={collapsedDays.has(dayString) ? undefined : (e) => startDrag(e, shift)}
                           onDoubleClick={collapsedDays.has(dayString) ? undefined : (e) => {
                             e.stopPropagation();
@@ -2043,8 +2116,34 @@ export default function ScheduleManagement() {
                             openEditShiftModal(shift);
                           }}
                         >
+                          {/* Barra principal del turno */}
+                          <div 
+                            className="absolute inset-0 rounded"
+                            style={{
+                              backgroundColor: baseColor,
+                              width: breakWidth > 0 ? `calc(100% - ${breakWidth}px)` : '100%',
+                              left: 0,
+                              top: 0,
+                              height: '100%'
+                            }}
+                          />
+                          
+                          {/* Barra de descanso (más oscura) */}
+                          {breakWidth > 0 && (
+                            <div 
+                              className="absolute rounded-r"
+                              style={{
+                                backgroundColor: breakColor,
+                                width: `${breakWidth}px`,
+                                right: 0,
+                                top: 0,
+                                height: '100%'
+                              }}
+                            />
+                          )}
+                          
                           {/* Contenido de texto de la barra */}
-                            <div className="flex items-center justify-between h-full text-white font-medium text-xs overflow-hidden px-1">
+                            <div className="flex items-center justify-between h-full text-white font-medium text-xs overflow-hidden px-1 relative z-10">
                                   {(() => {
                               // Usar valores temporales si estamos en drag/resize, sino usar valores originales
                               const isDragging = draggedElement?.dataset.shiftId === shift.id;
@@ -2067,6 +2166,11 @@ export default function ScheduleManagement() {
                               const currentWidth = isBeingModified && tempWidth !== null 
                                 ? tempWidth 
                                 : width;
+                              
+                              // Crear un shift temporal para formatear con descanso si estamos modificando
+                              const currentShiftForFormat = isBeingModified 
+                                ? { ...shift, hours: currentHours }
+                                : shift;
                               
                               // Si el día está colapsado, mostrar solo barra finita
                               if (collapsedDays.has(dayString)) {
@@ -2093,7 +2197,7 @@ export default function ScheduleManagement() {
                                       <div className="text-xs opacity-90">{displayStartTime} - {displayEndTime}</div>
                                           </div>
                                     <div className="text-right text-xs opacity-75">
-                                      {formatHours(currentHours)}
+                                      {formatHoursWithBreak(currentShiftForFormat)}
                                           </div>
                                       </>
                                     );
@@ -2221,6 +2325,50 @@ export default function ScheduleManagement() {
                     required
                   />
                 </div>
+              </div>
+
+              {/* Campo de descanso */}
+              <div className="pt-2 border-t border-gray-300 dark:border-gray-600">
+                <div className="mb-3">
+                  <label className="flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={shiftForm.breakDuration > 0}
+                      onChange={(e) => {
+                        if (!e.target.checked) {
+                          setShiftForm(prev => ({ ...prev, breakDuration: 0 }));
+                        } else {
+                          // Establecer valor por defecto de 30 minutos
+                          setShiftForm(prev => ({ ...prev, breakDuration: 30 }));
+                        }
+                      }}
+                      className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                    />
+                    <span className="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Agregar descanso
+                    </span>
+                  </label>
+                </div>
+                
+                {shiftForm.breakDuration > 0 && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Duración del descanso (minutos)
+                    </label>
+                    <select
+                      value={shiftForm.breakDuration}
+                      onChange={(e) => setShiftForm(prev => ({ ...prev, breakDuration: parseInt(e.target.value) }))}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                    >
+                      <option value="15">15 minutos</option>
+                      <option value="30">30 minutos</option>
+                      <option value="45">45 minutos</option>
+                      <option value="60">1 hora</option>
+                      <option value="90">1 hora 30 minutos</option>
+                      <option value="120">2 horas</option>
+                    </select>
+                  </div>
+                )}
               </div>
 
               {/* Botón para repetir día anterior */}

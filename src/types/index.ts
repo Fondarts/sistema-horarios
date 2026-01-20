@@ -106,6 +106,7 @@ export interface Shift {
   createdAt: string;
   updatedAt: string;
   storeId?: string; // ID de la tienda a la que pertenece el turno
+  breakDuration?: number; // duración del descanso en minutos (ej: 30, 60)
 }
 
 export interface ValidationError {
