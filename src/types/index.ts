@@ -88,6 +88,8 @@ export interface Store {
   address?: string;
   phone?: string;
   email?: string;
+  latitude?: number; // Latitud GPS de la tienda
+  longitude?: number; // Longitud GPS de la tienda
   isActive?: boolean; // Indica si la tienda está activa
   employees?: Employee[]; // Opcional, para simulación o datos agregados
   shifts?: Shift[];       // Opcional, para simulación o datos agregados

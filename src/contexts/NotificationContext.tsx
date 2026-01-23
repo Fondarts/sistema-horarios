@@ -16,7 +16,7 @@ import {
 export interface Notification {
   id: string;
   userId: string;
-  type: 'vacation_approved' | 'vacation_rejected' | 'vacation_modified' | 'schedule_change' | 'birthday' | 'absence_request' | 'absence_approved' | 'absence_rejected';
+  type: 'vacation_approved' | 'vacation_rejected' | 'vacation_modified' | 'schedule_change' | 'schedule_new' | 'birthday' | 'absence_request' | 'absence_approved' | 'absence_rejected';
   title: string;
   message: string;
   data?: any; // Datos adicionales específicos del tipo de notificación
@@ -33,6 +33,8 @@ interface NotificationContextType {
   markAllAsRead: () => Promise<void>;
   deleteNotification: (notificationId: string) => Promise<void>;
   isLoading: boolean;
+  getUserNotifications: (userId: string) => Notification[];
+  getUserUnreadCount: (userId: string) => number;
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
@@ -121,6 +123,14 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
 
   const unreadCount = notifications.filter(n => !n.isRead).length;
 
+  const getUserNotifications = (userId: string): Notification[] => {
+    return notifications.filter(n => n.userId === userId);
+  };
+
+  const getUserUnreadCount = (userId: string): number => {
+    return notifications.filter(n => n.userId === userId && !n.isRead).length;
+  };
+
   return (
     <NotificationContext.Provider value={{
       notifications,
@@ -129,7 +139,9 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
       markAsRead,
       markAllAsRead,
       deleteNotification,
-      isLoading
+      isLoading,
+      getUserNotifications,
+      getUserUnreadCount
     }}>
       {children}
     </NotificationContext.Provider>

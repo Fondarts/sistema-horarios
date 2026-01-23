@@ -12,6 +12,7 @@ import { Logo } from './Logo';
 import { TestDataGenerator } from './TestDataGenerator';
 import { ConfigurationModal } from './ConfigurationModal';
 import { useLanguage } from '../contexts/LanguageContext';
+import { GoogleMapPicker } from './GoogleMapPicker';
 
 interface StoreSelectorProps {
   onStoreSelect: (storeId: string) => void;
@@ -33,7 +34,9 @@ export function StoreSelector({ onStoreSelect }: StoreSelectorProps) {
     name: '',
     address: '',
     phone: '',
-    email: ''
+    email: '',
+    latitude: undefined as number | undefined,
+    longitude: undefined as number | undefined
   });
 
   const handleCreateStore = async () => {
@@ -58,10 +61,14 @@ export function StoreSelector({ onStoreSelect }: StoreSelectorProps) {
       if (formData.email.trim()) {
         storeData.email = formData.email.trim();
       }
+      if (formData.latitude !== undefined && formData.longitude !== undefined) {
+        storeData.latitude = formData.latitude;
+        storeData.longitude = formData.longitude;
+      }
 
       const storeId = await createStore(storeData);
 
-      setFormData({ name: '', address: '', phone: '', email: '' });
+      setFormData({ name: '', address: '', phone: '', email: '', latitude: undefined, longitude: undefined });
       setShowCreateForm(false);
       alert('Tienda creada exitosamente');
     } catch (error) {
@@ -91,11 +98,15 @@ export function StoreSelector({ onStoreSelect }: StoreSelectorProps) {
       if (formData.email.trim()) {
         updateData.email = formData.email.trim();
       }
+      if (formData.latitude !== undefined && formData.longitude !== undefined) {
+        updateData.latitude = formData.latitude;
+        updateData.longitude = formData.longitude;
+      }
 
       await updateStore(storeId, updateData);
 
       setEditingStore(null);
-      setFormData({ name: '', address: '', phone: '', email: '' });
+      setFormData({ name: '', address: '', phone: '', email: '', latitude: undefined, longitude: undefined });
       alert('Tienda actualizada exitosamente');
     } catch (error) {
       console.error('Error updating store:', error);
@@ -121,7 +132,9 @@ export function StoreSelector({ onStoreSelect }: StoreSelectorProps) {
       name: store.name,
       address: store.address || '',
       phone: store.phone || '',
-      email: store.email || ''
+      email: store.email || '',
+      latitude: store.latitude,
+      longitude: store.longitude
     });
   };
 
@@ -359,63 +372,84 @@ export function StoreSelector({ onStoreSelect }: StoreSelectorProps) {
 
         {/* Modal Crear/Editar Tienda */}
         {(showCreateForm || editingStore) && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className={`bg-gray-200 dark:bg-gray-800 rounded-lg shadow-xl w-full ${isMobile ? 'mx-4 p-4 max-w-sm' : 'p-6 max-w-md'}`}>
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-y-auto">
+            <div className={`bg-gray-200 dark:bg-gray-800 rounded-lg shadow-xl w-full ${isMobile ? 'mx-4 p-4 max-w-sm my-4' : 'p-6 max-w-4xl my-4'}`}>
               <h3 className={`${isMobile ? 'text-lg' : 'text-xl'} font-semibold text-gray-900 dark:text-gray-100 mb-4`}>
                 {editingStore ? t('editStoreTitle') : t('createStoreTitle')}
               </h3>
               
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    {t('storeName')} *
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.name}
-                    onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                    className="input-field"
-                    placeholder={t('storeNamePlaceholder')}
-                    required
-                  />
+              <div className={`${isMobile ? 'space-y-4' : 'grid grid-cols-2 gap-6'}`}>
+                {/* Columna izquierda: Formulario */}
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      {t('storeName')} *
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.name}
+                      onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                      className="input-field"
+                      placeholder={t('storeNamePlaceholder')}
+                      required
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      {t('storeAddress')}
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.address}
+                      onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
+                      className="input-field"
+                      placeholder={t('storeAddressPlaceholder')}
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      {t('storePhone')}
+                    </label>
+                    <input
+                      type="tel"
+                      value={formData.phone}
+                      onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                      className="input-field"
+                      placeholder={t('storePhonePlaceholder')}
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      {t('storeEmail')}
+                    </label>
+                    <input
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                      className="input-field"
+                      placeholder={t('storeEmailPlaceholder')}
+                    />
+                  </div>
                 </div>
-                
-                <div>
+
+                {/* Columna derecha: Mapa */}
+                <div className="space-y-2">
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    {t('storeAddress')}
+                    Ubicación en el mapa
                   </label>
-                  <input
-                    type="text"
-                    value={formData.address}
-                    onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
-                    className="input-field"
-                    placeholder={t('storeAddressPlaceholder')}
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    {t('storePhone')}
-                  </label>
-                  <input
-                    type="tel"
-                    value={formData.phone}
-                    onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                    className="input-field"
-                    placeholder={t('storePhonePlaceholder')}
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    {t('storeEmail')}
-                  </label>
-                  <input
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                    className="input-field"
-                    placeholder={t('storeEmailPlaceholder')}
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                    Haz clic en el mapa o arrastra el pin para establecer la ubicación de la tienda
+                  </p>
+                  <GoogleMapPicker
+                    latitude={formData.latitude}
+                    longitude={formData.longitude}
+                    address={formData.address}
+                    onLocationChange={(lat, lng) => {
+                      setFormData(prev => ({ ...prev, latitude: lat, longitude: lng }));
+                    }}
                   />
                 </div>
               </div>
@@ -425,7 +459,7 @@ export function StoreSelector({ onStoreSelect }: StoreSelectorProps) {
                   onClick={() => {
                     setShowCreateForm(false);
                     setEditingStore(null);
-                    setFormData({ name: '', address: '', phone: '', email: '' });
+                    setFormData({ name: '', address: '', phone: '', email: '', latitude: undefined, longitude: undefined });
                   }}
                   className={`${isMobile ? 'btn-secondary text-sm py-2' : 'btn-secondary'}`}
                 >

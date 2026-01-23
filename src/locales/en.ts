@@ -299,6 +299,11 @@ export const en = {
   // Notifications
   notifications: 'Notifications',
   noNotifications: 'No notifications',
+  markAllAsRead: 'Mark all as read',
+  markAsRead: 'Mark as read',
+  justNow: 'Just now',
+  hoursAgo: 'h ago',
+  yesterday: 'Yesterday',
   birthdayToday: 'Birthday today',
   reviewAssignments: 'Review assignments',
   verifyAllEmployeesHaveAssignedSchedules: 'Verify that all employees have assigned schedules',

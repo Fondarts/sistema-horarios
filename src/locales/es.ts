@@ -299,6 +299,11 @@ export const es = {
   // Notifications
   notifications: 'Notificaciones',
   noNotifications: 'No hay notificaciones',
+  markAllAsRead: 'Marcar todas como leídas',
+  markAsRead: 'Marcar como leída',
+  justNow: 'Ahora',
+  hoursAgo: 'h',
+  yesterday: 'Ayer',
   birthdayToday: 'Cumpleaños hoy',
   reviewAssignments: 'Revisar asignaciones',
   verifyAllEmployeesHaveAssignedSchedules: 'Verifica que todos los empleados tengan horarios asignados',

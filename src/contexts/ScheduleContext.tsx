@@ -3,9 +3,12 @@ import { Shift, StoreSchedule, StoreException, ValidationError, Template } from 
 import { useStore } from './StoreContext';
 import { useEmployees } from './EmployeeContext';
 import { useAuth } from './AuthContext';
+import { useNotifications } from './NotificationContext';
 import { db } from '../firebase';
 import { HistoryService } from '../services/historyService';
 import { VacationRequest } from './VacationContext';
+import { format, startOfWeek, endOfWeek, parseISO, isSameWeek } from 'date-fns';
+import { es, enUS } from 'date-fns/locale';
 import { 
   collection, 
   doc, 
@@ -202,6 +205,7 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
   const [templates, setTemplates] = useState<Template[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [publishedShiftsState, setPublishedShiftsState] = useState<Map<string, Partial<Shift>>>(new Map());
+  const { addNotification } = useNotifications();
   const { currentStore } = useStore();
   const { employees } = useEmployees();
   const { currentEmployee } = useAuth();
@@ -702,6 +706,16 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
 
   const publishShifts = async (shiftIds: string[]) => {
     try {
+      if (!currentEmployee) return;
+
+      // Primero, actualizar todos los turnos y recopilar información
+      const shiftsToProcess: Array<{
+        shift: Shift;
+        wasPublished: boolean;
+        lastPublishedState: any;
+        employee: any;
+      }> = [];
+
       const updatePromises = shiftIds.map(async (id) => {
         const shiftRef = doc(db, 'shifts', id);
         const shift = shifts.find(s => s.id === id);
@@ -709,6 +723,7 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
         
         const wasPublished = shift.isPublished || false;
         const lastPublishedState = publishedShiftsState.get(id);
+        const employee = employees.find(emp => emp.id === shift.employeeId);
         
         await updateDoc(shiftRef, { 
           isPublished: true,
@@ -727,38 +742,151 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
           });
           return newMap;
         });
-        
-        // Registrar en historial
-        if (currentEmployee) {
-          const employee = employees.find(emp => emp.id === shift.employeeId);
-          
-          if (!wasPublished) {
-            // Turno nuevo - registrar como creado
-            await HistoryService.logShiftCreated(id, currentEmployee.id, employee?.name);
-          } else if (lastPublishedState) {
-            // Turno modificado - registrar cambios desde la última publicación
-            const changes: Record<string, { old: any; new: any }> = {};
-            if (lastPublishedState.employeeId !== shift.employeeId) {
-              changes.employeeId = { old: lastPublishedState.employeeId, new: shift.employeeId };
-            }
-            if (lastPublishedState.date !== shift.date) {
-              changes.date = { old: lastPublishedState.date, new: shift.date };
-            }
-            if (lastPublishedState.startTime !== shift.startTime) {
-              changes.startTime = { old: lastPublishedState.startTime, new: shift.startTime };
-            }
-            if (lastPublishedState.endTime !== shift.endTime) {
-              changes.endTime = { old: lastPublishedState.endTime, new: shift.endTime };
-            }
-            
-            if (Object.keys(changes).length > 0) {
-              await HistoryService.logShiftUpdated(id, currentEmployee.id, changes, employee?.name);
-            }
-          }
-        }
+
+        shiftsToProcess.push({
+          shift,
+          wasPublished,
+          lastPublishedState,
+          employee
+        });
       });
       
       await Promise.all(updatePromises);
+
+      // Agrupar turnos nuevos por empleado y por semana
+      const newShiftsByEmployeeAndWeek = new Map<string, Map<string, Shift[]>>();
+      const modifiedShifts: Array<{
+        shift: Shift;
+        changes: Record<string, { old: any; new: any }>;
+        employee: any;
+      }> = [];
+
+      for (const { shift, wasPublished, lastPublishedState, employee } of shiftsToProcess) {
+        if (!wasPublished) {
+          // Turno nuevo
+          await HistoryService.logShiftCreated(shift.id, currentEmployee.id, employee?.name);
+          
+          const weekStart = startOfWeek(parseISO(shift.date), { weekStartsOn: 1 });
+          const weekKey = format(weekStart, 'yyyy-MM-dd');
+          
+          if (!newShiftsByEmployeeAndWeek.has(shift.employeeId)) {
+            newShiftsByEmployeeAndWeek.set(shift.employeeId, new Map());
+          }
+          const employeeWeeks = newShiftsByEmployeeAndWeek.get(shift.employeeId)!;
+          if (!employeeWeeks.has(weekKey)) {
+            employeeWeeks.set(weekKey, []);
+          }
+          employeeWeeks.get(weekKey)!.push(shift);
+        } else if (lastPublishedState) {
+          // Turno modificado
+          const changes: Record<string, { old: any; new: any }> = {};
+          if (lastPublishedState.date !== shift.date) {
+            changes.date = { old: lastPublishedState.date, new: shift.date };
+          }
+          if (lastPublishedState.startTime !== shift.startTime) {
+            changes.startTime = { old: lastPublishedState.startTime, new: shift.startTime };
+          }
+          if (lastPublishedState.endTime !== shift.endTime) {
+            changes.endTime = { old: lastPublishedState.endTime, new: shift.endTime };
+          }
+          
+          if (Object.keys(changes).length > 0) {
+            await HistoryService.logShiftUpdated(shift.id, currentEmployee.id, changes, employee?.name);
+            modifiedShifts.push({ shift, changes, employee });
+          }
+        }
+      }
+
+      // Crear notificaciones agrupadas para turnos nuevos
+      for (const [employeeId, weeks] of Array.from(newShiftsByEmployeeAndWeek.entries())) {
+        for (const [weekKey, weekShifts] of Array.from(weeks.entries())) {
+          if (weekShifts.length === 0) continue;
+
+          const weekStart = parseISO(weekKey);
+          const weekEnd = endOfWeek(weekStart, { weekStartsOn: 1 });
+          
+          if (weekShifts.length === 1) {
+            // Un solo turno - notificación individual
+            const shift = weekShifts[0];
+            const shiftDate = parseISO(shift.date);
+            try {
+              await addNotification({
+                userId: employeeId,
+                type: 'schedule_new',
+                title: 'Nuevo Horario Asignado',
+                message: `Se te ha asignado un nuevo turno el ${format(shiftDate, 'd MMMM', { locale: es })} de ${shift.startTime} a ${shift.endTime}.`,
+                data: {
+                  shiftId: shift.id,
+                  date: shift.date,
+                  startTime: shift.startTime,
+                  endTime: shift.endTime
+                }
+              });
+            } catch (error) {
+              console.error('Error creating notification for new shift:', error);
+            }
+          } else {
+            // Múltiples turnos - notificación agrupada
+            try {
+              await addNotification({
+                userId: employeeId,
+                type: 'schedule_new',
+                title: 'Nuevos Horarios Asignados',
+                message: `Se te han publicado los horarios de la semana del ${format(weekStart, 'd MMMM', { locale: es })} al ${format(weekEnd, 'd MMMM', { locale: es })}.`,
+                data: {
+                  shiftIds: weekShifts.map((s: Shift) => s.id),
+                  weekStart: weekKey,
+                  weekEnd: format(weekEnd, 'yyyy-MM-dd'),
+                  shiftCount: weekShifts.length
+                }
+              });
+            } catch (error) {
+              console.error('Error creating grouped notification for new shifts:', error);
+            }
+          }
+        }
+      }
+
+      // Crear notificaciones mejoradas para turnos modificados
+      for (const { shift, changes, employee } of modifiedShifts) {
+        try {
+          const shiftDate = parseISO(shift.date);
+          const changeMessages: string[] = [];
+          
+          if (changes.date) {
+            const oldDate = parseISO(changes.date.old);
+            const newDate = parseISO(changes.date.new);
+            changeMessages.push(`fecha de ${format(oldDate, 'd MMMM', { locale: es })} a ${format(newDate, 'd MMMM', { locale: es })}`);
+          }
+          if (changes.startTime || changes.endTime) {
+            const oldStart = changes.startTime?.old || shift.startTime;
+            const oldEnd = changes.endTime?.old || shift.endTime;
+            const oldTime = `${oldStart} - ${oldEnd}`;
+            const newTime = `${shift.startTime} - ${shift.endTime}`;
+            changeMessages.push(`horario de ${oldTime} a ${newTime}`);
+          }
+          
+          const changeMessage = changeMessages.length > 0 
+            ? `Se ha modificado ${changeMessages.join(' y ')}.`
+            : 'Se ha modificado.';
+          
+          await addNotification({
+            userId: shift.employeeId,
+            type: 'schedule_change',
+            title: 'Horario Modificado',
+            message: `Tu turno del ${format(shiftDate, 'd MMMM', { locale: es })} ha sido modificado. ${changeMessage}`,
+            data: {
+              shiftId: shift.id,
+              date: shift.date,
+              startTime: shift.startTime,
+              endTime: shift.endTime,
+              changes
+            }
+          });
+        } catch (error) {
+          console.error('Error creating notification for shift change:', error);
+        }
+      }
     } catch (error) {
       console.error('Error publishing shifts:', error);
     }

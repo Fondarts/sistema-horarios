@@ -12,6 +12,7 @@ import { db } from '../firebase';
 import { collection, addDoc, query, where, onSnapshot } from 'firebase/firestore';
 import { TimeClockEntry } from '../types';
 import { AbsenceManagement } from './AbsenceManagement';
+import { NotificationBell } from './NotificationBell';
 
 // Función para calcular distancia entre dos puntos GPS (fórmula de Haversine)
 function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
@@ -106,14 +107,19 @@ export default function TimeClockApp() {
 
   // Obtener ubicación de la tienda (si está disponible)
   useEffect(() => {
-    if (currentEmployee?.storeId) {
-      // Por ahora, usar una ubicación por defecto o configurable
-      // En el futuro, esto podría venir de la configuración de la tienda
-      // Por ahora, usaremos una ubicación de ejemplo (puedes cambiarla)
-      setStoreLocation({ lat: -34.6037, lon: -58.3816 }); // Buenos Aires por defecto
-      setMaxDistance(100); // 100 metros de radio
+    if (currentEmployee?.storeId && employeeStore) {
+      // Usar las coordenadas guardadas de la tienda
+      if (employeeStore.latitude && employeeStore.longitude) {
+        setStoreLocation({ lat: employeeStore.latitude, lon: employeeStore.longitude });
+        setMaxDistance(100); // 100 metros de radio
+      } else {
+        // Si no hay coordenadas guardadas, no validar distancia
+        setStoreLocation(null);
+      }
+    } else {
+      setStoreLocation(null);
     }
-  }, [currentEmployee?.storeId]);
+  }, [currentEmployee?.storeId, employeeStore]);
 
   const weekStart = startOfWeek(currentWeek, { weekStartsOn: 1 });
   const weekEnd = endOfWeek(currentWeek, { weekStartsOn: 1 });
@@ -269,15 +275,19 @@ export default function TimeClockApp() {
                 </p>
               )}
             </div>
-            {/* Botón de cerrar sesión */}
-            <button
-              onClick={logout}
-              className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 ml-4"
-              title={t('closeSession') || 'Cerrar Sesión'}
-            >
-              <LogOut className="w-5 h-5" />
-              {!isMobile && <span className="text-sm">{t('closeSession') || 'Cerrar Sesión'}</span>}
-            </button>
+            <div className="flex items-center space-x-2">
+              {/* Campanita de notificaciones */}
+              <NotificationBell userId={currentEmployee.id} />
+              {/* Botón de cerrar sesión */}
+              <button
+                onClick={logout}
+                className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
+                title={t('closeSession') || 'Cerrar Sesión'}
+              >
+                <LogOut className="w-5 h-5" />
+                {!isMobile && <span className="text-sm">{t('closeSession') || 'Cerrar Sesión'}</span>}
+              </button>
+            </div>
           </div>
         </div>
       </div>
