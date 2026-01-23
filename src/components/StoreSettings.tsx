@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSchedule } from '../contexts/ScheduleContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useCompactMode } from '../contexts/CompactModeContext';
+import { usePermissions } from '../hooks/usePermissions';
 import { Settings, Clock, Calendar, Plus, Trash2, Edit, X, CalendarDays } from 'lucide-react';
 import { StoreSchedule, StoreException, TimeRange } from '../types';
 import TimeInput from './TimeInput';
@@ -23,6 +24,7 @@ export function StoreSettings() {
     deleteStoreException
   } = useSchedule();
   const { isCompactMode, isMobile } = useCompactMode();
+  const permissions = usePermissions();
   const [activeSubTab, setActiveSubTab] = useState<SubTabType>('horarios');
 
   // Horario de tienda por defecto (Lunes a Domingo + Feriados)
@@ -90,12 +92,22 @@ export function StoreSettings() {
   };
 
   const handleScheduleChange = (id: string, updates: Partial<StoreSchedule>) => {
+    if (!permissions.storeSchedule?.edit) {
+      alert('No tenés acceso. Solo tenés permisos de lectura.');
+      return;
+    }
+    
     console.log('StoreSettings: handleScheduleChange called with:', { id, updates });
     updateStoreSchedule(id, updates);
   };
 
   // Función para agregar un nuevo rango de tiempo
   const addTimeRange = (scheduleId: string) => {
+    if (!permissions.storeSchedule?.edit) {
+      alert('No tenés acceso. Solo tenés permisos de lectura.');
+      return;
+    }
+    
     const schedule = storeSchedule.find(s => s.id === scheduleId);
     if (!schedule) return;
 
@@ -115,6 +127,11 @@ export function StoreSettings() {
 
   // Función para inicializar el primer rango cuando se marca como abierto
   const initializeFirstTimeRange = (scheduleId: string) => {
+    if (!permissions.storeSchedule?.edit) {
+      alert('No tenés acceso. Solo tenés permisos de lectura.');
+      return;
+    }
+    
     const schedule = storeSchedule.find(s => s.id === scheduleId);
     if (!schedule) return;
 
@@ -137,6 +154,11 @@ export function StoreSettings() {
 
   // Función para eliminar un rango de tiempo
   const removeTimeRange = (scheduleId: string, rangeId: string) => {
+    if (!permissions.storeSchedule?.edit) {
+      alert('No tenés acceso. Solo tenés permisos de lectura.');
+      return;
+    }
+    
     const schedule = storeSchedule.find(s => s.id === scheduleId);
     if (!schedule) return;
 
@@ -150,6 +172,11 @@ export function StoreSettings() {
 
   // Función para actualizar un rango de tiempo
   const updateTimeRange = (scheduleId: string, rangeId: string, updates: Partial<TimeRange>) => {
+    if (!permissions.storeSchedule?.edit) {
+      alert('No tenés acceso. Solo tenés permisos de lectura.');
+      return;
+    }
+    
     const schedule = storeSchedule.find(s => s.id === scheduleId);
     if (!schedule) return;
 
@@ -188,6 +215,11 @@ export function StoreSettings() {
   };
 
   const handleDeleteException = async (id: string) => {
+    if (!permissions.storeSchedule?.edit) {
+      alert('No tenés acceso. Solo tenés permisos de lectura.');
+      return;
+    }
+    
     if (window.confirm('¿Estás seguro de que quieres eliminar esta excepción de horario?')) {
       try {
         await deleteStoreException(id);
@@ -199,6 +231,12 @@ export function StoreSettings() {
 
   const handleExceptionSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!permissions.storeSchedule?.edit) {
+      alert('No tenés acceso. Solo tenés permisos de lectura.');
+      return;
+    }
+    
     try {
       if (editingException) {
         await updateStoreException(editingException.id, exceptionForm);

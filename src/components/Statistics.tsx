@@ -37,6 +37,14 @@ const minutesToTime = (minutes: number): string => {
   return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
 };
 
+// Función para calcular horas totales del turno (sin restar descanso)
+const getTotalShiftHours = (shift: Shift): number => {
+  const startMinutes = timeToMinutes(shift.startTime);
+  const endMinutes = timeToMinutes(shift.endTime);
+  const totalMinutes = endMinutes - startMinutes;
+  return totalMinutes / 60; // Convertir a horas
+};
+
 
 export function Statistics() {
   const { shifts, storeSchedule } = useSchedule();
@@ -135,7 +143,7 @@ export function Statistics() {
       
       const employeeWeeks = employeeWeeklyHours.get(shift.employeeId)!;
       const current = employeeWeeks.get(weekKey) || 0;
-      employeeWeeks.set(weekKey, current + shift.hours);
+      employeeWeeks.set(weekKey, current + getTotalShiftHours(shift));
     });
 
     const totalExtraHours = Array.from(employeeWeeklyHours.entries()).reduce((total, [employeeId, weeklyHoursMap]) => {
@@ -201,7 +209,7 @@ export function Statistics() {
     return {
       month: format(month, 'MMM yyyy', { locale: es }),
       shifts: monthShifts.length,
-      totalHours: monthShifts.reduce((total, shift) => total + shift.hours, 0),
+      totalHours: monthShifts.reduce((total, shift) => total + getTotalShiftHours(shift), 0),
       uniqueEmployees: new Set(monthShifts.map(shift => shift.employeeId)).size,
       extraHours: totalExtraHours,
       staffRotation: staffRotation
@@ -233,7 +241,7 @@ export function Statistics() {
     const employeeWeeklyHours = new Map<string, number>();
     weekShifts.forEach(shift => {
       const current = employeeWeeklyHours.get(shift.employeeId) || 0;
-      employeeWeeklyHours.set(shift.employeeId, current + shift.hours);
+      employeeWeeklyHours.set(shift.employeeId, current + getTotalShiftHours(shift));
     });
 
     const totalExtraHours = Array.from(employeeWeeklyHours.entries()).reduce((total, [employeeId, weeklyHours]) => {
@@ -302,7 +310,7 @@ export function Statistics() {
     return {
       week: format(weekStart, 'd MMM', { locale: es }) + ' - ' + format(weekEnd, 'd MMM', { locale: es }),
       shifts: weekShifts.length,
-      totalHours: weekShifts.reduce((total, shift) => total + shift.hours, 0),
+      totalHours: weekShifts.reduce((total, shift) => total + getTotalShiftHours(shift), 0),
       uniqueEmployees: new Set(weekShifts.map(shift => shift.employeeId)).size,
       extraHours: totalExtraHours,
       staffRotation: staffRotation
@@ -360,7 +368,7 @@ export function Statistics() {
 
   const employeeStats: StatisticsType[] = orderedEmployees.map(employee => {
     const employeeShifts = weeklyShifts.filter(s => s.employeeId === employee.id);
-    const assignedHours = employeeShifts.reduce((total, shift) => total + shift.hours, 0);
+    const assignedHours = employeeShifts.reduce((total, shift) => total + getTotalShiftHours(shift), 0);
     
     // Calcular días desde último fin de semana completamente libre (sábado Y domingo sin turnos)
     const calculateDaysSinceLastWeekendOff = () => {
@@ -460,7 +468,7 @@ export function Statistics() {
     const dayCounts = [0, 0, 0, 0, 0, 0, 0]; // Domingo a Sábado
     employeeShifts.forEach(shift => {
       const dayOfWeek = new Date(shift.date).getDay();
-      dayCounts[dayOfWeek] += shift.hours;
+      dayCounts[dayOfWeek] += getTotalShiftHours(shift);
     });
     const busiestDay = dayCounts.indexOf(Math.max(...dayCounts));
 
@@ -623,7 +631,7 @@ export function Statistics() {
             <div>
               <p className={`${isMobile ? 'text-xs' : 'text-sm'} text-gray-600 dark:text-gray-400`}>{t('totalHours')}</p>
               <p className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold text-gray-900 dark:text-gray-100`}>
-                {formatHours(weeklyShifts.reduce((total, shift) => total + shift.hours, 0))}
+                {formatHours(weeklyShifts.reduce((total, shift) => total + getTotalShiftHours(shift), 0))}
               </p>
             </div>
           </div>
@@ -848,7 +856,7 @@ export function Statistics() {
                 <div>
                   <p className={`${isMobile ? 'text-xs' : 'text-sm'} text-gray-600 dark:text-gray-400 ${isMobile ? 'mb-1' : ''}`}>Horas Totales</p>
                   <p className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold text-gray-900 dark:text-gray-100`}>
-                    {formatHours(monthlyShifts.reduce((total, shift) => total + shift.hours, 0))}
+                    {formatHours(monthlyShifts.reduce((total, shift) => total + getTotalShiftHours(shift), 0))}
                   </p>
                 </div>
               </div>
@@ -860,7 +868,7 @@ export function Statistics() {
                 <div>
                   <p className={`${isMobile ? 'text-xs' : 'text-sm'} text-gray-600 dark:text-gray-400 ${isMobile ? 'mb-1' : ''}`}>Promedio Semanal</p>
                   <p className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold text-gray-900 dark:text-gray-100`}>
-                    {formatHours(monthlyShifts.reduce((total, shift) => total + shift.hours, 0) / 4)}
+                    {formatHours(monthlyShifts.reduce((total, shift) => total + getTotalShiftHours(shift), 0) / 4)}
                   </p>
                 </div>
               </div>
@@ -1051,7 +1059,7 @@ export function Statistics() {
                 <div>
                   <p className={`${isMobile ? 'text-xs' : 'text-sm'} text-gray-600 dark:text-gray-400 ${isMobile ? 'mb-1' : ''}`}>Horas Totales</p>
                   <p className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold text-gray-900 dark:text-gray-100`}>
-                    {formatHours(yearlyShifts.reduce((total, shift) => total + shift.hours, 0))}
+                    {formatHours(yearlyShifts.reduce((total, shift) => total + getTotalShiftHours(shift), 0))}
                   </p>
                 </div>
               </div>
@@ -1063,7 +1071,7 @@ export function Statistics() {
                 <div>
                   <p className={`${isMobile ? 'text-xs' : 'text-sm'} text-gray-600 dark:text-gray-400 ${isMobile ? 'mb-1' : ''}`}>Promedio Mensual</p>
                   <p className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold text-gray-900 dark:text-gray-100`}>
-                    {formatHours(yearlyShifts.reduce((total, shift) => total + shift.hours, 0) / 12)}
+                    {formatHours(yearlyShifts.reduce((total, shift) => total + getTotalShiftHours(shift), 0) / 12)}
                   </p>
                 </div>
               </div>

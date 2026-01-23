@@ -12,6 +12,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { useDateFormat } from '../contexts/DateFormatContext';
 import { useNotifications } from '../contexts/NotificationContext';
 import { useTheme } from '../contexts/ThemeContext';
+import { usePermissions } from '../hooks/usePermissions';
 import { Shift, Employee } from '../types';
 import TimeInput from './TimeInput';
 import { BirthdayNotification } from './BirthdayNotification';
@@ -26,6 +27,7 @@ export default function ScheduleManagement() {
   const { t, language } = useLanguage();
   const { formatDate } = useDateFormat();
   const { addNotification } = useNotifications();
+  const permissions = usePermissions();
   
   // Get dynamic locale based on current language
   const getLocale = () => {
@@ -615,6 +617,12 @@ export default function ScheduleManagement() {
   const handleCreateOrUpdateShift = async () => {
     if (!shiftForm.employeeId) return;
 
+    // Validar permisos de edición
+    if (!permissions.schedule?.edit) {
+      alert('No tenés acceso. Solo tenés permisos de lectura.');
+      return;
+    }
+
     // Validar si el empleado tiene fecha de terminación
     const selectedEmployee = employees.find(emp => emp.id === shiftForm.employeeId);
     if (selectedEmployee && selectedEmployee.terminationDate) {
@@ -636,7 +644,9 @@ export default function ScheduleManagement() {
 
     if (editingShift) {
       // Actualizar turno existente
-      await updateShift(editingShift.id, {
+      console.log('ScheduleManagement: Updating shift from form:', shiftForm);
+      
+      const errors = await updateShift(editingShift.id, {
         employeeId: shiftForm.employeeId,
         date: shiftForm.date,
         startTime: shiftForm.startTime,
@@ -644,6 +654,13 @@ export default function ScheduleManagement() {
         hours: calculatedHours,
         breakDuration: shiftForm.breakDuration > 0 ? shiftForm.breakDuration : undefined
       });
+
+      console.log('ScheduleManagement: Form shift update errors:', errors);
+
+      if (errors.length > 0) {
+        alert(errors.map(e => e.message).join('\n'));
+        return;
+      }
       setHasUnpublishedChanges(true);
     } else {
       // Crear nuevo turno
@@ -672,6 +689,11 @@ export default function ScheduleManagement() {
   };
 
   const handleDeleteShift = () => {
+    if (!permissions.schedule?.edit) {
+      alert('No tenés acceso. Solo tenés permisos de lectura.');
+      return;
+    }
+    
     if (editingShift) {
       deleteShift(editingShift.id);
       setHasUnpublishedChanges(true);
@@ -738,6 +760,11 @@ export default function ScheduleManagement() {
   };
 
   const publishWeekShifts = async () => {
+    if (!permissions.schedule?.edit) {
+      alert('No tenés acceso. Solo tenés permisos de lectura.');
+      return;
+    }
+    
     const unpublishedShifts = weekShifts.filter(s => !s.isPublished);
     await publishShifts(unpublishedShifts.map(s => s.id));
     
@@ -1303,6 +1330,11 @@ export default function ScheduleManagement() {
             
             const newHours = startDuration / 60;
 
+            if (!permissions.schedule?.edit) {
+              alert('No tenés acceso. Solo tenés permisos de lectura.');
+              return;
+            }
+
             updateShift(shiftId, {
               ...currentShift,
               startTime: newStartTime,
@@ -1418,6 +1450,11 @@ export default function ScheduleManagement() {
             
             const newHours = calculateExactDuration(newStartTime, newEndTime);
 
+            if (!permissions.schedule?.edit) {
+              alert('No tenés acceso. Solo tenés permisos de lectura.');
+              return;
+            }
+
             updateShift(shiftId, {
               ...currentShift,
               startTime: newStartTime,
@@ -1484,46 +1521,64 @@ export default function ScheduleManagement() {
       const leftHandle = bar.querySelector('.resize-handle-left');
       const rightHandle = bar.querySelector('.resize-handle-right');
       
+      const handleLeftResize = (e: Event) => {
+        e.stopPropagation();
+        const target = e.currentTarget as HTMLDivElement;
+        const barElement = target.closest('.gantt-bar') as HTMLDivElement;
+        if (!barElement) return;
+        setResizingElement(barElement);
+        setContainerRect(barElement.parentElement?.getBoundingClientRect() || null);
+        setStartX((e as MouseEvent).clientX);
+        setStartLeft(barElement.offsetLeft);
+        setStartWidth(barElement.offsetWidth);
+        setIsResizingLeft(true);
+        e.preventDefault();
+      };
+      
+      const handleRightResize = (e: Event) => {
+        e.stopPropagation();
+        const target = e.currentTarget as HTMLDivElement;
+        const barElement = target.closest('.gantt-bar') as HTMLDivElement;
+        if (!barElement) return;
+        setResizingElement(barElement);
+        setContainerRect(barElement.parentElement?.getBoundingClientRect() || null);
+        setStartX((e as MouseEvent).clientX);
+        setStartLeft(barElement.offsetLeft);
+        setStartWidth(barElement.offsetWidth);
+        setIsResizingLeft(false);
+        e.preventDefault();
+      };
+      
       if (leftHandle) {
-        const handleLeftResize = (e: Event) => {
-          e.stopPropagation();
-          const target = e.currentTarget as HTMLDivElement;
-          setResizingElement(target.closest('.gantt-bar') as HTMLDivElement);
-          setContainerRect(target.closest('.gantt-bar')?.parentElement?.getBoundingClientRect() || null);
-          setStartX((e as MouseEvent).clientX);
-          setStartLeft((target.closest('.gantt-bar') as HTMLDivElement).offsetLeft);
-          setStartWidth((target.closest('.gantt-bar') as HTMLDivElement).offsetWidth);
-          setIsResizingLeft(true);
-          e.preventDefault();
-        };
         leftHandle.addEventListener('mousedown', handleLeftResize);
+        // Guardar referencia para cleanup
+        (bar as any)._leftHandle = leftHandle;
+        (bar as any)._leftHandleFn = handleLeftResize;
       }
       
       if (rightHandle) {
-        const handleRightResize = (e: Event) => {
-          e.stopPropagation();
-          const target = e.currentTarget as HTMLDivElement;
-          setResizingElement(target.closest('.gantt-bar') as HTMLDivElement);
-          setContainerRect(target.closest('.gantt-bar')?.parentElement?.getBoundingClientRect() || null);
-          setStartX((e as MouseEvent).clientX);
-          setStartLeft((target.closest('.gantt-bar') as HTMLDivElement).offsetLeft);
-          setStartWidth((target.closest('.gantt-bar') as HTMLDivElement).offsetWidth);
-          setIsResizingLeft(false);
-          e.preventDefault();
-        };
         rightHandle.addEventListener('mousedown', handleRightResize);
+        // Guardar referencia para cleanup
+        (bar as any)._rightHandle = rightHandle;
+        (bar as any)._rightHandleFn = handleRightResize;
       }
       
       bar.addEventListener('mousedown', handleMouseDown);
+      // Guardar referencia para cleanup
+      (bar as any)._handleMouseDown = handleMouseDown;
     });
 
     return () => {
       ganttBars.forEach(bar => {
-        bar.removeEventListener('mousedown', () => {});
-        const leftHandle = bar.querySelector('.resize-handle-left');
-        const rightHandle = bar.querySelector('.resize-handle-right');
-        if (leftHandle) leftHandle.removeEventListener('mousedown', () => {});
-        if (rightHandle) rightHandle.removeEventListener('mousedown', () => {});
+        if ((bar as any)._handleMouseDown) {
+          bar.removeEventListener('mousedown', (bar as any)._handleMouseDown);
+        }
+        if ((bar as any)._leftHandle && (bar as any)._leftHandleFn) {
+          (bar as any)._leftHandle.removeEventListener('mousedown', (bar as any)._leftHandleFn);
+        }
+        if ((bar as any)._rightHandle && (bar as any)._rightHandleFn) {
+          (bar as any)._rightHandle.removeEventListener('mousedown', (bar as any)._rightHandleFn);
+        }
       });
     };
   }, [shifts]); // Re-ejecutar cuando cambien los shifts

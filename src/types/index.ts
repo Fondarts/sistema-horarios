@@ -180,4 +180,19 @@ export interface CompanySettings {
   updatedBy: string; // ID del usuario IT que lo actualizó
 }
 
+// Fichadas de entrada/salida con geolocalización
+export interface TimeClockEntry {
+  id: string;
+  employeeId: string;
+  storeId?: string; // ID de la tienda donde fichó
+  type: 'entry' | 'exit'; // Tipo de fichada: entrada o salida
+  timestamp: string; // ISO string de la fecha y hora
+  date: string; // formato YYYY-MM-DD
+  time: string; // formato HH:MM
+  latitude: number; // Latitud GPS
+  longitude: number; // Longitud GPS
+  accuracy?: number; // Precisión del GPS en metros
+  createdAt: string; // ISO string de cuando se creó el registro
+}
+
 

@@ -219,7 +219,7 @@ export function ManagerDashboard() {
               )}
               
               {/* Botón de volver al selector de tiendas - según permiso stores */}
-              {permissions.storeSchedule?.read && !isMobile && (
+              {permissions.stores?.read && !isMobile && (
                 <button
                   onClick={handleBackToStoreSelector}
                   className="flex items-center px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-md transition-colors dark:text-blue-400 dark:hover:text-blue-300 dark:hover:bg-blue-900/20"
@@ -252,7 +252,7 @@ export function ManagerDashboard() {
               isManager={true}
               onShowKeyboardHelp={() => setShowKeyboardHelp(true)}
               onLogout={logout}
-              onBackToStoreSelector={permissions.storeSchedule?.read ? handleBackToStoreSelector : undefined}
+              onBackToStoreSelector={permissions.stores?.read ? handleBackToStoreSelector : undefined}
               onShowUserMenu={() => setShowUserMenu(true)}
             />
           </div>

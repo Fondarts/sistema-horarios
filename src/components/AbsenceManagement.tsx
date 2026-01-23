@@ -5,6 +5,7 @@ import { useDateFormat } from '../contexts/DateFormatContext';
 import { useEmployees } from '../contexts/EmployeeContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useCompactMode } from '../contexts/CompactModeContext';
+import { usePermissions } from '../hooks/usePermissions';
 import { FileUpload } from './FileUpload';
 import { LocalFileStorage } from '../services/localFileStorage';
 import { 
@@ -21,6 +22,14 @@ import {
   Trash2,
   X
 } from 'lucide-react';
+import { 
+  AbsenceType, 
+  AbsenceStatus, 
+  ABSENCE_TYPE_LABELS, 
+  ABSENCE_STATUS_LABELS,
+  ABSENCE_TYPE_COLORS,
+  ABSENCE_STATUS_COLORS
+} from '../types/absence';
 
 // Función para formatear automáticamente la fecha mientras se escribe
 const formatDateInput = (value: string): string => {
@@ -50,15 +59,6 @@ const convertToISODate = (dateString: string): string => {
   return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
 };
 
-import { 
-  AbsenceType, 
-  AbsenceStatus, 
-  ABSENCE_TYPE_LABELS, 
-  ABSENCE_STATUS_LABELS,
-  ABSENCE_TYPE_COLORS,
-  ABSENCE_STATUS_COLORS
-} from '../types/absence';
-
 interface AbsenceManagementProps {
   isEmployeeDashboard?: boolean;
 }
@@ -67,6 +67,7 @@ export const AbsenceManagement: React.FC<AbsenceManagementProps> = ({ isEmployee
   const { t } = useLanguage();
   const { formatDate, parseDate, dateFormat } = useDateFormat();
   const { isMobile } = useCompactMode();
+  const permissions = usePermissions();
   
   // Función para obtener el placeholder dinámico según el formato de fecha
   const getDatePlaceholder = () => {
@@ -217,6 +218,12 @@ export const AbsenceManagement: React.FC<AbsenceManagementProps> = ({ isEmployee
 
   const handleApprove = async (id: string) => {
     if (!currentEmployee) return;
+    
+    if (!permissions.absences?.edit) {
+      alert('No tenés acceso. Solo tenés permisos de lectura.');
+      return;
+    }
+    
     try {
       await approveAbsenceRequest(id, currentEmployee.name || 'Manager');
     } catch (error) {
@@ -227,6 +234,12 @@ export const AbsenceManagement: React.FC<AbsenceManagementProps> = ({ isEmployee
 
   const handleReject = async (id: string) => {
     if (!currentEmployee) return;
+    
+    if (!permissions.absences?.edit) {
+      alert('No tenés acceso. Solo tenés permisos de lectura.');
+      return;
+    }
+    
     const reason = prompt('Motivo del rechazo (opcional):');
     try {
       await rejectAbsenceRequest(id, currentEmployee.name || 'Manager', reason || undefined);
@@ -237,6 +250,11 @@ export const AbsenceManagement: React.FC<AbsenceManagementProps> = ({ isEmployee
   };
 
   const handleDelete = async (id: string) => {
+    if (!permissions.absences?.edit) {
+      alert('No tenés acceso. Solo tenés permisos de lectura.');
+      return;
+    }
+    
     if (!confirm('¿Estás seguro de que quieres eliminar esta solicitud?')) return;
     try {
       await deleteAbsenceRequest(id);
@@ -279,29 +297,31 @@ export const AbsenceManagement: React.FC<AbsenceManagementProps> = ({ isEmployee
   }
 
   return (
-    <div className="space-y-6">
+    <div className={`space-y-6 ${isEmployeeDashboard ? 'pb-24' : ''}`}>
       {/* Header */}
       <div className={`flex ${isMobile ? 'flex-col space-y-4' : 'justify-between items-center'}`}>
         <div>
           <h2 className={`font-bold text-gray-900 ${isMobile ? 'text-xl' : 'text-2xl'}`}>{t('absenceManagement')}</h2>
           <p className="text-gray-600">{t('manageAllAbsenceRequests')}</p>
         </div>
-        <button
-          onClick={() => {
-            setNewRequest({
-              employeeId: currentEmployee?.id || '',
-              startDate: '',
-              endDate: '',
-              reason: '',
-              type: 'vacation' as AbsenceType
-            });
-            setShowNewRequestForm(true);
-          }}
-          className={`bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 ${isMobile ? 'w-full justify-center' : ''}`}
-        >
-          <Plus className="w-4 h-4" />
-          {t('newRequest')}
-        </button>
+        {!isEmployeeDashboard && (
+          <button
+            onClick={() => {
+              setNewRequest({
+                employeeId: currentEmployee?.id || '',
+                startDate: '',
+                endDate: '',
+                reason: '',
+                type: 'vacation' as AbsenceType
+              });
+              setShowNewRequestForm(true);
+            }}
+            className={`bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 ${isMobile ? 'w-full justify-center' : ''}`}
+          >
+            <Plus className="w-4 h-4" />
+            {t('newRequest')}
+          </button>
+        )}
       </div>
 
               {/* Estadísticas */}
@@ -385,15 +405,11 @@ export const AbsenceManagement: React.FC<AbsenceManagementProps> = ({ isEmployee
                     <div key={request.id} className="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-4">
                       {/* Header de la tarjeta */}
                       <div className="flex justify-between items-start mb-3">
-                        <div className="flex items-center">
-                          <User className="w-5 h-5 text-gray-400 dark:text-gray-500 mr-2" />
-                          <div>
-                            <div className="font-medium text-gray-900 dark:text-gray-50">{request.employeeName}</div>
-                            <div className="text-sm text-gray-500 dark:text-gray-400">{request.employeeId}</div>
-                          </div>
+                        <div className="min-w-0">
+                          <div className="font-medium text-gray-900 dark:text-gray-50 break-words leading-tight">{request.employeeName}</div>
                         </div>
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${ABSENCE_STATUS_COLORS[request.status]}`}>
-                          {t(request.status)}
+                        <span className={`inline-flex px-1.5 py-0.5 text-[10px] font-semibold rounded-full ${ABSENCE_STATUS_COLORS[request.status]}`}>
+                          {request.status === 'pending' ? 'pendiente' : t(request.status)}
                         </span>
                       </div>
 
@@ -402,7 +418,7 @@ export const AbsenceManagement: React.FC<AbsenceManagementProps> = ({ isEmployee
                         <div className="flex items-center justify-between">
                           <span className="text-sm text-gray-500 dark:text-gray-400">Tipo:</span>
                           <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${ABSENCE_TYPE_COLORS[request.type]}`}>
-                            {t(request.type)}
+                            {request.type === 'vacation' ? 'vacaciones' : t(request.type)}
                           </span>
                         </div>
                         <div className="flex items-center justify-between">
@@ -465,95 +481,80 @@ export const AbsenceManagement: React.FC<AbsenceManagementProps> = ({ isEmployee
               ) : (
                 // Vista de escritorio con tabla
                 <div className="bg-gray-200 dark:bg-gray-800 rounded-lg shadow overflow-hidden border border-gray-200 dark:border-gray-700">
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                  <div>
+                    <table className="w-full divide-y divide-gray-200 dark:divide-gray-700 table-fixed">
                       <thead className="bg-gray-50 dark:bg-gray-700">
                         <tr>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                            {t('employee')}
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                          <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-[20%]">
                             {t('type')}
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                          <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-[28%]">
                             {t('dates')}
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                          <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-[12%]">
                             {t('days')}
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                            {t('status')}
+                          <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-[15%]">
+                            EST
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                            {t('actions')}
+                          <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-[8%]">
                           </th>
                         </tr>
                       </thead>
                       <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                         {filteredRequests.map((request) => (
                           <tr key={request.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="flex items-center">
-                                <User className="w-4 h-4 text-gray-400 dark:text-gray-500 mr-2" />
-                                <div>
-                                  <div className="text-sm font-medium text-gray-900 dark:text-gray-50">{request.employeeName}</div>
-                                  <div className="text-sm text-gray-500 dark:text-gray-400">{request.employeeId}</div>
-                                </div>
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${ABSENCE_TYPE_COLORS[request.type]}`}>
-                                {t(request.type)}
+                            <td className="px-3 py-3 overflow-hidden">
+                              <span className={`inline-block px-1.5 py-0.5 text-[9px] font-semibold rounded-full max-w-full truncate ${ABSENCE_TYPE_COLORS[request.type]}`}>
+                                {request.type === 'vacation' ? 'vacaciones' : t(request.type)}
                               </span>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-50">
-                              <div>{formatDateLocal(request.startDate)}</div>
-                              <div className="text-gray-500 dark:text-gray-400">al {formatDateLocal(request.endDate)}</div>
+                            <td className="px-3 py-3 text-xs text-gray-900 dark:text-gray-50">
+                              <div className="leading-tight">{formatDateLocal(request.startDate)}</div>
+                              <div className="text-gray-500 dark:text-gray-400 text-[10px]">al {formatDateLocal(request.endDate)}</div>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-50">
+                            <td className="px-3 py-3 whitespace-nowrap text-xs text-gray-900 dark:text-gray-50">
                               {getDaysDifference(request.startDate, request.endDate)} {t('days')}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${ABSENCE_STATUS_COLORS[request.status]}`}>
-                                {t(request.status)}
+                            <td className="px-3 py-3 whitespace-nowrap">
+                              <span className={`inline-flex px-1 py-0.5 text-[10px] font-semibold rounded-full ${ABSENCE_STATUS_COLORS[request.status]}`}>
+                                {request.status === 'pending' ? 'pendiente' : t(request.status)}
                               </span>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                              <div className="flex space-x-2">
-                                <button
-                                  onClick={() => setShowDetails(showDetails === request.id ? null : request.id)}
-                                  className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
-                                >
-                                  <Eye className="w-4 h-4" />
-                                </button>
-                                {/* Solo encargados y encargados de distrito pueden aprobar/rechazar/eliminar */}
-                                {(currentEmployee?.role === 'encargado' || currentEmployee?.role === 'distrito' || currentEmployee?.role === 'region') && (
-                                  <>
-                                    {request.status === 'pending' && (
-                                      <>
-                                        <button
-                                          onClick={() => handleApprove(request.id)}
-                                          className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300"
-                                        >
-                                          <CheckCircle className="w-4 h-4" />
-                                        </button>
-                                        <button
-                                          onClick={() => handleReject(request.id)}
-                                          className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
-                                        >
-                                          <XCircle className="w-4 h-4" />
-                                        </button>
-                                      </>
-                                    )}
-                                    <button
-                                      onClick={() => handleDelete(request.id)}
-                                      className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
-                                    >
-                                      <Trash2 className="w-4 h-4" />
-                                    </button>
-                                  </>
-                                )}
-                              </div>
+                            <td className="px-3 py-3 whitespace-nowrap text-center">
+                              <button
+                                onClick={() => setShowDetails(showDetails === request.id ? null : request.id)}
+                                className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
+                              >
+                                <Eye className="w-4 h-4" />
+                              </button>
+                              {/* Solo encargados y encargados de distrito pueden aprobar/rechazar/eliminar */}
+                              {(currentEmployee?.role === 'encargado' || currentEmployee?.role === 'distrito' || currentEmployee?.role === 'region') && (
+                                <div className="flex space-x-1 justify-center mt-1">
+                                  {request.status === 'pending' && (
+                                    <>
+                                      <button
+                                        onClick={() => handleApprove(request.id)}
+                                        className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300"
+                                      >
+                                        <CheckCircle className="w-4 h-4" />
+                                      </button>
+                                      <button
+                                        onClick={() => handleReject(request.id)}
+                                        className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                                      >
+                                        <XCircle className="w-4 h-4" />
+                                      </button>
+                                    </>
+                                  )}
+                                  <button
+                                    onClick={() => handleDelete(request.id)}
+                                    className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                </div>
+                              )}
                             </td>
                           </tr>
                         ))}
@@ -722,11 +723,7 @@ export const AbsenceManagement: React.FC<AbsenceManagementProps> = ({ isEmployee
                               <div className="grid grid-cols-2 gap-4">
                                 <div>
                                   <span className="text-sm text-gray-500 dark:text-gray-400">{t('name')}:</span>
-                                  <p className="text-gray-900 dark:text-gray-50">{request.employeeName}</p>
-                                </div>
-                                <div>
-                                  <span className="text-sm text-gray-500 dark:text-gray-400">ID:</span>
-                                  <p className="text-gray-900 dark:text-gray-50">{request.employeeId}</p>
+                                  <p className="text-gray-900 dark:text-gray-50 break-words">{request.employeeName}</p>
                                 </div>
                               </div>
                             </div>
@@ -739,7 +736,7 @@ export const AbsenceManagement: React.FC<AbsenceManagementProps> = ({ isEmployee
                                   <span className="text-sm text-gray-500 dark:text-gray-400">{t('type')}:</span>
                                   <p className="text-gray-900 dark:text-gray-50">
                                     <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${ABSENCE_TYPE_COLORS[request.type]}`}>
-                                      {t(request.type)}
+                                      {request.type === 'vacation' ? 'vac' : t(request.type)}
                                     </span>
                                   </p>
                                 </div>
@@ -896,6 +893,30 @@ export const AbsenceManagement: React.FC<AbsenceManagementProps> = ({ isEmployee
                   </div>
                 </div>
               )}
-            </div>
-          );
-        };
+
+      {/* Botón de Nueva Solicitud - Fijo en la parte inferior (solo en dashboard de empleado) */}
+      {isEmployeeDashboard && (
+        <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-4 z-20">
+          <div className="max-w-md mx-auto">
+            <button
+              onClick={() => {
+                setNewRequest({
+                  employeeId: currentEmployee?.id || '',
+                  startDate: '',
+                  endDate: '',
+                  reason: '',
+                  type: 'vacation' as AbsenceType
+                });
+                setShowNewRequestForm(true);
+              }}
+              className="w-full py-4 px-6 rounded-lg font-semibold text-white text-lg transition-all bg-blue-600 hover:bg-blue-700 active:bg-blue-800 flex items-center justify-center gap-2"
+            >
+              <Plus className="w-5 h-5" />
+              <span>{t('newRequest')}</span>
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};

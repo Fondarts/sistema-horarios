@@ -3,6 +3,7 @@ import { Shield, Plus, Trash2, Save, X } from 'lucide-react';
 import { useCompanySettings } from '../contexts/CompanySettingsContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useEmployees } from '../contexts/EmployeeContext';
 import { EmployeeRole, getRoleLabel } from '../utils/rolePermissions';
 import { db } from '../firebase';
 import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
@@ -13,8 +14,8 @@ export type ModuleType =
   | 'schedule'           // Horarios
   | 'employees'          // Empleados
   | 'absences'           // Vacaciones y ausencias
-  | 'holidays'           // Feriados
   | 'storeSchedule'     // Horarios tienda
+  | 'stores'            // Tiendas (selector de tiendas)
   | 'statistics'         // Estadísticas
   | 'export'            // Exportar
   | 'history';          // Historial
@@ -32,8 +33,22 @@ export interface RolePermissions {
     schedule: ModulePermissions;
     employees: ModulePermissions;
     absences: ModulePermissions;
-    holidays: ModulePermissions;
     storeSchedule: ModulePermissions;
+    stores: ModulePermissions;
+    statistics: ModulePermissions;
+    export: ModulePermissions;
+    history: ModulePermissions;
+  };
+}
+
+export interface IndividualPermissions {
+  employeeId: string;
+  permissions: {
+    schedule: ModulePermissions;
+    employees: ModulePermissions;
+    absences: ModulePermissions;
+    storeSchedule: ModulePermissions;
+    stores: ModulePermissions;
     statistics: ModulePermissions;
     export: ModulePermissions;
     history: ModulePermissions;
@@ -42,6 +57,7 @@ export interface RolePermissions {
 
 export interface PermissionsConfig {
   roles: RolePermissions[];
+  individualPermissions?: IndividualPermissions[]; // Permisos individuales por empleado
   updatedAt: string;
   updatedBy: string;
 }
@@ -52,8 +68,8 @@ const MODULE_LABELS: Record<ModuleType, string> = {
   schedule: 'Horarios',
   employees: 'Empleados',
   absences: 'Vacaciones y Ausencias',
-  holidays: 'Feriados',
   storeSchedule: 'Horarios Tienda',
+  stores: 'Tiendas',
   statistics: 'Estadísticas',
   export: 'Exportar',
   history: 'Historial'
@@ -67,13 +83,27 @@ const PERMISSION_LABELS: Record<PermissionType, string> = {
 export function PermissionsManagement() {
   const { currentEmployee } = useAuth();
   const { t } = useLanguage();
+  const { getAllEmployees } = useEmployees();
   const [permissionsConfig, setPermissionsConfig] = useState<PermissionsConfig | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showAddRoleModal, setShowAddRoleModal] = useState(false);
   const [newRoleName, setNewRoleName] = useState('');
   const [editingRole, setEditingRole] = useState<string | null>(null);
+  const [selectedEmployeeIds, setSelectedEmployeeIds] = useState<string[]>([]);
+  
+  const allEmployees = getAllEmployees();
 
   const canEdit = currentEmployee && isIT(currentEmployee.role);
+
+  // Cargar los empleados seleccionados desde la configuración cuando se carga
+  useEffect(() => {
+    if (permissionsConfig?.individualPermissions) {
+      const employeeIds = permissionsConfig.individualPermissions.map(p => p.employeeId);
+      setSelectedEmployeeIds(employeeIds);
+    } else {
+      setSelectedEmployeeIds([]);
+    }
+  }, [permissionsConfig]);
 
   useEffect(() => {
     const permissionsRef = doc(db, 'permissions', 'main');
@@ -101,13 +131,13 @@ export function PermissionsManagement() {
                   read: true,
                   edit: role !== 'empleado'
                 },
-                holidays: {
-                  read: true,
-                  edit: role === 'region' || role === 'distrito' || role === 'encargado' || role === 'it'
-                },
                 storeSchedule: {
                   read: true,
                   edit: role === 'region' || role === 'distrito' || role === 'encargado' || role === 'it'
+                },
+                stores: {
+                  read: role === 'region' || role === 'distrito' || role === 'encargado' || role === 'it',
+                  edit: false // Solo lectura, no se editan tiendas desde aquí
                 },
                 statistics: {
                   read: true,
@@ -166,6 +196,61 @@ export function PermissionsManagement() {
     });
   };
 
+  const handleIndividualPermissionChange = (employeeId: string, module: ModuleType, permission: PermissionType, value: boolean) => {
+    if (!permissionsConfig || !canEdit) return;
+
+    const individualPermissions = permissionsConfig.individualPermissions || [];
+    const existingIndex = individualPermissions.findIndex(p => p.employeeId === employeeId);
+    
+    let updatedIndividualPermissions: IndividualPermissions[];
+    
+    if (existingIndex >= 0) {
+      // Actualizar permisos existentes
+      updatedIndividualPermissions = individualPermissions.map((p, index) => {
+        if (index === existingIndex) {
+          return {
+            ...p,
+            permissions: {
+              ...p.permissions,
+              [module]: {
+                ...p.permissions[module],
+                [permission]: value
+              }
+            }
+          };
+        }
+        return p;
+      });
+    } else {
+      // Crear nuevos permisos individuales
+      const newIndividualPerm: IndividualPermissions = {
+        employeeId,
+        permissions: {
+          schedule: { read: false, edit: false },
+          employees: { read: false, edit: false },
+          absences: { read: false, edit: false },
+          storeSchedule: { read: false, edit: false },
+          stores: { read: false, edit: false },
+          statistics: { read: false, edit: false },
+          export: { read: false, edit: false },
+          history: { read: false, edit: false },
+          [module]: {
+            read: permission === 'read' ? value : false,
+            edit: permission === 'edit' ? value : false
+          }
+        }
+      };
+      updatedIndividualPermissions = [...individualPermissions, newIndividualPerm];
+    }
+
+    setPermissionsConfig({
+      ...permissionsConfig,
+      individualPermissions: updatedIndividualPermissions,
+      updatedAt: new Date().toISOString(),
+      updatedBy: currentEmployee!.id
+    });
+  };
+
   const handleSave = async () => {
     if (!permissionsConfig || !canEdit) return;
 
@@ -202,8 +287,8 @@ export function PermissionsManagement() {
         schedule: { read: false, edit: false },
         employees: { read: false, edit: false },
         absences: { read: false, edit: false },
-        holidays: { read: false, edit: false },
         storeSchedule: { read: false, edit: false },
+        stores: { read: false, edit: false },
         statistics: { read: false, edit: false },
         export: { read: false, edit: false },
         history: { read: false, edit: false }
@@ -298,26 +383,28 @@ export function PermissionsManagement() {
 
             {/* Tabla de permisos */}
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-xs">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-sm">
                 <thead className="bg-gray-50 dark:bg-gray-700">
                   <tr>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider sticky left-0 bg-gray-50 dark:bg-gray-700 z-10 min-w-[140px]">
+                    <th className="px-3 py-2 text-left text-sm font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider sticky left-0 bg-gray-50 dark:bg-gray-700 z-10 min-w-[120px]">
                       Puesto/Cargo
                     </th>
                     {Object.entries(MODULE_LABELS).map(([moduleKey, moduleLabel]) => (
-                      <th key={moduleKey} colSpan={2} className="px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider border-l border-gray-200 dark:border-gray-600 min-w-[120px]">
-                        {moduleLabel}
+                      <th key={moduleKey} colSpan={2} className="px-1 py-1.5 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider border-l border-gray-200 dark:border-gray-600 min-w-[70px] max-w-[80px]">
+                        <div className="leading-tight whitespace-normal break-words">
+                          {moduleLabel}
+                        </div>
                       </th>
                     ))}
                   </tr>
                   <tr>
-                    <th className="px-4 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 sticky left-0 bg-gray-50 dark:bg-gray-700 z-10"></th>
+                    <th className="px-4 py-1.5 text-left text-sm font-medium text-gray-500 dark:text-gray-300 sticky left-0 bg-gray-50 dark:bg-gray-700 z-10"></th>
                     {Object.entries(MODULE_LABELS).map(([moduleKey]) => (
                       <React.Fragment key={moduleKey}>
-                        <th className="px-2 py-1.5 text-center text-xs font-medium text-gray-500 dark:text-gray-300 border-l border-gray-200 dark:border-gray-600">
+                        <th className="px-0.5 py-1 text-center text-xs font-medium text-gray-500 dark:text-gray-300 border-l border-gray-200 dark:border-gray-600">
                           {PERMISSION_LABELS.read}
                         </th>
-                        <th className="px-2 py-1.5 text-center text-xs font-medium text-gray-500 dark:text-gray-300">
+                        <th className="px-0.5 py-1 text-center text-xs font-medium text-gray-500 dark:text-gray-300">
                           {PERMISSION_LABELS.edit}
                         </th>
                       </React.Fragment>
@@ -333,8 +420,8 @@ export function PermissionsManagement() {
                     
                     return (
                       <tr key={rolePerm.role}>
-                        <td className="px-4 py-2 whitespace-nowrap sticky left-0 bg-white dark:bg-gray-800 z-10">
-                          <div className="text-xs font-medium text-gray-900 dark:text-gray-100">
+                        <td className="px-3 py-1.5 whitespace-nowrap sticky left-0 bg-white dark:bg-gray-800 z-10">
+                          <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
                             {roleLabel}
                           </div>
                         </td>
@@ -342,20 +429,20 @@ export function PermissionsManagement() {
                           const module = moduleKey as ModuleType;
                           return (
                             <React.Fragment key={moduleKey}>
-                              <td className="px-2 py-2 whitespace-nowrap text-center border-l border-gray-200 dark:border-gray-600">
+                              <td className="px-0.5 py-1.5 whitespace-nowrap text-center border-l border-gray-200 dark:border-gray-600">
                                 <input
                                   type="checkbox"
                                   checked={rolePerm.permissions[module]?.read || false}
                                   onChange={(e) => handlePermissionChange(rolePerm.role, module, 'read', e.target.checked)}
-                                  className="w-3.5 h-3.5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-1 dark:bg-gray-700 dark:border-gray-600"
+                                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-1 dark:bg-gray-700 dark:border-gray-600"
                                 />
                               </td>
-                              <td className="px-2 py-2 whitespace-nowrap text-center">
+                              <td className="px-0.5 py-1.5 whitespace-nowrap text-center">
                                 <input
                                   type="checkbox"
                                   checked={rolePerm.permissions[module]?.edit || false}
                                   onChange={(e) => handlePermissionChange(rolePerm.role, module, 'edit', e.target.checked)}
-                                  className="w-3.5 h-3.5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-1 dark:bg-gray-700 dark:border-gray-600"
+                                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-1 dark:bg-gray-700 dark:border-gray-600"
                                 />
                               </td>
                             </React.Fragment>
@@ -366,6 +453,123 @@ export function PermissionsManagement() {
                   })}
                 </tbody>
               </table>
+            </div>
+
+            {/* División y sección de permisos individuales */}
+            <div className="mt-6 pt-6 border-t-2 border-gray-300 dark:border-gray-600">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+                Permisos Individuales
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                Los permisos individuales tienen prioridad sobre los permisos del cargo. Selecciona un empleado para asignarle permisos especiales.
+              </p>
+
+              {/* Tabla de permisos individuales */}
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-sm">
+                  <thead className="bg-gray-50 dark:bg-gray-700">
+                    <tr>
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider sticky left-0 bg-gray-50 dark:bg-gray-700 z-10 min-w-[120px] max-w-[140px]">
+                        Empleado
+                      </th>
+                      {Object.entries(MODULE_LABELS).map(([moduleKey, moduleLabel]) => (
+                        <th key={moduleKey} colSpan={2} className="px-1 py-1.5 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider border-l border-gray-200 dark:border-gray-600 min-w-[70px] max-w-[80px]">
+                          <div className="leading-tight whitespace-normal break-words">
+                            {moduleLabel}
+                          </div>
+                        </th>
+                      ))}
+                    </tr>
+                    <tr>
+                      <th className="px-4 py-1.5 text-left text-sm font-medium text-gray-500 dark:text-gray-300 sticky left-0 bg-gray-50 dark:bg-gray-700 z-10"></th>
+                      {Object.entries(MODULE_LABELS).map(([moduleKey]) => (
+                        <React.Fragment key={moduleKey}>
+                          <th className="px-0.5 py-1 text-center text-xs font-medium text-gray-500 dark:text-gray-300 border-l border-gray-200 dark:border-gray-600">
+                            {PERMISSION_LABELS.read}
+                          </th>
+                          <th className="px-0.5 py-1 text-center text-xs font-medium text-gray-500 dark:text-gray-300">
+                            {PERMISSION_LABELS.edit}
+                          </th>
+                        </React.Fragment>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white dark:bg-gray-800">
+                    {/* Renderizar una fila por cada empleado seleccionado + una fila vacía para agregar más */}
+                    {[...selectedEmployeeIds, ''].map((employeeId, index) => {
+                      const isLastRow = index === selectedEmployeeIds.length;
+                      const availableEmployees = allEmployees.filter(emp => 
+                        !selectedEmployeeIds.includes(emp.id) || emp.id === employeeId
+                      );
+                      
+                      return (
+                        <tr key={index}>
+                          <td className="px-3 py-1.5 sticky left-0 bg-white dark:bg-gray-800 z-10 min-w-[120px] max-w-[140px]">
+                            <select
+                              value={employeeId || ''}
+                              onChange={(e) => {
+                                const newEmployeeId = e.target.value || null;
+                                if (newEmployeeId) {
+                                  // Si es la última fila (vacía), agregar el empleado y crear una nueva fila vacía
+                                  if (isLastRow) {
+                                    setSelectedEmployeeIds([...selectedEmployeeIds, newEmployeeId]);
+                                  } else {
+                                    // Actualizar el empleado en la posición correspondiente
+                                    const newIds = [...selectedEmployeeIds];
+                                    newIds[index] = newEmployeeId;
+                                    setSelectedEmployeeIds(newIds);
+                                  }
+                                } else {
+                                  // Si se deselecciona, eliminar de la lista
+                                  if (!isLastRow) {
+                                    setSelectedEmployeeIds(selectedEmployeeIds.filter((_, i) => i !== index));
+                                  }
+                                }
+                              }}
+                              className="w-full text-[10px] p-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            >
+                              <option value="">-- Seleccionar empleado --</option>
+                              {availableEmployees.map(emp => (
+                                <option key={emp.id} value={emp.id}>
+                                  {emp.name} ({getRoleLabel(emp.role)})
+                                </option>
+                              ))}
+                            </select>
+                          </td>
+                          {Object.keys(MODULE_LABELS).map((moduleKey) => {
+                            const module = moduleKey as ModuleType;
+                            const individualPerm = employeeId 
+                              ? permissionsConfig?.individualPermissions?.find(p => p.employeeId === employeeId)
+                              : null;
+                            return (
+                              <React.Fragment key={moduleKey}>
+                                <td className="px-0.5 py-1.5 whitespace-nowrap text-center border-l border-gray-200 dark:border-gray-600">
+                                  <input
+                                    type="checkbox"
+                                    checked={individualPerm?.permissions[module]?.read || false}
+                                    onChange={(e) => employeeId && handleIndividualPermissionChange(employeeId, module, 'read', e.target.checked)}
+                                    disabled={!employeeId}
+                                    className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-1 dark:bg-gray-700 dark:border-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                                  />
+                                </td>
+                                <td className="px-0.5 py-1.5 whitespace-nowrap text-center">
+                                  <input
+                                    type="checkbox"
+                                    checked={individualPerm?.permissions[module]?.edit || false}
+                                    onChange={(e) => employeeId && handleIndividualPermissionChange(employeeId, module, 'edit', e.target.checked)}
+                                    disabled={!employeeId}
+                                    className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-1 dark:bg-gray-700 dark:border-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                                  />
+                                </td>
+                              </React.Fragment>
+                            );
+                          })}
+                        </tr>
+                      );
+                    })}
+                    </tbody>
+                  </table>
+                </div>
             </div>
 
             {/* Explicación de permisos */}
@@ -386,8 +590,8 @@ export function PermissionsManagement() {
                     <li><strong>Horarios:</strong> Gestión de turnos y horarios de empleados</li>
                     <li><strong>Empleados:</strong> Gestión de información de empleados</li>
                     <li><strong>Vacaciones y Ausencias:</strong> Gestión de solicitudes de vacaciones y ausencias</li>
-                    <li><strong>Feriados:</strong> Gestión de días feriados</li>
-                    <li><strong>Horarios Tienda:</strong> Configuración de horarios de apertura/cierre de la tienda</li>
+                    <li><strong>Horarios Tienda:</strong> Configuración de horarios de apertura/cierre de la tienda y gestión de días feriados</li>
+                    <li><strong>Tiendas:</strong> Permite acceder al selector de tiendas para cambiar entre diferentes tiendas</li>
                     <li><strong>Estadísticas:</strong> Visualización de estadísticas y reportes</li>
                     <li><strong>Exportar:</strong> Exportación de datos a diferentes formatos</li>
                     <li><strong>Historial:</strong> Visualización del historial de cambios</li>

@@ -376,5 +376,19 @@ export const es = {
   noShiftsThisMonth: 'No tienes turnos asignados este mes',
   previousMonth: 'Mes Anterior',
   nextMonth: 'Mes Siguiente',
-  closeSession: 'Cerrar Sesión'
+  closeSession: 'Cerrar Sesión',
+
+  // Time Clock
+  timeClock: 'Fichar',
+  clockIn: 'Fichar Entrada',
+  clockOut: 'Fichar Salida',
+  lastAction: 'Última acción',
+  entry: 'Entrada',
+  exit: 'Salida',
+  gettingLocation: 'Obteniendo ubicación...',
+  locationPermissionDenied: 'Permiso de ubicación denegado. Por favor, permite el acceso a la ubicación en la configuración del navegador.',
+  locationUnavailable: 'No se pudo obtener la ubicación. Verifica que el GPS esté activado.',
+  locationTimeout: 'Tiempo de espera agotado al obtener la ubicación.',
+  tooFarFromStore: 'Estás demasiado lejos de la tienda ({distance}m). Distancia máxima permitida: {maxDistance}m',
+  noShiftsOrEntries: 'Sin turnos ni fichadas'
 };

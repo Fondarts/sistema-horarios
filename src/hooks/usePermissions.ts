@@ -13,8 +13,8 @@ export interface Permissions {
   schedule: ModulePermissions;
   employees: ModulePermissions;
   absences: ModulePermissions;
-  holidays: ModulePermissions;
   storeSchedule: ModulePermissions;
+  stores: ModulePermissions;
   statistics: ModulePermissions;
   export: ModulePermissions;
   history: ModulePermissions;
@@ -24,8 +24,8 @@ const DEFAULT_PERMISSIONS: Permissions = {
   schedule: { read: false, edit: false },
   employees: { read: false, edit: false },
   absences: { read: false, edit: false },
-  holidays: { read: false, edit: false },
   storeSchedule: { read: false, edit: false },
+  stores: { read: false, edit: false },
   statistics: { read: false, edit: false },
   export: { read: false, edit: false },
   history: { read: false, edit: false }
@@ -36,8 +36,8 @@ const DEFAULT_ROLE_PERMISSIONS: Record<string, Permissions> = {
     schedule: { read: true, edit: true },
     employees: { read: true, edit: true },
     absences: { read: true, edit: true },
-    holidays: { read: true, edit: true },
     storeSchedule: { read: true, edit: true },
+    stores: { read: true, edit: false },
     statistics: { read: true, edit: true },
     export: { read: true, edit: true },
     history: { read: false, edit: false }
@@ -46,8 +46,8 @@ const DEFAULT_ROLE_PERMISSIONS: Record<string, Permissions> = {
     schedule: { read: true, edit: true },
     employees: { read: true, edit: true },
     absences: { read: true, edit: true },
-    holidays: { read: true, edit: true },
     storeSchedule: { read: true, edit: true },
+    stores: { read: true, edit: false },
     statistics: { read: true, edit: true },
     export: { read: true, edit: true },
     history: { read: false, edit: false }
@@ -56,8 +56,8 @@ const DEFAULT_ROLE_PERMISSIONS: Record<string, Permissions> = {
     schedule: { read: true, edit: true },
     employees: { read: true, edit: true },
     absences: { read: true, edit: true },
-    holidays: { read: true, edit: true },
     storeSchedule: { read: true, edit: true },
+    stores: { read: true, edit: false },
     statistics: { read: true, edit: true },
     export: { read: true, edit: true },
     history: { read: false, edit: false }
@@ -66,8 +66,8 @@ const DEFAULT_ROLE_PERMISSIONS: Record<string, Permissions> = {
     schedule: { read: true, edit: false },
     employees: { read: true, edit: false },
     absences: { read: true, edit: false },
-    holidays: { read: false, edit: false },
     storeSchedule: { read: false, edit: false },
+    stores: { read: false, edit: false },
     statistics: { read: false, edit: false },
     export: { read: false, edit: false },
     history: { read: false, edit: false }
@@ -76,8 +76,8 @@ const DEFAULT_ROLE_PERMISSIONS: Record<string, Permissions> = {
     schedule: { read: true, edit: true },
     employees: { read: true, edit: true },
     absences: { read: true, edit: true },
-    holidays: { read: true, edit: true },
     storeSchedule: { read: true, edit: true },
+    stores: { read: true, edit: false },
     statistics: { read: true, edit: true },
     export: { read: true, edit: true },
     history: { read: true, edit: true }
@@ -103,17 +103,35 @@ export function usePermissions(): Permissions {
           const data = snapshot.data();
           const roles: RolePermissions[] = data.roles || [];
           
+          // Primero buscar permisos individuales (tienen prioridad)
+          const individualPermissions = data.individualPermissions || [];
+          const individualPerm = individualPermissions.find((p: any) => p.employeeId === currentEmployee.id);
+          
           // Buscar los permisos del rol actual del empleado
           const rolePermissions = roles.find(r => r.role === currentEmployee.role);
           
-          if (rolePermissions && rolePermissions.permissions) {
-            // Asegurar que todos los módulos estén definidos
+          // Si hay permisos individuales, usarlos; si no, usar los del rol
+          if (individualPerm && individualPerm.permissions) {
+            // Usar permisos individuales (tienen prioridad)
+            const loadedPermissions: Permissions = {
+              schedule: individualPerm.permissions.schedule || DEFAULT_PERMISSIONS.schedule,
+              employees: individualPerm.permissions.employees || DEFAULT_PERMISSIONS.employees,
+              absences: individualPerm.permissions.absences || DEFAULT_PERMISSIONS.absences,
+              storeSchedule: individualPerm.permissions.storeSchedule || DEFAULT_PERMISSIONS.storeSchedule,
+              stores: individualPerm.permissions.stores || DEFAULT_PERMISSIONS.stores,
+              statistics: individualPerm.permissions.statistics || DEFAULT_PERMISSIONS.statistics,
+              export: individualPerm.permissions.export || DEFAULT_PERMISSIONS.export,
+              history: individualPerm.permissions.history || DEFAULT_PERMISSIONS.history
+            };
+            setPermissions(loadedPermissions);
+          } else if (rolePermissions && rolePermissions.permissions) {
+            // Usar permisos del rol
             const loadedPermissions: Permissions = {
               schedule: rolePermissions.permissions.schedule || DEFAULT_PERMISSIONS.schedule,
               employees: rolePermissions.permissions.employees || DEFAULT_PERMISSIONS.employees,
               absences: rolePermissions.permissions.absences || DEFAULT_PERMISSIONS.absences,
-              holidays: rolePermissions.permissions.holidays || DEFAULT_PERMISSIONS.holidays,
               storeSchedule: rolePermissions.permissions.storeSchedule || DEFAULT_PERMISSIONS.storeSchedule,
+              stores: rolePermissions.permissions.stores || DEFAULT_PERMISSIONS.stores,
               statistics: rolePermissions.permissions.statistics || DEFAULT_PERMISSIONS.statistics,
               export: rolePermissions.permissions.export || DEFAULT_PERMISSIONS.export,
               history: rolePermissions.permissions.history || DEFAULT_PERMISSIONS.history

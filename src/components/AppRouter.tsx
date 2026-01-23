@@ -6,6 +6,7 @@ import { isIT } from '../utils/rolePermissions';
 import LoginScreen from './LoginScreen';
 import { ManagerDashboard } from './ManagerDashboard';
 import EmployeeDashboard from './EmployeeDashboard';
+import TimeClockApp from './TimeClockApp';
 import { StoreSelector } from './StoreSelector';
 import { LoadingSpinner } from './LoadingSpinner';
 
@@ -28,7 +29,7 @@ export function AppRouter() {
   }
 
   // Si tiene permiso de tiendas y no ha seleccionado una tienda, mostrar selector
-  if (permissions.storeSchedule?.read && !currentStore) {
+  if (permissions.stores?.read && !currentStore) {
     return (
       <StoreSelector 
         onStoreSelect={(storeId) => {
@@ -39,7 +40,7 @@ export function AppRouter() {
   }
 
   // Si tiene permiso de tiendas y ya seleccionó una tienda, mostrar dashboard
-  if (permissions.storeSchedule?.read && currentStore) {
+  if (permissions.stores?.read && currentStore) {
     return <ManagerDashboard />;
   }
   
@@ -60,7 +61,8 @@ export function AppRouter() {
   }
 
   // Usuarios normales (empleados y encargados)
-  return isManager ? <ManagerDashboard /> : <EmployeeDashboard />;
+  // Los empleados ven la app de fichado, los encargados ven el dashboard de manager
+  return isManager ? <ManagerDashboard /> : <TimeClockApp />;
 }
 
 

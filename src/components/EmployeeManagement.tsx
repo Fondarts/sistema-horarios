@@ -6,6 +6,7 @@ import { useCompactMode } from '../contexts/CompactModeContext';
 import { useStore } from '../contexts/StoreContext';
 import { useSchedule } from '../contexts/ScheduleContext';
 import { useAuth } from '../contexts/AuthContext';
+import { usePermissions } from '../hooks/usePermissions';
 import { Plus, Edit, Trash2, User, Clock, Calendar, Eye, EyeOff, ArrowRightLeft } from 'lucide-react';
 import { Employee, UnavailableTime, EmployeeTransfer, EmployeeRole } from '../types';
 import { getAssignableRoles, canChangeRole, getRoleLabel, isIT } from '../utils/rolePermissions';
@@ -84,6 +85,7 @@ export function EmployeeManagement() {
   const { employees, addEmployee, updateEmployee, deleteEmployee, resetToMockEmployees } = useEmployees();
   const { stores, currentStore } = useStore();
   const { isCompactMode, isMobile } = useCompactMode();
+  const permissions = usePermissions();
   const { t } = useLanguage();
   const { formatDate, dateFormat } = useDateFormat();
   const { shifts, deleteShift } = useSchedule();
@@ -305,6 +307,11 @@ export function EmployeeManagement() {
   };
 
   const handleTransfer = (employee: Employee) => {
+    if (!permissions.employees?.edit) {
+      alert('No tenés acceso. Solo tenés permisos de lectura.');
+      return;
+    }
+    
     setEmployeeToTransfer(employee);
     setSelectedStoreId('');
     setTransferType('permanent');
@@ -368,6 +375,11 @@ export function EmployeeManagement() {
   };
 
   const handleDelete = (employee: Employee) => {
+    if (!permissions.employees?.edit) {
+      alert('No tenés acceso. Solo tenés permisos de lectura.');
+      return;
+    }
+    
     setEmployeeToDelete(employee);
     const today = new Date().toISOString().split('T')[0];
     setTerminationDate(today);
@@ -449,6 +461,12 @@ export function EmployeeManagement() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validar permisos de edición
+    if (!permissions.employees?.edit) {
+      alert('No tenés acceso. Solo tenés permisos de lectura.');
+      return;
+    }
     
     // Validar username
     if (!validateUsername(formData.username)) {

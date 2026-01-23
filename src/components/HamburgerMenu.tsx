@@ -206,7 +206,7 @@ export function HamburgerMenu({ activeTab, onTabChange, isManager = false, onSho
                 </button>
               </li>
             )}
-            {permissions.storeSchedule?.read && onBackToStoreSelector && (
+            {permissions.stores?.read && onBackToStoreSelector && (
               <li>
                 <button
                   onClick={handleBackToStoreSelector}

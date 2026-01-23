@@ -524,13 +524,23 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
         shiftData.breakDuration
       );
       
-      const newShift = {
-        ...shiftData,
-        storeId: currentStore.id,
+      // Construir el objeto del turno, excluyendo campos undefined
+      const newShift: any = {
+        employeeId: shiftData.employeeId,
+        date: shiftData.date,
+        startTime: shiftData.startTime,
+        endTime: shiftData.endTime,
         hours,
+        isPublished: shiftData.isPublished,
+        storeId: currentStore.id,
         createdAt: new Date(),
         updatedAt: new Date()
       };
+
+      // Solo incluir breakDuration si tiene un valor definido
+      if (shiftData.breakDuration !== undefined && shiftData.breakDuration !== null) {
+        newShift.breakDuration = shiftData.breakDuration;
+      }
 
       console.log('ScheduleContext: Adding shift to Firebase:', newShift);
       const docRef = await addDoc(collection(db, 'shifts'), newShift);
@@ -648,13 +658,23 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
         }
       });
 
-      const updateData = {
-        ...updates,
+      // Filtrar valores undefined antes de actualizar
+      const updateData: any = {
         isPublished: false, // Marcar como no publicado cuando se modifica
-        updatedAt: new Date()
+        updatedAt: new Date().toISOString()
       };
       
+      // Solo incluir campos que tienen valores definidos
+      Object.keys(updates).forEach(key => {
+        const value = updates[key as keyof Shift];
+        if (value !== undefined && value !== null) {
+          updateData[key] = value;
+        }
+      });
+      
+      console.log('ScheduleContext: Updating shift with data:', updateData);
       await updateDoc(shiftRef, updateData);
+      console.log('ScheduleContext: Shift updated successfully');
       
       // NO registrar en historial aquí - solo cuando se publique
     } catch (error) {

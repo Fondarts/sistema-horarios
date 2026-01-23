@@ -376,5 +376,19 @@ export const en = {
   noShiftsThisMonth: 'You have no shifts assigned this month',
   previousMonth: 'Previous Month',
   nextMonth: 'Next Month',
-  closeSession: 'Logout'
+  closeSession: 'Logout',
+
+  // Time Clock
+  timeClock: 'Time Clock',
+  clockIn: 'Clock In',
+  clockOut: 'Clock Out',
+  lastAction: 'Last action',
+  entry: 'Entry',
+  exit: 'Exit',
+  gettingLocation: 'Getting location...',
+  locationPermissionDenied: 'Location permission denied. Please allow location access in your browser settings.',
+  locationUnavailable: 'Could not get location. Make sure GPS is enabled.',
+  locationTimeout: 'Timeout while getting location.',
+  tooFarFromStore: 'You are too far from the store ({distance}m). Maximum allowed distance: {maxDistance}m',
+  noShiftsOrEntries: 'No shifts or entries'
 };
