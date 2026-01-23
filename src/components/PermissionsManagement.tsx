@@ -18,7 +18,8 @@ export type ModuleType =
   | 'stores'            // Tiendas (selector de tiendas)
   | 'statistics'         // Estadísticas
   | 'export'            // Exportar
-  | 'history';          // Historial
+  | 'history'           // Historial
+  | 'timeClockHistory'; // Historial de Fichadas
 
 export type PermissionType = 'read' | 'edit';
 
@@ -38,6 +39,7 @@ export interface RolePermissions {
     statistics: ModulePermissions;
     export: ModulePermissions;
     history: ModulePermissions;
+    timeClockHistory: ModulePermissions;
   };
 }
 
@@ -52,6 +54,7 @@ export interface IndividualPermissions {
     statistics: ModulePermissions;
     export: ModulePermissions;
     history: ModulePermissions;
+    timeClockHistory: ModulePermissions;
   };
 }
 
@@ -72,7 +75,8 @@ const MODULE_LABELS: Record<ModuleType, string> = {
   stores: 'Tiendas',
   statistics: 'Estadísticas',
   export: 'Exportar',
-  history: 'Historial'
+  history: 'Historial',
+  timeClockHistory: 'Historial de Fichadas'
 };
 
 const PERMISSION_LABELS: Record<PermissionType, string> = {
@@ -148,6 +152,10 @@ export function PermissionsManagement() {
                   edit: role === 'region' || role === 'distrito' || role === 'encargado' || role === 'it'
                 },
                 history: {
+                  read: role === 'it',
+                  edit: role === 'it'
+                },
+                timeClockHistory: {
                   read: role === 'it',
                   edit: role === 'it'
                 }
@@ -234,6 +242,7 @@ export function PermissionsManagement() {
           statistics: { read: false, edit: false },
           export: { read: false, edit: false },
           history: { read: false, edit: false },
+          timeClockHistory: { read: false, edit: false },
           [module]: {
             read: permission === 'read' ? value : false,
             edit: permission === 'edit' ? value : false
@@ -291,7 +300,8 @@ export function PermissionsManagement() {
         stores: { read: false, edit: false },
         statistics: { read: false, edit: false },
         export: { read: false, edit: false },
-        history: { read: false, edit: false }
+        history: { read: false, edit: false },
+        timeClockHistory: { read: false, edit: false }
       }
     };
 

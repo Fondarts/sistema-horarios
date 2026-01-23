@@ -18,6 +18,7 @@ export interface Permissions {
   statistics: ModulePermissions;
   export: ModulePermissions;
   history: ModulePermissions;
+  timeClockHistory: ModulePermissions;
 }
 
 const DEFAULT_PERMISSIONS: Permissions = {
@@ -28,7 +29,8 @@ const DEFAULT_PERMISSIONS: Permissions = {
   stores: { read: false, edit: false },
   statistics: { read: false, edit: false },
   export: { read: false, edit: false },
-  history: { read: false, edit: false }
+  history: { read: false, edit: false },
+  timeClockHistory: { read: false, edit: false }
 };
 
 const DEFAULT_ROLE_PERMISSIONS: Record<string, Permissions> = {
@@ -40,7 +42,8 @@ const DEFAULT_ROLE_PERMISSIONS: Record<string, Permissions> = {
     stores: { read: true, edit: false },
     statistics: { read: true, edit: true },
     export: { read: true, edit: true },
-    history: { read: false, edit: false }
+    history: { read: false, edit: false },
+    timeClockHistory: { read: false, edit: false }
   },
   'distrito': {
     schedule: { read: true, edit: true },
@@ -50,7 +53,8 @@ const DEFAULT_ROLE_PERMISSIONS: Record<string, Permissions> = {
     stores: { read: true, edit: false },
     statistics: { read: true, edit: true },
     export: { read: true, edit: true },
-    history: { read: false, edit: false }
+    history: { read: false, edit: false },
+    timeClockHistory: { read: false, edit: false }
   },
   'encargado': {
     schedule: { read: true, edit: true },
@@ -60,7 +64,8 @@ const DEFAULT_ROLE_PERMISSIONS: Record<string, Permissions> = {
     stores: { read: true, edit: false },
     statistics: { read: true, edit: true },
     export: { read: true, edit: true },
-    history: { read: false, edit: false }
+    history: { read: false, edit: false },
+    timeClockHistory: { read: false, edit: false }
   },
   'empleado': {
     schedule: { read: true, edit: false },
@@ -70,7 +75,8 @@ const DEFAULT_ROLE_PERMISSIONS: Record<string, Permissions> = {
     stores: { read: false, edit: false },
     statistics: { read: false, edit: false },
     export: { read: false, edit: false },
-    history: { read: false, edit: false }
+    history: { read: false, edit: false },
+    timeClockHistory: { read: false, edit: false }
   },
   'it': {
     schedule: { read: true, edit: true },
@@ -80,7 +86,8 @@ const DEFAULT_ROLE_PERMISSIONS: Record<string, Permissions> = {
     stores: { read: true, edit: false },
     statistics: { read: true, edit: true },
     export: { read: true, edit: true },
-    history: { read: true, edit: true }
+    history: { read: true, edit: true },
+    timeClockHistory: { read: true, edit: true }
   }
 };
 
@@ -121,7 +128,8 @@ export function usePermissions(): Permissions {
               stores: individualPerm.permissions.stores || DEFAULT_PERMISSIONS.stores,
               statistics: individualPerm.permissions.statistics || DEFAULT_PERMISSIONS.statistics,
               export: individualPerm.permissions.export || DEFAULT_PERMISSIONS.export,
-              history: individualPerm.permissions.history || DEFAULT_PERMISSIONS.history
+              history: individualPerm.permissions.history || DEFAULT_PERMISSIONS.history,
+              timeClockHistory: individualPerm.permissions.timeClockHistory || DEFAULT_PERMISSIONS.timeClockHistory
             };
             setPermissions(loadedPermissions);
           } else if (rolePermissions && rolePermissions.permissions) {
@@ -134,7 +142,8 @@ export function usePermissions(): Permissions {
               stores: rolePermissions.permissions.stores || DEFAULT_PERMISSIONS.stores,
               statistics: rolePermissions.permissions.statistics || DEFAULT_PERMISSIONS.statistics,
               export: rolePermissions.permissions.export || DEFAULT_PERMISSIONS.export,
-              history: rolePermissions.permissions.history || DEFAULT_PERMISSIONS.history
+              history: rolePermissions.permissions.history || DEFAULT_PERMISSIONS.history,
+              timeClockHistory: rolePermissions.permissions.timeClockHistory || DEFAULT_PERMISSIONS.timeClockHistory
             };
             setPermissions(loadedPermissions);
           } else {

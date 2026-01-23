@@ -23,12 +23,13 @@ import { UserAvatar } from './UserAvatar';
 import { CompanySettings } from './CompanySettings';
 import { PermissionsManagement } from './PermissionsManagement';
 import { HistoryManagement } from './HistoryManagement';
+import { TimeClockHistory } from './TimeClockHistory';
 import { useLanguage } from '../contexts/LanguageContext';
 import { isIT } from '../utils/rolePermissions';
-import { Shield, History } from 'lucide-react';
+import { Shield, History, Clock } from 'lucide-react';
 import { usePermissions } from '../hooks/usePermissions';
 
-type TabType = 'schedule' | 'employees' | 'settings' | 'statistics' | 'export' | 'absences' | 'holidays' | 'company' | 'permissions' | 'history';
+type TabType = 'schedule' | 'employees' | 'settings' | 'statistics' | 'export' | 'absences' | 'holidays' | 'company' | 'permissions' | 'history' | 'timeClockHistory';
 
 export function ManagerDashboard() {
   const { currentEmployee, logout, isDistrictManager } = useAuth();
@@ -51,7 +52,8 @@ export function ManagerDashboard() {
     ? [
         { id: 'company' as TabType, label: 'Configuración Empresa', icon: Settings },
         { id: 'permissions' as TabType, label: 'Permisos', icon: Shield },
-        ...(permissions.history?.read ? [{ id: 'history' as TabType, label: 'Historial', icon: History }] : [])
+        ...(permissions.history?.read ? [{ id: 'history' as TabType, label: 'Historial', icon: History }] : []),
+        ...(permissions.timeClockHistory?.read ? [{ id: 'timeClockHistory' as TabType, label: 'Historial de Fichadas', icon: Clock }] : [])
       ]
     : [
         ...(permissions.schedule?.read ? [{ id: 'schedule' as TabType, label: t('schedule'), icon: Calendar }] : []),
@@ -60,7 +62,8 @@ export function ManagerDashboard() {
         ...(permissions.storeSchedule?.read ? [{ id: 'settings' as TabType, label: 'Horarios Tienda', icon: Home }] : []),
         ...(permissions.statistics?.read ? [{ id: 'statistics' as TabType, label: t('statistics'), icon: BarChart3 }] : []),
         ...(permissions.export?.read ? [{ id: 'export' as TabType, label: t('export'), icon: FileText }] : []),
-        ...(permissions.history?.read ? [{ id: 'history' as TabType, label: 'Historial', icon: History }] : [])
+        ...(permissions.history?.read ? [{ id: 'history' as TabType, label: 'Historial', icon: History }] : []),
+        ...(permissions.timeClockHistory?.read ? [{ id: 'timeClockHistory' as TabType, label: 'Historial de Fichadas', icon: Clock }] : [])
       ];
 
   // Función para volver al selector de tiendas (solo para encargados de distrito)
@@ -145,6 +148,8 @@ export function ManagerDashboard() {
         return <PermissionsManagement />;
       case 'history':
         return <HistoryManagement />;
+      case 'timeClockHistory':
+        return <TimeClockHistory />;
       default:
         // Si es IT, mostrar Configuración Empresa por defecto
         if (currentEmployee && isIT(currentEmployee.role)) {
